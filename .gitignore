@@ -1,0 +1,36 @@
+# === Unity Generated Folders ===
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+**/UserSettings/
+
+# === Visual Studio / C# ===
+.vs/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.pdb
+*.mdb
+
+# === Rider ===
+.idea/
+*.iml
+
+# === Cache / Crash ===
+sysinfo.txt
+
+# === Unity Addressables ===
+[Aa]rtifact*
+*.bundle
+*.unityweb
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
