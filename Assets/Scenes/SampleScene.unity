@@ -500,7 +500,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -20, y: -150}
+  m_AnchoredPosition: {x: -60, y: -150}
   m_SizeDelta: {x: 300, y: 80}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &216043014
@@ -919,7 +919,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 12.515275
+  orthographic size: 14.567064
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1638,6 +1638,8 @@ MonoBehaviour:
   owner: 0
   maxHealth: 100
   currentHealth: 0
+  coinsPerTick: 5
+  coinInterval: 2
 --- !u!1 &887834576
 GameObject:
   m_ObjectHideFlags: 0
@@ -2623,6 +2625,8 @@ MonoBehaviour:
   owner: 1
   maxHealth: 100
   currentHealth: 0
+  coinsPerTick: 5
+  coinInterval: 2
 --- !u!1 &1570681464
 GameObject:
   m_ObjectHideFlags: 0
@@ -2878,9 +2882,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCoins: 0
-  coinsPerTick: 5
-  coinInterval: 2
-  coinText: {fileID: 216043014}
+  playerCoinText: {fileID: 216043014}
+  teamCoins: 0
 --- !u!4 &1920831355
 Transform:
   m_ObjectHideFlags: 0
