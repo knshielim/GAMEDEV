@@ -12,19 +12,23 @@ public class Enemy : MonoBehaviour
     public Animator animator;
 
     public float currentHealth;
-    public float attackCooldown = 0f;
-    public bool isAttacking = false;
+    private float attackCooldown = 0f;
+    private bool isAttacking = false;
 
-    public Troops targetTroop;
-    public Tower targetTower;
+    private Troops targetTroop;
+    private Tower targetTower;
 
     void Start()
     {
-        currentHealth = maxHealth;
+    currentHealth = maxHealth;
 
-        if (animator == null)
-            animator = GetComponent<Animator>();
+    if (animator == null)
+        animator = GetComponent<Animator>();
+
+    // flip the sprite to the left
+    GetComponent<SpriteRenderer>().flipX = true;
     }
+
 
     void Update()
     {
