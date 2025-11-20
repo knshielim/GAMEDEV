@@ -11,7 +11,7 @@ public class CoinManager : MonoBehaviour
     public TextMeshProUGUI playerCoinText;   // UI buat player 
 
     [Header("AI Coins (no UI)")]
-    public int teamCoins = 0;               
+    public int enemyCoins = 0;               
 
     private void Awake()
     {
@@ -67,33 +67,33 @@ public class CoinManager : MonoBehaviour
     }
 
     // ai coin
-    public void AddTeamCoins(int amount)
+    public void AddEnemyCoins(int amount)
     {
         if (amount <= 0) return;
 
-        teamCoins += amount;
+        enemyCoins += amount;
 
         // buat liat cara kerja AI
-        Debug.Log($"[AI COIN] +{amount} → total: {teamCoins}");
+        Debug.Log($"[AI COIN] +{amount} → total: {enemyCoins}");
     }
 
-    public bool TrySpendTeamCoins(int cost)
+    public bool TrySpendEnemyCoins(int cost)
     {
-        if (teamCoins < cost)
+        if (enemyCoins < cost)
         {
-            Debug.Log($"[AI COIN] NOT ENOUGH (need {cost}, has {teamCoins})");
+            Debug.Log($"[AI COIN] NOT ENOUGH (need {cost}, has {enemyCoins})");
             return false;
         }
 
-        teamCoins -= cost;
-        Debug.Log($"[AI COIN] SPEND {cost} → remaining: {teamCoins}");
+        enemyCoins -= cost;
+        Debug.Log($"[AI COIN] SPEND {cost} → remaining: {enemyCoins}");
         return true;
     }
 
     public void ResetCoins()
     {
         playerCoins = 0;
-        teamCoins = 0;
+        enemyCoins = 0;
         UpdatePlayerUI();
         Debug.Log("[COIN] Reset coins for new game/level");
     }

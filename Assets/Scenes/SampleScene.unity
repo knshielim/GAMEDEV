@@ -1132,7 +1132,7 @@ GameObject:
   - component: {fileID: 460093042}
   - component: {fileID: 460093041}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Summon Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1253,7 +1253,7 @@ GameObject:
   - component: {fileID: 466302373}
   - component: {fileID: 466302372}
   m_Layer: 5
-  m_Name: Button (3)
+  m_Name: Upgrade Summon Rate Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2608,11 +2608,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdf3d96291a835f40a50b8dc163ed5d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: 0
+  owner: 1
   maxHealth: 100
   currentHealth: 0
+  level: 1
   coinsPerTick: 5
   coinInterval: 2
+  upgradeButtonText: {fileID: 0}
+  upgradeButtonImage: {fileID: 0}
+  affordableSprite: {fileID: 0}
+  unaffordableSprite: {fileID: 0}
 --- !u!1 &887834576
 GameObject:
   m_ObjectHideFlags: 0
@@ -3901,11 +3906,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdf3d96291a835f40a50b8dc163ed5d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: 1
+  owner: 0
   maxHealth: 100
   currentHealth: 0
-  coinsPerTick: 5
-  coinInterval: 2
+  level: 1
+  coinsPerTick: 1
+  coinInterval: 1
+  upgradeButtonText: {fileID: 1701505968}
+  upgradeButtonImage: {fileID: 1607317672}
+  affordableSprite: {fileID: 21300000, guid: dc2484c2e00eeaa4fa6ac802e69086b5, type: 3}
+  unaffordableSprite: {fileID: 21300000, guid: 93230df273636a742b9fd2b29353e819, type: 3}
 --- !u!1 &1485386474
 GameObject:
   m_ObjectHideFlags: 0
@@ -4171,7 +4181,7 @@ GameObject:
   - component: {fileID: 1607317672}
   - component: {fileID: 1607317671}
   m_Layer: 5
-  m_Name: Button (2)
+  m_Name: Upgrade Tower Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4240,7 +4250,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1607317672}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1462288396}
+        m_TargetAssemblyTypeName: Tower, Assembly-CSharp
+        m_MethodName: UpgradeTower
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1607317672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4292,7 +4314,7 @@ GameObject:
   - component: {fileID: 1617622526}
   - component: {fileID: 1617622525}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: Deploy Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4743,7 +4765,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 2, y: 84}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1701505968
@@ -4753,7 +4775,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1701505966}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -4766,7 +4788,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Upgrade to Lv. ?
+
+    Cost: ???'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5042,7 +5066,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCoins: 0
   playerCoinText: {fileID: 216043014}
-  teamCoins: 0
+  enemyCoins: 0
 --- !u!4 &1920831355
 Transform:
   m_ObjectHideFlags: 0

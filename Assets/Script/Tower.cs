@@ -1,31 +1,166 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Tower : MonoBehaviour
 {
-    public enum TowerOwner { Player, Team }
+    public enum TowerOwner {Player, Enemy} 
     public TowerOwner owner;
 
     [Header("Health")]
     public int maxHealth = 100;
     public int currentHealth;
 
+    [Header("Upgrade & Economy")]
+    [Tooltip("The current level of the tower. Starts at 1.")]
+    public int level = 1; 
+
+    [Tooltip("Base coins generated per tick at Level 1")]
+    private const int TOWER_BASE_RATE = 1; 
+    
+    [Tooltip("The cost of the first upgrade (Lv 1->2).")]
+    private const int TOWER_FIRST_UPGRADE_COST = 100;
+    
+    [Tooltip("The amount the cost increases by each level (300, 400, etc.)")]
+    private const int TOWER_COST_INCREMENT = 100;
+
     [Header("Coin Generation")]
     public int coinsPerTick = 1;
     public float coinInterval = 1f;
     private float coinTimer = 0f;
 
+    [Header("UI References (Player Only)")]
+    [Tooltip("The Text component on the Upgrade button that shows the price.")]
+    public TextMeshProUGUI upgradeButtonText; 
+
+    [Tooltip("The Image component of the Upgrade Button to change its visual.")]
+    public Image upgradeButtonImage;
+    
+    [Tooltip("The sprite to display when the upgrade CAN be afforded (original).")]
+    public Sprite affordableSprite;
+    
+    [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
+    public Sprite unaffordableSprite;
+
     private void Start()
     {
         currentHealth = maxHealth;
 
+        coinsPerTick = CalculateCoinRate(level); 
+
         Debug.Log($"[{owner} TOWER] Start HP: {currentHealth}/{maxHealth}");
+
+        if (owner == TowerOwner.Player)
+        {
+            UpdateUpgradeUI();
+        }
     }
 
     private void Update()
     {
         HandleCoinGeneration();
+
+        if (owner == TowerOwner.Player)
+        {
+            UpdateUpgradeUI(); 
+        }
+    }
+
+    public int CalculateUpgradeCost()
+    {
+        int nextLevel = level + 1;
+        
+        // Cost for Lv 2 (Next Level = 2) should be 100.
+        if (nextLevel == 2)
+        {
+            return TOWER_FIRST_UPGRADE_COST;
+        }
+        return TOWER_FIRST_UPGRADE_COST + ((nextLevel - 2) * TOWER_COST_INCREMENT);
+    }
+
+    public int CalculateCoinRate(int currentLevel)
+    {
+        return TOWER_BASE_RATE * currentLevel;
+    }
+
+    public void UpdateUpgradeUI()
+    {
+        if (owner != TowerOwner.Player) return;
+        
+        if (upgradeButtonText == null)
+        {
+            Debug.LogError("[TOWER UI ERROR] upgradeButtonText is MISSING in the Inspector.");
+            return;
+        }
+        if (upgradeButtonImage == null)
+        {
+            Debug.LogError("[TOWER UI ERROR] upgradeButtonImage is MISSING in the Inspector. This is why the sprite isn't changing.");
+            return;
+        }
+
+        int nextLevel = level + 1;
+        int cost = CalculateUpgradeCost();
+        
+        UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
+        bool canAfford = false;
+
+        if (CoinManager.Instance != null)
+        {
+            canAfford = CoinManager.Instance.playerCoins >= cost;
+            
+            if (button != null)
+            {
+                button.interactable = canAfford;
+            }
+        }
+        
+        if (canAfford)
+        {
+            if (affordableSprite != null)
+            {
+                upgradeButtonImage.sprite = affordableSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[TOWER UI WARNING] affordableSprite is MISSING.");
+            }
+        }
+        else
+        {
+            if (unaffordableSprite != null)
+            {
+                upgradeButtonImage.sprite = unaffordableSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[TOWER UI WARNING] unaffordableSprite is MISSING.");
+            }
+        }
+
+        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";        
+    }
+
+    public void UpgradeTower()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.IsGameOver()) return;
+
+        int upgradeCost = CalculateUpgradeCost();
+
+        if (owner == TowerOwner.Player && CoinManager.Instance != null && CoinManager.Instance.TrySpendPlayerCoins(upgradeCost))
+        {
+            level++;
+            coinsPerTick = CalculateCoinRate(level);
+            
+            Debug.Log($"[PLAYER TOWER] Upgraded to Level {level}! New Rate: {coinsPerTick}/tick. Next cost: {CalculateUpgradeCost()}");
+
+            UpdateUpgradeUI(); 
+        }
+        else if (owner == TowerOwner.Player)
+        {
+            Debug.Log($"[PLAYER TOWER] Cannot upgrade. Need {upgradeCost} coins.");
+        }
     }
 
     void HandleCoinGeneration()
@@ -42,27 +177,25 @@ public class Tower : MonoBehaviour
             {
                 CoinManager.Instance.AddPlayerCoins(coinsPerTick);
             }
-            else if (owner == TowerOwner.Team)
+            else if (owner == TowerOwner.Enemy) 
             {
-                CoinManager.Instance.AddTeamCoins(coinsPerTick);
+                CoinManager.Instance.AddEnemyCoins(coinsPerTick);
             }
         }
     }
     
     void OnTowerDestroyed()
     {
-        GameManager.Instance.TowerDestroyed(this);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TowerDestroyed(this);
+        }
     }
-  
-    // handle damage
+ 
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-
-        // Clamp biar HP ga turun di bawah 0
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
-        // tau hp tower habis kena damage
         Debug.Log($"[{owner} TOWER] Took {damage} damage → HP: {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
@@ -71,5 +204,4 @@ public class Tower : MonoBehaviour
             OnTowerDestroyed();
         }
     }
-
 }

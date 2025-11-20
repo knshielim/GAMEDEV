@@ -43,6 +43,11 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    public bool IsGameOver()
+    {
+        return isGameOver;
+    }
+
     // Dipanggil dari Tower:
     // GameManager.Instance.TowerDestroyed(this);
     public void TowerDestroyed(Tower destroyedTower)
@@ -58,7 +63,7 @@ public class GameManager : MonoBehaviour
         {
             message = "YOU LOSE!";
         }
-        else if (destroyedTower == aiTower || destroyedTower.owner == Tower.TowerOwner.Team)
+        else if (destroyedTower == aiTower || destroyedTower.owner == Tower.TowerOwner.Enemy)
         {
             message = "YOU WIN!";
         }
