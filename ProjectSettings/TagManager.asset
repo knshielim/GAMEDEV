@@ -3,7 +3,10 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Troop
+  - Enemy
+  - Tower
   layers:
   - Default
   - TransparentFX
@@ -40,6 +43,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: 'Troops and enemies '
+    uniqueID: 269550449
     locked: 0
   - name: Button
     uniqueID: 448676099
