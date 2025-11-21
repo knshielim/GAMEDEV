@@ -82,5 +82,25 @@ public class GameManager : MonoBehaviour
         // Hentikan game (opsional, tapi enak buat Phase 1)
         Time.timeScale = 0f;
     }
+
+
+    public void OnSummonButtonClick()
+    {
+        if (isGameOver)
+        {
+            Debug.Log("[GameManager] Cannot summon: Game Over.");
+            return;
+        }
+
+        if (GachaManager.Instance != null)
+        {
+            // Manggil Gacha Function
+            GachaManager.Instance.SummonTroop();
+        }
+        else
+        {
+            Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
+        }
+    }
 }
 
