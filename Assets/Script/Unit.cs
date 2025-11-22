@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 public enum Team { Player, Enemy }
 
@@ -19,22 +20,16 @@ public abstract class Unit : MonoBehaviour
     [SerializeField] private float deathDuration = 1.0f; 
 
     [Header("Runtime Stats")]
-    [SerializeField] public float MaxHealth = 20f;
+    [SerializeField] private float _maxHealth = 20f;
+
+    public float MaxHealth 
+    { 
+        get => _maxHealth; 
+        internal set => _maxHealth = value; 
+    }
     public float moveSpeed;
     public float attackSpeed;
     public float attackPoints;
-
-    /*
-    [Header("Base Stats")]
-    [SerializeField] private float baseMaxHealth = 20f;
-    [SerializeField] private float deathDuration = 1.0f; 
-    
-    public float MaxHealth { get; set; }
-
-    public float moveSpeed = 1.5f;
-    public float attackSpeed = 1f;
-    public float attackPoints = 3f;
-    */
 
     [Header("State")]
     [HideInInspector] public float currentHealth;
@@ -53,6 +48,8 @@ public abstract class Unit : MonoBehaviour
 
     protected virtual void Start()
     {
+        MaxHealth = baseMaxHealth;
+        
         if (troopData != null)
         {
             MaxHealth   = troopData.maxHealth;
@@ -65,7 +62,6 @@ public abstract class Unit : MonoBehaviour
         else
         {
             // fallback and use base stats 
-            MaxHealth   = baseMaxHealth;
             moveSpeed   = baseMoveSpeed;
             attackSpeed = baseAttackSpeed;
             attackPoints = baseAttackPoints;
@@ -114,7 +110,7 @@ public abstract class Unit : MonoBehaviour
 
         attackCooldown += Time.deltaTime;
 
-        if (attackCooldown >= attackSpeed)
+        if (attackCooldown >= 1f / attackSpeed)
         {
             attackCooldown = 0f;
             FindAndPerformAttack(); 
@@ -135,40 +131,57 @@ public abstract class Unit : MonoBehaviour
             Die();
         }
     }
-
     protected void Die()
     {
         if (isDead) return; 
         
         isDead = true; 
-        
         isAttacking = false;
-        if (unitCollider != null)
-        {
-            unitCollider.enabled = false; 
-        }
-
-        SetAnimationState(false, false, true);
+        
+        Debug.Log($"[DEATH] {gameObject.name} starting death sequence");
+        
+        // Award coins based on which team died
         if (UnitTeam == Team.Enemy)
         {
-        int coinsEarned = 20; // Troops kill enemy
-        CoinManager.Instance?.AddPlayerCoins(coinsEarned);
-        Debug.Log($"[COIN] Player earned {coinsEarned}");
+            int coinsEarned = 20; // Player killed enemy
+            CoinManager.Instance?.AddPlayerCoins(coinsEarned);
+            Debug.Log($"[COIN] Player earned {coinsEarned} from killing {gameObject.name}");
         }
-    else if (UnitTeam == Team.Player)
+        else if (UnitTeam == Team.Player)
+        {
+            int coinsEarned = 20; // Enemy killed player troop
+            CoinManager.Instance?.AddEnemyCoins(coinsEarned);
+            Debug.Log($"[COIN] Enemy earned {coinsEarned} from killing {gameObject.name}");
+        }
+
+        // Set animation to death state
+        SetAnimationState(false, false, true);
+
+        // Start death sequence - collider will be disabled there
+        StartCoroutine(DeathSequence());
+    }
+
+    private IEnumerator DeathSequence()
     {
-        int coinsEarned = 20; // Enemy kills Troop
-        CoinManager.Instance?.AddEnemyCoins(coinsEarned);
-        Debug.Log($"[COIN] Enemy earned {coinsEarned}");
+        Debug.Log($"[DEATH] {gameObject.name} coroutine started");
+        
+        // Disable collider IMMEDIATELY to prevent new attacks
+        if (unitCollider != null)
+        {
+            unitCollider.enabled = false;
+            Debug.Log($"[DEATH] {gameObject.name} collider disabled");
+        }
+        
+        // Wait for death animation to complete
+        Debug.Log($"[DEATH] {gameObject.name} playing death animation");
+        yield return new WaitForSeconds(deathDuration);
+        
+        Debug.Log($"[DEATH] {gameObject.name} destroying now");
+        
+        // Destroy the game object
+        Destroy(gameObject);
     }
 
-    // Clean up health event listeners
-    OnHealthChanged = null;
-
-    // Destroy the game object after death animation duration
-    Destroy(gameObject, deathDuration);
-    }
-    
     protected void SetAnimationState(bool isMoving, bool isAttacking, bool isDead = false)
     {
         if (animator != null)
@@ -180,5 +193,9 @@ public abstract class Unit : MonoBehaviour
                 animator.SetTrigger("isDead");
             }
         }
+    }
+    protected void SetTeam(Team team)
+    {
+        UnitTeam = team;
     }
 }

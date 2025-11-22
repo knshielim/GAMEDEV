@@ -172,7 +172,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 10855691}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -205,13 +205,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -1761,7 +1761,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 560485586}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -1781,13 +1781,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -3060,7 +3060,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 940501125}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -3080,13 +3080,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -3282,7 +3282,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 944283106}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -3302,13 +3302,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -3996,13 +3996,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -4161,7 +4161,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1332875120}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -4590,7 +4590,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1563041730}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -4623,13 +4623,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
   baseAttackPoints: 3
   deathDuration: 1
-  MaxHealth: 20
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
@@ -6994,9 +6994,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1727386457277181258, guid: be7c9f2a3a09ff844a447a26bd10446b, type: 3}
+      propertyPath: troopData
+      value: 
+      objectReference: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
     - target: {fileID: 4251204389187099884, guid: be7c9f2a3a09ff844a447a26bd10446b, type: 3}
       propertyPath: m_Name
       value: Slime_Blue
+      objectReference: {fileID: 0}
+    - target: {fileID: 8962614978844121706, guid: be7c9f2a3a09ff844a447a26bd10446b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8962614978844121706, guid: be7c9f2a3a09ff844a447a26bd10446b, type: 3}
       propertyPath: HealthBarPrefab
@@ -7243,6 +7251,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1929114566598813995, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 269550449
+      objectReference: {fileID: 0}
     - target: {fileID: 2326530794378479623, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_SizeDelta.x
       value: 5.9999967
@@ -7250,6 +7262,10 @@ PrefabInstance:
     - target: {fileID: 2326530794378479623, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 2.000002
+      objectReference: {fileID: 0}
+    - target: {fileID: 4085586745240337544, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6147553724170775255, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_AnchorMax.y
@@ -7289,11 +7305,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6763168459511962538, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 6763168459511962538, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 15
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6763168459511962538, guid: c61219c59ce704c44bcceb59724c5a91, type: 3}
       propertyPath: m_LocalPosition.x
@@ -7407,6 +7423,14 @@ PrefabInstance:
     - target: {fileID: 3763474851904730125, guid: 7f2816e898c171f46a9f623f143499d6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6217977614963525643, guid: 7f2816e898c171f46a9f623f143499d6, type: 3}
+      propertyPath: troopData
+      value: 
+      objectReference: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
+    - target: {fileID: 8979725542805602373, guid: 7f2816e898c171f46a9f623f143499d6, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8979725542805602373, guid: 7f2816e898c171f46a9f623f143499d6, type: 3}
       propertyPath: HealthBarPrefab

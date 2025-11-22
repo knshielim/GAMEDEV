@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Unit))]
-
 public class UnitHealthBarController : MonoBehaviour
 {
     [Header("UI References")]
@@ -15,6 +14,7 @@ public class UnitHealthBarController : MonoBehaviour
 
     private Unit targetUnit;
     private Slider healthSlider;
+    private GameObject healthBarInstance; // STORE REFERENCE TO THE INSTANTIATED HEALTH BAR
     private Transform mainCameraTransform;
 
     private void Awake()
@@ -27,7 +27,8 @@ public class UnitHealthBarController : MonoBehaviour
             return;
         }
 
-        GameObject healthBarInstance = Instantiate(HealthBarPrefab, transform);
+        // Instantiate health bar as child of this unit
+        healthBarInstance = Instantiate(HealthBarPrefab, transform);
         
         healthBarInstance.transform.localPosition = new Vector3(0, 2f, 0); 
         
@@ -56,18 +57,21 @@ public class UnitHealthBarController : MonoBehaviour
         if (targetUnit != null)
         {
             targetUnit.OnHealthChanged -= UpdateHealthBar;
-            if (healthSlider != null)
-            {
-                Destroy(healthSlider.transform.root.gameObject);
-            }
+        }
+        
+        // Only destroy the health bar instance, NOT the root!
+        if (healthBarInstance != null)
+        {
+            Destroy(healthBarInstance);
         }
     }
 
     private void LateUpdate()
     {
-        if (mainCameraTransform != null)
+        if (mainCameraTransform != null && healthBarInstance != null)
         {
-            transform.rotation = mainCameraTransform.rotation;
+            // Make health bar face camera
+            healthBarInstance.transform.rotation = mainCameraTransform.rotation;
         }
     }
 

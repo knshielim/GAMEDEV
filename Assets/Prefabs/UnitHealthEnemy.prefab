@@ -222,7 +222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.92549026, g: 0.1254902, b: 0.1254902, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 4085586745240337544}
   - component: {fileID: 3445278549206649974}
   m_Layer: 0
-  m_Name: UnitHealthCanvas
+  m_Name: UnitHealthEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -359,7 +359,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &3445278549206649974
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,6 +388,18 @@ PrefabInstance:
     - target: {fileID: 4079922587313688, guid: 03d60b170e04e444994ed5121e44d567, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3319927686328784024, guid: 03d60b170e04e444994ed5121e44d567, type: 3}
+      propertyPath: m_Color.b
+      value: 0.1254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 3319927686328784024, guid: 03d60b170e04e444994ed5121e44d567, type: 3}
+      propertyPath: m_Color.g
+      value: 0.1254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 3319927686328784024, guid: 03d60b170e04e444994ed5121e44d567, type: 3}
+      propertyPath: m_Color.r
+      value: 0.92549026
       objectReference: {fileID: 0}
     - target: {fileID: 3728459142885418441, guid: 03d60b170e04e444994ed5121e44d567, type: 3}
       propertyPath: m_Pivot.x

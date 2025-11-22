@@ -36,6 +36,7 @@ public class Troops : Unit
         if (targetUnit != null && !targetUnit.isDead)
         {
             targetUnit.TakeDamage(attackPoints);
+            Debug.Log($"[ATTACK] {gameObject.name} dealt {attackPoints} damage to {targetUnit.gameObject.name} (HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})");
 
             if (targetUnit.CurrentHealth <= 0) 
             {
@@ -48,18 +49,43 @@ public class Troops : Unit
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (currentTarget == null)
+        if (currentTarget != null || isDead) return;
+        
+        Unit targetCandidate = other.GetComponent<Unit>();
+        
+        if (targetCandidate == null || targetCandidate.isDead) return;
+        
+        if (targetCandidate.UnitTeam == UnitTeam) return;
+        
+        if (other.CompareTag("Enemy") || other.CompareTag("Tower"))
         {
-            Unit targetCandidate = other.GetComponent<Unit>();
+            currentTarget = targetCandidate;
+            isAttacking = true;
+            Debug.Log($"[COMBAT] {gameObject.name} acquired target: {other.gameObject.name}");
+        }
+    }
 
-            if (targetCandidate != null && !targetCandidate.isDead)
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (isDead) return;
+        
+        if (currentTarget == null) return;
+        
+        Unit exitedUnit = other.GetComponent<Unit>();
+        
+        if (exitedUnit == null) return;
+        
+        if (exitedUnit == currentTarget)
+        {
+            if (exitedUnit.isDead)
             {
-                if ((other.CompareTag("Enemy") || other.CompareTag("Tower")) && other.gameObject != gameObject)
-                {
-                    currentTarget = targetCandidate;
-                    isAttacking = true;
-                }
+                Debug.Log($"[COMBAT] {gameObject.name} ignoring exit of dying target: {exitedUnit.gameObject.name}");
+                return;
             }
+            
+            Debug.Log($"[COMBAT] {gameObject.name} lost target (moved away): {exitedUnit.gameObject.name}");
+            currentTarget = null;
+            isAttacking = false;
         }
     }
 }
