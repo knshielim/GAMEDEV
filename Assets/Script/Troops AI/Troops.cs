@@ -1,143 +1,65 @@
 using UnityEngine;
 
-public class Troops : MonoBehaviour
+public class Troops : Unit
 {
-    [Header("Stats")]
-    public float maxHealth = 20f;
-    public float moveSpeed = 1.5f;
-    public float attackSpeed = 1f; 
-    public float attackPoints = 3f;
-
-    [Header("Animation")]
-    public Animator animator;
-
-    public float currentHealth;
-    private float attackCooldown = 0f;
-    private bool isAttacking = false;
-
-    private Enemy targetEnemy;
-    private Tower targetTower;
-
-    void Start()
+    private Unit currentTarget;
+    
+    protected override void Start()
     {
-        currentHealth = maxHealth;
-
-        if (animator == null)
-            animator = GetComponent<Animator>();
+        base.Start();
+        UnitTeam = Team.Player; 
     }
 
-    void Update()
-    {
-        if (currentHealth <= 0)
-        {
-            Die();
-            return;
-        }
-
-        if (isAttacking)
-        {
-            if (targetEnemy != null)
-                AttackEnemy();
-            else if (targetTower != null)
-                AttackTower();
-            else
-                isAttacking = false;
-        }
-        else
-        {
-            MoveForward();
-        }
-    }
-
-    void MoveForward()
+    protected override void Move()
     {
         transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
-
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", true);
-            animator.SetBool("isAttacking", false);
-        }
+        SetAnimationState(true, false);
     }
 
-    void AttackEnemy()
+    protected override void FindAndPerformAttack()
     {
-        if (targetEnemy == null)
+        if (currentTarget == null || currentTarget.isDead) 
         {
+            currentTarget = null;
             isAttacking = false;
+            SetAnimationState(true, false);
             return;
         }
-
-        attackCooldown += Time.deltaTime;
-
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", false);
-            animator.SetBool("isAttacking", true);
-        }
-
-        if (attackCooldown >= attackSpeed)
-        {
-            attackCooldown = 0f;
-            targetEnemy.TakeDamage(attackPoints);
-
-            if (targetEnemy.currentHealth <= 0)
-                targetEnemy = null;
-        }
+        
+        PerformAttack(currentTarget.GetComponent<Collider2D>());
     }
-
-    void AttackTower()
+    
+    protected override void PerformAttack(Collider2D targetCollider)
     {
-        if (targetTower == null)
+        Unit targetUnit = targetCollider.GetComponent<Unit>();
+        
+        if (targetUnit != null && !targetUnit.isDead)
         {
-            isAttacking = false;
-            return;
+            targetUnit.TakeDamage(attackPoints);
+
+            if (targetUnit.CurrentHealth <= 0) 
+            {
+                currentTarget = null;
+                isAttacking = false;
+                SetAnimationState(true, false);
+            }
         }
-
-        attackCooldown += Time.deltaTime;
-
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", false);
-            animator.SetBool("isAttacking", true);
-        }
-
-        if (attackCooldown >= attackSpeed)
-        {
-            attackCooldown = 0f;
-            targetTower.TakeDamage(Mathf.CeilToInt(attackPoints));
-
-            if (targetTower.currentHealth <= 0)
-                targetTower = null;
-        }
-    }
-
-    public void TakeDamage(float dmg)
-    {
-        currentHealth -= dmg;
-        if (currentHealth <= 0)
-            Die();
-    }
-
-    void Die()
-    {
-        if (animator != null)
-            animator.SetTrigger("isDead");
-
-        Destroy(gameObject, 0.5f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Enemy") && other.GetComponent<Enemy>() != null)
+        if (currentTarget == null)
         {
-            targetEnemy = other.GetComponent<Enemy>();
-            isAttacking = true;
-        }
-        else if (other.CompareTag("Tower") && other.GetComponent<Tower>() != null)
-        {
-            targetTower = other.GetComponent<Tower>();
-            isAttacking = true;
+            Unit targetCandidate = other.GetComponent<Unit>();
+
+            if (targetCandidate != null && !targetCandidate.isDead)
+            {
+                if ((other.CompareTag("Enemy") || other.CompareTag("Tower")) && other.gameObject != gameObject)
+                {
+                    currentTarget = targetCandidate;
+                    isAttacking = true;
+                }
+            }
         }
     }
 }

@@ -1,150 +1,70 @@
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Unit
 {
-    [Header("Stats")]
-    public float maxHealth = 20f;
-    public float moveSpeed = 1.5f;
-    public float attackSpeed = 1f; 
-    public float attackPoints = 3f;
+    private Unit currentTarget; 
 
-    [Header("Animation")]
-    public Animator animator;
-
-    public float currentHealth;
-    private float attackCooldown = 0f;
-    private bool isAttacking = false;
-
-    private Troops targetTroop;
-    private Tower targetTower;
-
-    void Start()
+    protected override void Start()
     {
-    currentHealth = maxHealth;
-
-    if (animator == null)
-        animator = GetComponent<Animator>();
-
-    // flip the sprite to the left
-    GetComponent<SpriteRenderer>().flipX = true;
-    }
-
-
-    void Update()
-    {
-        if (currentHealth <= 0)
+        base.Start();
+        UnitTeam = Team.Enemy; 
+        
+        if (TryGetComponent<SpriteRenderer>(out var sr))
         {
-            Die();
-            return;
-        }
-
-        if (isAttacking)
-        {
-            if (targetTroop != null)
-                AttackTroop();
-            else if (targetTower != null)
-                AttackTower();
-            else
-                isAttacking = false; // no target
-        }
-        else
-        {
-            MoveLeft();
+            sr.flipX = true;
         }
     }
 
-    void MoveLeft()
+    protected override void Move()
     {
         transform.Translate(Vector2.left * moveSpeed * Time.deltaTime);
-
-        // Animation
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", true);
-            animator.SetBool("isAttacking", false);
-        }
+        SetAnimationState(true, false);
     }
 
-    void AttackTroop()
+    protected override void FindAndPerformAttack()
     {
-        if (targetTroop == null)
+        if (currentTarget == null || currentTarget.isDead) 
         {
+            currentTarget = null;
             isAttacking = false;
+            SetAnimationState(true, false);
             return;
         }
 
-        attackCooldown += Time.deltaTime;
-
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", false);
-            animator.SetBool("isAttacking", true);
-        }
-
-        if (attackCooldown >= attackSpeed)
-        {
-            attackCooldown = 0f;
-            targetTroop.TakeDamage(attackPoints);
-
-            if (targetTroop.currentHealth <= 0) // Troop destroyed
-                targetTroop = null;
-        }
+        PerformAttack(currentTarget.GetComponent<Collider2D>());
     }
 
-    void AttackTower()
+    protected override void PerformAttack(Collider2D targetCollider)
     {
-        if (targetTower == null)
+        Unit targetUnit = targetCollider.GetComponent<Unit>();
+
+        if (targetUnit != null && !targetUnit.isDead)
         {
-            isAttacking = false;
-            return;
+            targetUnit.TakeDamage(attackPoints);
+
+            if (targetUnit.CurrentHealth <= 0)
+            {
+                currentTarget = null;
+                isAttacking = false;
+                SetAnimationState(true, false);
+            }
         }
-
-        attackCooldown += Time.deltaTime;
-
-        if (animator != null)
-        {
-            animator.SetBool("isMoving", false);
-            animator.SetBool("isAttacking", true);
-        }
-
-        if (attackCooldown >= attackSpeed)
-        {
-            attackCooldown = 0f;
-            targetTower.TakeDamage(Mathf.CeilToInt(attackPoints));
-
-            if (targetTower.currentHealth <= 0) // Tower destroyed
-                targetTower = null;
-        }
-    }
-
-    public void TakeDamage(float dmg)
-    {
-        currentHealth -= dmg;
-        if (currentHealth <= 0)
-            Die();
-    }
-
-    void Die()
-    {
-        if (animator != null)
-            animator.SetTrigger("isDead");
-
-        Destroy(gameObject, 0.5f);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // Detect friendly Troops
-        if (other.CompareTag("Troop") && other.GetComponent<Troops>() != null)
+        if (currentTarget == null)
         {
-            targetTroop = other.GetComponent<Troops>();
-            isAttacking = true;
-        }
-        // Detect player's Tower
-        else if (other.CompareTag("Tower") && other.GetComponent<Tower>() != null)
-        {
-            targetTower = other.GetComponent<Tower>();
-            isAttacking = true;
+            Unit targetCandidate = other.GetComponent<Unit>();
+
+            if (targetCandidate != null && !targetCandidate.isDead)
+            {
+                if ((other.CompareTag("Troop") || other.CompareTag("Tower")) && other.gameObject != gameObject)
+                {
+                    currentTarget = targetCandidate;
+                    isAttacking = true;
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 
 [System.Serializable]
@@ -90,6 +91,8 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
+        SpawnTroop(newTroop);
+
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
 
         return newTroop;
@@ -99,7 +102,7 @@ public class GachaManager : MonoBehaviour
     private TroopRarity DetermineRarity()
     {
       
-        float randomValue = Random.Range(0f, 100f);
+        float randomValue = UnityEngine.Random.Range(0f, 100f);
         float cumulativeProbability = 0f;
 
         foreach (var rate in dropRates)
@@ -127,7 +130,7 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
-        int randomIndex = Random.Range(0, filteredTroops.Count);
+        int randomIndex = UnityEngine.Random.Range(0, filteredTroops.Count);
         return filteredTroops[randomIndex];
     }
 
@@ -145,12 +148,12 @@ public class GachaManager : MonoBehaviour
             Quaternion.identity
         );
 
-        Troops unitScript = newUnit.GetComponent<Troops>();
+        Unit unitScript = newUnit.GetComponent<Unit>();
         
         if (unitScript != null) 
         {
 
-            unitScript.maxHealth = troop.maxHealth;
+            unitScript.MaxHealth = troop.maxHealth;
             unitScript.currentHealth = troop.maxHealth;
             unitScript.attackPoints = troop.attack;
             unitScript.moveSpeed = troop.moveSpeed;

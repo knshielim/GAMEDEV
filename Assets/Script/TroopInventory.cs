@@ -7,7 +7,9 @@ public class TroopInventory : MonoBehaviour
     public static TroopInventory Instance;
 
     [Header("UI Inventory Slot Images")]
+    [Tooltip("List of Image components representing the inventory slots.")]
     public List<Image> slotImages; // gray boxes
+    [Tooltip("The sprite to display when a slot is empty.")]
     public Sprite emptySlotSprite;
 
     [Header("Stored Troops")]

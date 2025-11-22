@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +12,9 @@ public class Tower : MonoBehaviour
 
     [Header("Health")]
     public int maxHealth = 100;
-    public int currentHealth;
+    public int currentHealth = 0;
+    
+    public event Action<int> OnHealthChanged;
 
     [Header("Upgrade & Economy")]
     [Tooltip("The current level of the tower. Starts at 1.")]
@@ -43,6 +46,11 @@ public class Tower : MonoBehaviour
     
     [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
     public Sprite unaffordableSprite;
+
+    void Awake() 
+    {
+        currentHealth = maxHealth; 
+    }
 
     private void Start()
     {
@@ -197,6 +205,8 @@ public class Tower : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         Debug.Log($"[{owner} TOWER] Took {damage} damage → HP: {currentHealth}/{maxHealth}");
+
+        OnHealthChanged?.Invoke(currentHealth);
 
         if (currentHealth <= 0)
         {
