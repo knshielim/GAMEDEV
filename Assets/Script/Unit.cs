@@ -110,9 +110,24 @@ public abstract class Unit : MonoBehaviour
         }
 
         SetAnimationState(false, false, true);
-        OnHealthChanged = null; 
-        
-        Destroy(gameObject, deathDuration);
+        if (UnitTeam == Team.Enemy)
+        {
+        int coinsEarned = 20; // Troops kill enemy
+        CoinManager.Instance?.AddPlayerCoins(coinsEarned);
+        Debug.Log($"[COIN] Player earned {coinsEarned}");
+        }
+    else if (UnitTeam == Team.Player)
+    {
+        int coinsEarned = 20; // Enemy kills Troop
+        CoinManager.Instance?.AddEnemyCoins(coinsEarned);
+        Debug.Log($"[COIN] Enemy earned {coinsEarned}");
+    }
+
+    // Clean up health event listeners
+    OnHealthChanged = null;
+
+    // Destroy the game object after death animation duration
+    Destroy(gameObject, deathDuration);
     }
     
     protected void SetAnimationState(bool isMoving, bool isAttacking, bool isDead = false)

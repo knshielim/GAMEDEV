@@ -29,6 +29,7 @@ public class CoinManager : MonoBehaviour
     private void Start()
     {
         UpdatePlayerUI();
+        AddPlayerCoins(99999);
     }
 
     // player coin
