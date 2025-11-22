@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Youkai_Gotoku
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Youkai_Gotoku
+  displayName: Gotoku Youkai
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 220
+  attack: 30
+  moveSpeed: 1.7
+  attackInterval: 0.9
+  prefab: {fileID: 6400170879304436892, guid: a521b7ade0c62e243a5bb19c29700770, type: 3}

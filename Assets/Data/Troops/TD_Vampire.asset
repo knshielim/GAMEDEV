@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Vampire
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Vampire
+  displayName: Vampire
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 280
+  attack: 40
+  moveSpeed: 2
+  attackInterval: 0.7
+  prefab: {fileID: 2989748437951197671, guid: 329c030752dca3a41830754acc1d88d5, type: 3}

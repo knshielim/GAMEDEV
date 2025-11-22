@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Orc_Shaman
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Orc_Shaman
+  displayName: Shaman Orc
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 130
+  attack: 18
+  moveSpeed: 1.6
+  attackInterval: 0.8
+  prefab: {fileID: 4089975414588399776, guid: 1b7cddab2d5c03545a5c858ad23711a7, type: 3}

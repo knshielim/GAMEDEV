@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Warrior_1
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Warrior_1
+  displayName: First Warrior
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 110
+  attack: 11
+  moveSpeed: 1.5
+  attackInterval: 1.1
+  prefab: {fileID: 8163048701096252919, guid: f1afd04908b2d8e408096d171b334cf3, type: 3}

@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Orc_Warrior
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Orc_Warrior
+  displayName: Warrior Orc
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 170
+  attack: 20
+  moveSpeed: 1.5
+  attackInterval: 1
+  prefab: {fileID: 6584794856216265329, guid: 1473c8dcc839a4f489335ec55ed38cad, type: 3}

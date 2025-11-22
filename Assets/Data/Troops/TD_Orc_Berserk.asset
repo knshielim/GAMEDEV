@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Orc_Berserk
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Orc_Berserk
+  displayName: Berserk Orc
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 150
+  attack: 22
+  moveSpeed: 1.7
+  attackInterval: 0.9
+  prefab: {fileID: 3973147294380664772, guid: 6b7a00af84e241c4d8311fb9ec5a7f64, type: 3}

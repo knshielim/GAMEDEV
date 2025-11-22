@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Slime_Red
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Slime_Red
+  displayName: Red Slime
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 50
+  attack: 8
+  moveSpeed: 1.8
+  attackInterval: 1
+  prefab: {fileID: 5385030817546445256, guid: dce76c2b052733c418a704fb5b4596a5, type: 3}

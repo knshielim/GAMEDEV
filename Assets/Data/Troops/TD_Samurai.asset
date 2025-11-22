@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Samurai
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Samurai
+  displayName: Samurai
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 320
+  attack: 45
+  moveSpeed: 1.9
+  attackInterval: 0.8
+  prefab: {fileID: 2891842361310792916, guid: 00ff4eb254a0a6841b80b1f867f3ec7c, type: 3}

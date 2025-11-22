@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61fb469f260bdec4fb314535c9cbbea9, type: 3}
   m_Name: TD_Slime_Green
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
+  id: Slime_Green
+  displayName: Green Slime
   rarity: 0
-  maxHealth: 0
-  attack: 0
-  moveSpeed: 0
-  attackInterval: 0
-  prefab: {fileID: 0}
+  maxHealth: 60
+  attack: 7
+  moveSpeed: 1.6
+  attackInterval: 1.1
+  prefab: {fileID: 1985306042837692627, guid: 7f2816e898c171f46a9f623f143499d6, type: 3}

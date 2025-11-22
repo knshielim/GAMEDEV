@@ -19,6 +19,11 @@ public class GachaManager : MonoBehaviour
     [Tooltip("The coin cost to perform one summon.")]
     [SerializeField] private int summonCost = 100;
 
+    [Header("Gacha Cost Escalation")]
+    [Tooltip("Kenaikan harga setiap kali melakukan 1x summon.")]
+    [SerializeField] private int summonCostIncrease = 25;
+    private int summonsSinceReset = 0;
+
     [Tooltip("List of ALL TroopData ScriptableObjects available to be summoned.")]
     [SerializeField] private List<TroopData> allAvailableTroops;
 
@@ -74,12 +79,18 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
+        // calculate the price
+        int currentCost = GetCurrentSummonCost();
         // Spend coins
-        if (CoinManager.Instance == null || !CoinManager.Instance.TrySpendPlayerCoins(summonCost))
+        if (CoinManager.Instance == null || !CoinManager.Instance.TrySpendPlayerCoins(currentCost))
         {
-            Debug.Log($"[Gacha] Not enough coins to summon (Cost: {summonCost}).");
+            Debug.Log($"[Gacha] Not enough coins to summon (Cost: {currentCost}).");
             return null;
         }
+
+        // If player successfully pays, it means 1 summon is successful → increase the counter
+        summonsSinceReset++;
+        Debug.Log($"[Gacha] Summon: {summonsSinceReset} (Cost: {currentCost})");
 
         // Roll rarity using drop rates
         TroopRarity pulledRarity = DetermineRarity();
@@ -281,4 +292,18 @@ public class GachaManager : MonoBehaviour
             rate.dropPercentage = (rate.dropPercentage / total) * 100f;
         }
     }
+
+    // -------------------- SUMMON COST SYSTEM --------------------
+    public int GetCurrentSummonCost()
+    {
+        return summonCost + summonsSinceReset * summonCostIncrease;
+    }
+    
+    public void ResetGachaCost()
+    {
+        summonsSinceReset = 0;
+        Debug.Log("[Gacha] Summon cost escalation reset (stage/level baru).");
+    }
 }
+
+    
