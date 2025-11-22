@@ -4306,8 +4306,8 @@ MonoBehaviour:
   coinInterval: 1
   upgradeButtonText: {fileID: 1701505968}
   upgradeButtonImage: {fileID: 1607317672}
-  affordableSprite: {fileID: 0}
-  unaffordableSprite: {fileID: 0}
+  affordableSprite: {fileID: 21300000, guid: dc2484c2e00eeaa4fa6ac802e69086b5, type: 3}
+  unaffordableSprite: {fileID: 21300000, guid: 93230df273636a742b9fd2b29353e819, type: 3}
 --- !u!1 &1570681464
 GameObject:
   m_ObjectHideFlags: 0
