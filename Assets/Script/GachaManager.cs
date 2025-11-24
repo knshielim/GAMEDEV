@@ -53,7 +53,6 @@ public class GachaManager : MonoBehaviour
 
     private void Awake()
     {
-        // Assign instance here just like original
         if (Instance == null)
         {
             Instance = this;
@@ -70,7 +69,6 @@ public class GachaManager : MonoBehaviour
     }
 
     // -------------------- SUMMON FUNCTION --------------------
-
     public TroopData SummonTroop()
     {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
@@ -79,8 +77,9 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
-        // calculate the price
+        // Calculate current cost
         int currentCost = GetCurrentSummonCost();
+
         // Spend coins
         if (CoinManager.Instance == null || !CoinManager.Instance.TrySpendPlayerCoins(currentCost))
         {
@@ -88,16 +87,15 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
-        // If player successfully pays, it means 1 summon is successful → increase the counter
+        // Increase counter
         summonsSinceReset++;
         Debug.Log($"[Gacha] Summon: {summonsSinceReset} (Cost: {currentCost})");
 
-        // Roll rarity using drop rates
+        // Determine rarity
         TroopRarity pulledRarity = DetermineRarity();
 
-        // Pick random troop based on rarity
+        // Pick random troop
         TroopData newTroop = GetRandomTroopOfRarity(pulledRarity);
-
         if (newTroop == null)
         {
             Debug.LogError("[Gacha] No troop found for rarity: " + pulledRarity);
@@ -112,9 +110,12 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
+        // Refresh UI and spawn troop
+        TroopInventory.Instance.RefreshUI();
         SpawnTroop(newTroop);
 
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
+
         return newTroop;
     }
 
@@ -135,19 +136,16 @@ public class GachaManager : MonoBehaviour
 
     private TroopData GetRandomTroopOfRarity(TroopRarity rarity)
     {
-    List<TroopData> filteredTroops = allAvailableTroops
-        .Where(troop => troop.rarity == rarity)
-        .ToList();
+        List<TroopData> filteredTroops = allAvailableTroops
+            .Where(troop => troop.rarity == rarity)
+            .ToList();
 
-    if (filteredTroops.Count == 0)
-    {
-        return null;
+        if (filteredTroops.Count == 0)
+            return null;
+
+        int randomIndex = UnityEngine.Random.Range(0, filteredTroops.Count);
+        return filteredTroops[randomIndex];
     }
-
-    int randomIndex = UnityEngine.Random.Range(0, filteredTroops.Count);
-    return filteredTroops[randomIndex];
-    }
-
 
     private void SpawnTroop(TroopData troop)
     {
@@ -180,7 +178,6 @@ public class GachaManager : MonoBehaviour
     }
 
     // -------------------- TROOP CACHE --------------------
-
     private void InitializeTroopCache()
     {
         _troopsByRarity = allAvailableTroops
@@ -190,7 +187,6 @@ public class GachaManager : MonoBehaviour
     }
 
     // -------------------- DROP RATE VALIDATION --------------------
-
     private void ValidateDropRates()
     {
         float totalPercentage = dropRates.Sum(rate => rate.dropPercentage);
@@ -201,7 +197,6 @@ public class GachaManager : MonoBehaviour
     }
 
     // -------------------- UPGRADE SYSTEM --------------------
-
     public void UpgradeGachaSystem()
     {
         if (upgradeLevel >= 5)
@@ -298,12 +293,10 @@ public class GachaManager : MonoBehaviour
     {
         return summonCost + summonsSinceReset * summonCostIncrease;
     }
-    
+
     public void ResetGachaCost()
     {
         summonsSinceReset = 0;
         Debug.Log("[Gacha] Summon cost escalation reset (stage/level baru).");
     }
 }
-
-    

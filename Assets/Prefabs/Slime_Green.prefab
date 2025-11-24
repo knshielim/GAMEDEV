@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 5535826586418259128}
   - component: {fileID: 1236380099769351525}
   - component: {fileID: 4304571500066644306}
-  - component: {fileID: 6217977614963525643}
   - component: {fileID: 980828100698480037}
   - component: {fileID: 8979725542805602373}
+  - component: {fileID: -4213778098897159577}
   m_Layer: 0
   m_Name: Slime_Green
   m_TagString: Enemy
@@ -183,26 +183,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 2.4909143, y: 1.8524656}
   m_EdgeRadius: 0
---- !u!114 &6217977614963525643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1985306042837692627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseMaxHealth: 20
-  deathDuration: 1
-  moveSpeed: 5
-  attackSpeed: 1
-  attackPoints: 3
-  currentHealth: 0
-  isDead: 0
-  animator: {fileID: 5535826586418259128}
 --- !u!114 &980828100698480037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,7 +190,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1985306042837692627}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7677e2fbec4944e3f8dd9fee667dcfff, type: 3}
   m_Name: 
@@ -223,7 +203,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1985306042837692627}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
@@ -231,3 +211,28 @@ MonoBehaviour:
   HealthBarPrefab: {fileID: 0}
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &-4213778098897159577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1985306042837692627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  troopData: {fileID: 0}
+  baseMaxHealth: 20
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseAttackPoints: 3
+  deathDuration: 1
+  _maxHealth: 20
+  moveSpeed: 0
+  attackSpeed: 0
+  attackPoints: 0
+  currentHealth: 0
+  isDead: 0
+  animator: {fileID: 0}

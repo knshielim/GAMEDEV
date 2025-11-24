@@ -194,8 +194,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  troopData: {fileID: 0}
   baseMaxHealth: 20
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseAttackPoints: 3
   deathDuration: 1
+  _maxHealth: 20
   moveSpeed: 5
   attackSpeed: 1
   attackPoints: 3
