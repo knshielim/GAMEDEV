@@ -13,8 +13,10 @@ GameObject:
   - component: {fileID: 6775854471411913666}
   - component: {fileID: 1693807433831840949}
   - component: {fileID: 1168801910170651427}
+  - component: {fileID: -2387271798946335379}
   - component: {fileID: 1727386457277181258}
   - component: {fileID: 8962614978844121706}
+  - component: {fileID: -6093323252443113835}
   m_Layer: 0
   m_Name: Slime_Blue
   m_TagString: Troop
@@ -182,6 +184,31 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-2387271798946335379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4251204389187099884}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  troopData: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
+  baseMaxHealth: 20
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseAttackPoints: 3
+  deathDuration: 1
+  _maxHealth: 20
+  moveSpeed: 0
+  attackSpeed: 0
+  attackPoints: 0
+  currentHealth: 0
+  isDead: 0
+  animator: {fileID: 0}
 --- !u!114 &1727386457277181258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,7 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
+  troopData: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
   baseMaxHealth: 20
   baseMoveSpeed: 1.5
   baseAttackSpeed: 1
@@ -214,11 +241,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4251204389187099884}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HealthBarPrefab: {fileID: 0}
+  HealthBarPrefab: {fileID: 9118076586985036550, guid: d47e350c234b8d44ea9b5f8460ea625c, type: 3}
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &-6093323252443113835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4251204389187099884}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7677e2fbec4944e3f8dd9fee667dcfff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFacingRight: 0

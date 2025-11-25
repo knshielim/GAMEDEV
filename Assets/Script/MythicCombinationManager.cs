@@ -21,6 +21,10 @@ public class MythicCombinationManager : MonoBehaviour
     
     private MythicRecipe selectedRecipe;
     
+    [Header("Icon Display")]
+    public Transform iconContainer; 
+    public GameObject iconPrefab; 
+
     private void Awake()
     {
         if (Instance == null)
@@ -88,11 +92,11 @@ public class MythicCombinationManager : MonoBehaviour
                 MythicRecipe r = recipe; // Capture for closure
                 btn.onClick.AddListener(() => SelectRecipe(r));
                 
-                // Disable if can't craft
-                bool canCraft = recipe.CanCraft(availableTroops);
-                btn.interactable = canCraft;
+                // Recipe buttons should always be interactable
+                btn.interactable = true; 
                 
-                // Visual feedback
+                // Visual feedback (keep visual feedback based on canCraft)
+                bool canCraft = recipe.CanCraft(availableTroops);
                 Image btnImage = btn.GetComponent<Image>();
                 if (btnImage != null)
                 {
@@ -106,14 +110,42 @@ public class MythicCombinationManager : MonoBehaviour
     {
         selectedRecipe = recipe;
         
-        if (recipeDescriptionText != null)
-            recipeDescriptionText.text = recipe.GetRecipeDescription();
-            
-        if (craftButton != null)
+        // Clear old icons
+        foreach (Transform child in iconContainer)
+            Destroy(child.gameObject);
+        
+        // Build description (only header now)
+        string desc = $"<b>Create {recipe.resultMythicTroop.displayName}</b>\n\n<b>Required:</b>\n"; 
+        
+        foreach (var ingredient in recipe.ingredients)
         {
-            Dictionary<TroopData, int> availableTroops = GetAvailableTroopsFromInventory();
-            craftButton.interactable = recipe.CanCraft(availableTroops);
+            // Create icon-name pair
+            GameObject iconPair = Instantiate(iconPrefab, iconContainer);
+
+            // Get Image component (assuming it's on the root or a child)
+            Image img = iconPair.GetComponent<Image>();
+            if (img == null) // Fallback if Image is a child
+            {
+                 img = iconPair.GetComponentInChildren<Image>();
+            }
+            
+            if (ingredient.requiredTroop?.prefab != null)
+            {
+                var sr = ingredient.requiredTroop.prefab.GetComponent<SpriteRenderer>();
+                if (sr?.sprite != null)
+                    img.sprite = sr.sprite;
+            }
+            
+            // Get TextMeshProUGUI component (assuming it's a child)
+            TextMeshProUGUI nameText = iconPair.GetComponentInChildren<TextMeshProUGUI>();
+            if (nameText != null)
+            {
+                nameText.text = $"{ingredient.quantity}x {ingredient.requiredTroop.displayName}";
+            }
         }
+        
+        if (recipeDescriptionText != null)
+            recipeDescriptionText.text = desc; // Assign only the header text
     }
     
     private void CraftSelectedRecipe()

@@ -32,6 +32,9 @@ public class UnitHealthBarController : MonoBehaviour
         
         healthBarInstance.transform.localPosition = new Vector3(0, 2f, 0); 
         
+        // Log position and scale of the instantiated health bar
+        Debug.Log($"[HealthBar] Instantiated health bar for {targetUnit.name} at local position: {healthBarInstance.transform.localPosition} with local scale: {healthBarInstance.transform.localScale}");
+        
         healthSlider = healthBarInstance.GetComponentInChildren<Slider>();
 
         if (healthSlider == null)

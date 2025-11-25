@@ -11,6 +11,12 @@ GameObject:
   - component: {fileID: 7898871391354428611}
   - component: {fileID: 2396168685622193720}
   - component: {fileID: 9079552096215424129}
+  - component: {fileID: -3214860200106323500}
+  - component: {fileID: -1702740244424558431}
+  - component: {fileID: 2000539178552968499}
+  - component: {fileID: -6012451275426121219}
+  - component: {fileID: 5077955859226773753}
+  - component: {fileID: 3676798875598240065}
   m_Layer: 0
   m_Name: Slime_Red
   m_TagString: Untagged
@@ -106,3 +112,153 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!61 &-3214860200106323500
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 8, y: 8}
+    newSize: {x: 8, y: 4}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 8, y: 8}
+  m_EdgeRadius: 0
+--- !u!50 &-1702740244424558431
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &2000539178552968499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  troopData: {fileID: 11400000, guid: 6b1ec826a015ced4a8ba0169c2643450, type: 2}
+  baseMaxHealth: 20
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseAttackPoints: 3
+  deathDuration: 1
+  _maxHealth: 20
+  moveSpeed: 0
+  attackSpeed: 0
+  attackPoints: 0
+  currentHealth: 0
+  isDead: 0
+  animator: {fileID: 0}
+--- !u!114 &-6012451275426121219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  troopData: {fileID: 11400000, guid: 6b1ec826a015ced4a8ba0169c2643450, type: 2}
+  baseMaxHealth: 20
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseAttackPoints: 3
+  deathDuration: 1
+  _maxHealth: 20
+  moveSpeed: 0
+  attackSpeed: 0
+  attackPoints: 0
+  currentHealth: 0
+  isDead: 0
+  animator: {fileID: 0}
+--- !u!114 &5077955859226773753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91e942eb35ceac24a8d5d6cc3f8bab30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HealthBarPrefab: {fileID: 9118076586985036550, guid: d47e350c234b8d44ea9b5f8460ea625c, type: 3}
+  PlayerColor: {r: 0, g: 1, b: 0, a: 1}
+  EnemyColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &3676798875598240065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5385030817546445256}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7677e2fbec4944e3f8dd9fee667dcfff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFacingRight: 0

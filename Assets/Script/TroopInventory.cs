@@ -85,6 +85,7 @@ public class TroopInventory : MonoBehaviour
             if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
             {
                 storedTroops[i].count++;
+                Debug.Log($"[TroopInventory] Added {troop.displayName} to slot {i}, count: {storedTroops[i].count}");
                 RefreshUI();
                 return true;
             }
@@ -97,6 +98,7 @@ public class TroopInventory : MonoBehaviour
             {
                 storedTroops[i].troop = troop;
                 storedTroops[i].count = 1;
+                Debug.Log($"[TroopInventory] Added {troop.displayName} to new slot {i}");
                 RefreshUI();
                 return true;
             }
@@ -196,9 +198,11 @@ public class TroopInventory : MonoBehaviour
             case TroopRarity.Epic:
                 return TroopRarity.Legendary;
             case TroopRarity.Legendary:
-                return TroopRarity.Mythic;
+                Debug.LogWarning("[Merge] Legendary is the highest rarity that can be merged. Cannot merge further.");
+                return TroopRarity.Legendary; // Max mergeable rarity
             case TroopRarity.Mythic:
-                return TroopRarity.Mythic; // Max rarity
+                Debug.LogWarning("[Merge] Mythic troops cannot be merged.");
+                return TroopRarity.Mythic; // Mythic cannot be merged
             default:
                 return current;
         }
@@ -225,7 +229,8 @@ public class TroopInventory : MonoBehaviour
             if (slot.troop == null)
             {
                 slotImages[i].sprite = emptySlotSprite;
-                slotCountTexts[i].text = "";
+                if (i < slotCountTexts.Count)
+                    slotCountTexts[i].text = "";
                 
                 // Hide merge button
                 if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
@@ -237,7 +242,8 @@ public class TroopInventory : MonoBehaviour
                 if (sr != null)
                     slotImages[i].sprite = sr.sprite;
                     
-                slotCountTexts[i].text = "x" + slot.count;
+                if (i < slotCountTexts.Count)
+                    slotCountTexts[i].text = "x" + slot.count;
                 
                 // Show merge button if count == maxUnitsPerSlot
                 if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)

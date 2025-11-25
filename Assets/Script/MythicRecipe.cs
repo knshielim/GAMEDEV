@@ -19,8 +19,10 @@ public class MythicRecipe : ScriptableObject
     
     [Header("Required Ingredients")]
     public List<MythicIngredient> ingredients = new List<MythicIngredient>();
-
+    
+    /// <summary>
     /// Check if the given inventory can fulfill this recipe
+    /// </summary>
     public bool CanCraft(Dictionary<TroopData, int> availableTroops)
     {
         foreach (var ingredient in ingredients)
@@ -34,17 +36,39 @@ public class MythicRecipe : ScriptableObject
         
         return true;
     }
-
-    /// Get a human-readable description of the recipe
+    
     public string GetRecipeDescription()
     {
-        string desc = $"Create {resultMythicTroop.displayName}:\n";
+        string desc = $"<b>Create {resultMythicTroop.displayName}:</b>\n\n";
         
         foreach (var ingredient in ingredients)
         {
-            desc += $"• {ingredient.quantity}x {ingredient.requiredTroop.displayName}\n";
+            string spriteName = GetSpriteNameFromTroop(ingredient.requiredTroop);
+            
+            if (!string.IsNullOrEmpty(spriteName))
+            {
+                desc += $"• <sprite name=\"{spriteName}\"> {ingredient.quantity}x {ingredient.requiredTroop.displayName}\n";
+            }
+            else
+            {
+                desc += $"• {ingredient.quantity}x {ingredient.requiredTroop.displayName}\n";
+            }
         }
         
         return desc;
+    }
+    
+    private string GetSpriteNameFromTroop(TroopData troop)
+    {
+        if (troop == null || troop.prefab == null)
+            return null;
+            
+        SpriteRenderer sr = troop.prefab.GetComponent<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            return sr.sprite.name;
+        }
+        
+        return null;
     }
 }
