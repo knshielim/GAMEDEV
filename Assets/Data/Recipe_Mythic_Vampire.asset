@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285c58f5eca233c489c8e4d727c2f26a, type: 3}
+  m_Name: Recipe_Mythic_Vampire
+  m_EditorClassIdentifier: 
+  recipeName: Vampire Combination
+  resultMythicTroop: {fileID: 11400000, guid: e24a9a8ea9de0674fa0a1d6bdd0d52c1, type: 2}
+  ingredients:
+  - requiredTroop: {fileID: 11400000, guid: c790f131b0555cd459791918c75b0ce0, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: de7c75e465c2e7d45bd79ec495be62e0, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: 45608b3ce33eef9418120f2e446bece9, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: 6b1ec826a015ced4a8ba0169c2643450, type: 2}
+    quantity: 1

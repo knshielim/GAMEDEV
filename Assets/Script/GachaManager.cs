@@ -134,7 +134,7 @@ public class GachaManager : MonoBehaviour
         return TroopRarity.Common;
     }
 
-    private TroopData GetRandomTroopOfRarity(TroopRarity rarity)
+    public TroopData GetRandomTroopOfRarity(TroopRarity rarity)
     {
         List<TroopData> filteredTroops = allAvailableTroops
             .Where(troop => troop.rarity == rarity)

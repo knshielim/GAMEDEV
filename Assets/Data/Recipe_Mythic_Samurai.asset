@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285c58f5eca233c489c8e4d727c2f26a, type: 3}
+  m_Name: Recipe_Mythic_Samurai
+  m_EditorClassIdentifier: 
+  recipeName: Samurai Combination
+  resultMythicTroop: {fileID: 11400000, guid: 93e75359d4a0ddd4b81ec1a80435849f, type: 2}
+  ingredients:
+  - requiredTroop: {fileID: 11400000, guid: aa82c631e37b388499e4188408579b75, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: 50fb599e29164484882145b5e647d418, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: 0afdc92e608f1f3438d7945c1648deeb, type: 2}
+    quantity: 1
+  - requiredTroop: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
+    quantity: 1

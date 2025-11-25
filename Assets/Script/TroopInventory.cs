@@ -22,7 +22,7 @@ public class TroopInventory : MonoBehaviour
 
     [Header("UI Inventory Slot Images")]
     [Tooltip("List of Image components representing the inventory slots.")]
-    public List<Image> slotImages; // gray
+    public List<Image> slotImages;
 
     [Tooltip("The sprite to display when a slot is empty.")]
     public Sprite emptySlotSprite;
@@ -36,8 +36,14 @@ public class TroopInventory : MonoBehaviour
     
     [Header("UI Inventory Slot Borders")]
     [Tooltip("Border Images for each inventory slot (used for selection highlight).")]
-    public List<Image> slotBorders; 
-
+    public List<Image> slotBorders;
+    
+    [Header("Merge System")]
+    [Tooltip("List of merge buttons (one per slot)")]
+    public List<Button> mergeButtons;
+    
+    [Tooltip("Maximum units per slot before merge is available")]
+    public int maxUnitsPerSlot = 3;
 
     private void Awake()
     {
@@ -52,10 +58,20 @@ public class TroopInventory : MonoBehaviour
         {
             int index = i;
             var btn = slotImages[i].GetComponent<UnityEngine.UI.Button>();
-            btn.onClick.AddListener(() =>
+            if (btn != null)
             {
-                FindObjectOfType<TroopDeployManager>().SelectTroop(index);
-            });
+                btn.onClick.AddListener(() =>
+                {
+                    FindObjectOfType<TroopDeployManager>()?.SelectTroop(index);
+                });
+            }
+            
+            // Setup merge button listeners
+            if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
+            {
+                mergeButtons[i].onClick.AddListener(() => MergeUnits(index));
+                mergeButtons[i].gameObject.SetActive(false); // Hide by default
+            }
         }
 
         RefreshUI();
@@ -66,7 +82,7 @@ public class TroopInventory : MonoBehaviour
         // 1. Try to stack first (max 3 per slot)
         for (int i = 0; i < storedTroops.Count; i++)
         {
-            if (storedTroops[i].troop == troop && storedTroops[i].count < 3)
+            if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
             {
                 storedTroops[i].count++;
                 RefreshUI();
@@ -92,37 +108,148 @@ public class TroopInventory : MonoBehaviour
 
     public TroopData GetTroop(int index)
     {
+        if (index < 0 || index >= storedTroops.Count)
+            return null;
+            
         return storedTroops[index].troop;
     }
 
     public void ClearSlot(int index)
     {
+        if (index < 0 || index >= storedTroops.Count)
+            return;
+            
         storedTroops[index].troop = null;
         storedTroops[index].count = 0;
         RefreshUI();
     }
-
-    public void RefreshUI()
+    
+    /// <summary>
+    /// Merge 3 units of the same rarity into 1 unit of the next rarity
+    /// </summary>
+    public void MergeUnits(int slotIndex)
     {
-    for (int i = 0; i < slotImages.Count; i++)
-    {
-        var slot = storedTroops[i];
-
-        if (slot.troop == null)
+        if (slotIndex < 0 || slotIndex >= storedTroops.Count)
         {
-            slotImages[i].sprite = emptySlotSprite; // reset to empty image
-            slotCountTexts[i].text = "";
+            Debug.LogWarning("[Merge] Invalid slot index!");
+            return;
+        }
+        
+        var slot = storedTroops[slotIndex];
+        
+        if (slot.troop == null || slot.count < maxUnitsPerSlot)
+        {
+            Debug.LogWarning($"[Merge] Cannot merge: slot has {slot.count} units (need {maxUnitsPerSlot})");
+            return;
+        }
+        
+        TroopRarity currentRarity = slot.troop.rarity;
+        TroopRarity nextRarity = GetNextRarity(currentRarity);
+        
+        if (nextRarity == currentRarity)
+        {
+            Debug.LogWarning($"[Merge] Cannot merge {currentRarity} - already at max rarity!");
+            return;
+        }
+        
+        // Consume the 3 units
+        slot.count -= maxUnitsPerSlot;
+        if (slot.count <= 0)
+        {
+            slot.troop = null;
+            slot.count = 0;
+        }
+        
+        // Get a random troop of the next rarity
+        TroopData upgradedTroop = GetRandomTroopOfRarity(nextRarity);
+        
+        if (upgradedTroop != null)
+        {
+            bool added = AddTroop(upgradedTroop);
+            
+            if (added)
+            {
+                Debug.Log($"[Merge] Successfully merged 3x {currentRarity} into 1x {upgradedTroop.displayName} ({nextRarity})!");
+            }
+            else
+            {
+                Debug.LogWarning("[Merge] Inventory full! Could not add merged troop.");
+                // TODO: Refund the consumed units
+            }
         }
         else
         {
-            slotImages[i].sprite = slot.troop.prefab.GetComponent<SpriteRenderer>().sprite;
-            slotCountTexts[i].text = "x" + slot.count;
+            Debug.LogError($"[Merge] No troops found for rarity: {nextRarity}");
         }
-
-        // Hide the border if nothing is selected
-        if (slotBorders != null && i < slotBorders.Count)
-            slotBorders[i].gameObject.SetActive(false);
+        
+        RefreshUI();
     }
+    
+    private TroopRarity GetNextRarity(TroopRarity current)
+    {
+        switch (current)
+        {
+            case TroopRarity.Common:
+                return TroopRarity.Rare;
+            case TroopRarity.Rare:
+                return TroopRarity.Epic;
+            case TroopRarity.Epic:
+                return TroopRarity.Legendary;
+            case TroopRarity.Legendary:
+                return TroopRarity.Mythic;
+            case TroopRarity.Mythic:
+                return TroopRarity.Mythic; // Max rarity
+            default:
+                return current;
+        }
+    }
+    
+    private TroopData GetRandomTroopOfRarity(TroopRarity rarity)
+    {
+        if (GachaManager.Instance == null)
+        {
+            Debug.LogError("[Merge] GachaManager not found!");
+            return null;
+        }
+        
+        // Use GachaManager's public method
+        return GachaManager.Instance.GetRandomTroopOfRarity(rarity);
     }
 
+    public void RefreshUI()
+    {
+        for (int i = 0; i < slotImages.Count; i++)
+        {
+            var slot = storedTroops[i];
+
+            if (slot.troop == null)
+            {
+                slotImages[i].sprite = emptySlotSprite;
+                slotCountTexts[i].text = "";
+                
+                // Hide merge button
+                if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
+                    mergeButtons[i].gameObject.SetActive(false);
+            }
+            else
+            {
+                SpriteRenderer sr = slot.troop.prefab?.GetComponent<SpriteRenderer>();
+                if (sr != null)
+                    slotImages[i].sprite = sr.sprite;
+                    
+                slotCountTexts[i].text = "x" + slot.count;
+                
+                // Show merge button if count == maxUnitsPerSlot
+                if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
+                {
+                    bool canMerge = slot.count >= maxUnitsPerSlot && slot.troop.rarity != TroopRarity.Mythic;
+                    mergeButtons[i].gameObject.SetActive(canMerge);
+                }
+            }
+
+            // Hide border by default
+            if (slotBorders != null && i < slotBorders.Count)
+                slotBorders[i].gameObject.SetActive(false);
+        }
+    }
 }
