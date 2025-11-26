@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Orc_Berserk
   displayName: Berserk Orc
-  rarity: 0
+  rarity: 2
   maxHealth: 150
   attack: 22
   moveSpeed: 1.7

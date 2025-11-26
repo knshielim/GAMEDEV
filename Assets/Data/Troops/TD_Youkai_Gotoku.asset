@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Youkai_Gotoku
   displayName: Gotoku Youkai
-  rarity: 0
+  rarity: 3
   maxHealth: 220
   attack: 30
   moveSpeed: 1.7

@@ -18,8 +18,8 @@ public enum TroopRarity
 public class TroopData : ScriptableObject
 {
     [Header("Basic Info")]
-    public string id;              // misal "slime_blue"
-    public string displayName;     // misal "Blue Slime"
+    public string id;              
+    public string displayName;     
     public TroopRarity rarity;
 
     [Header("Stats")]

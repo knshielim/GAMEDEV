@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Samurai
   displayName: Samurai
-  rarity: 0
+  rarity: 4
   maxHealth: 320
   attack: 45
   moveSpeed: 1.9

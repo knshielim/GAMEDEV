@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Youkai_Onre
   displayName: Onre Youkai
-  rarity: 0
+  rarity: 3
   maxHealth: 190
   attack: 35
   moveSpeed: 1.9

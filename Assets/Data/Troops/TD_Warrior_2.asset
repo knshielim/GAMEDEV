@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Warrior_2
   displayName: Second Warrior
-  rarity: 0
+  rarity: 1
   maxHealth: 95
   attack: 13
   moveSpeed: 1.7

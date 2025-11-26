@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Vampire
   displayName: Vampire
-  rarity: 0
+  rarity: 4
   maxHealth: 280
   attack: 40
   moveSpeed: 2

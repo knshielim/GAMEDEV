@@ -31,6 +31,7 @@ public class TroopDeployManager : MonoBehaviour
     // Deploy the selected troop
     public void DeploySelectedTroop()
     {
+        Debug.Log("[DEPLOY] DeploySelectedTroop called: " + Time.time);
         if (!canDeploy)
         {
             Debug.Log("Deployment on cooldown...");
@@ -70,17 +71,14 @@ public class TroopDeployManager : MonoBehaviour
 
     private void storedTroopDeployed(int index)
     {
-        // Clear stored troop
-        TroopInventory.Instance.storedTroops[index].troop = null;
-        TroopInventory.Instance.storedTroops[index].count = 0;
+        TroopInventory.Instance.ClearSlot(index);
 
-        // Reset image to empty
-        TroopInventory.Instance.slotImages[index].sprite = TroopInventory.Instance.emptySlotSprite;
-        TroopInventory.Instance.slotCountTexts[index].text = "";
-
-        // Hide border
-        if (TroopInventory.Instance.slotBorders != null && index < TroopInventory.Instance.slotBorders.Count)
+        // remove highlight
+        if (TroopInventory.Instance.slotBorders != null && 
+        index >= 0 && index < TroopInventory.Instance.slotBorders.Count)
+        {
             TroopInventory.Instance.slotBorders[index].gameObject.SetActive(false);
+        }
     }
 
     private IEnumerator DeployCooldown()

@@ -57,7 +57,7 @@ public class TroopInventory : MonoBehaviour
         for (int i = 0; i < slotImages.Count; i++)
         {
             int index = i;
-            var btn = slotImages[i].GetComponent<UnityEngine.UI.Button>();
+            var btn = slotImages[i].GetComponentInParent<UnityEngine.UI.Button>();
             if (btn != null)
             {
                 btn.onClick.AddListener(() =>

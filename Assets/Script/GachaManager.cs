@@ -71,6 +71,7 @@ public class GachaManager : MonoBehaviour
     // -------------------- SUMMON FUNCTION --------------------
     public TroopData SummonTroop()
     {
+        Debug.Log("[Gacha] SummonTroop is called: " + Time.time);
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
         {
             Debug.Log("[Gacha] Cannot summon: Game is Over.");
@@ -112,7 +113,7 @@ public class GachaManager : MonoBehaviour
 
         // Refresh UI and spawn troop
         TroopInventory.Instance.RefreshUI();
-        SpawnTroop(newTroop);
+        // SpawnTroop(newTroop);
 
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
 
@@ -149,6 +150,7 @@ public class GachaManager : MonoBehaviour
 
     private void SpawnTroop(TroopData troop)
     {
+        Debug.Log("[Gacha] SpawnTroop called for: " + troop.displayName + " | time: " + Time.time);
         if (troop.prefab == null || playerSpawnPoint == null)
         {
             Debug.LogError("[Gacha] Cannot spawn! Prefab or Spawn Point is missing.");

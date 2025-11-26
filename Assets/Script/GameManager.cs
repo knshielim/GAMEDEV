@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
 
     public void OnSummonButtonClick()
     {
+        Debug.Log("[GameManager] OnSummonButtonClick called at " + Time.time);
         if (isGameOver)
         {
             Debug.Log("[GameManager] Cannot summon: Game Over.");

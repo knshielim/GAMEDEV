@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Warrior_3
   displayName: Third Warrior
-  rarity: 0
+  rarity: 1
   maxHealth: 80
   attack: 15
   moveSpeed: 1.8

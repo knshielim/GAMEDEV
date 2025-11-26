@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Orc_Warrior
   displayName: Warrior Orc
-  rarity: 0
+  rarity: 2
   maxHealth: 170
   attack: 20
   moveSpeed: 1.5

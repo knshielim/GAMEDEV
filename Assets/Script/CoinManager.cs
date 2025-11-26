@@ -40,7 +40,7 @@ public class CoinManager : MonoBehaviour
         playerCoins += amount;
 
         // Debug di console
-        Debug.Log($"[PLAYER COIN] +{amount} → total: {playerCoins}");
+        // Debug.Log($"[PLAYER COIN] +{amount} → total: {playerCoins}");
 
         UpdatePlayerUI();
     }
@@ -54,7 +54,7 @@ public class CoinManager : MonoBehaviour
         }
 
         playerCoins -= cost;
-        Debug.Log($"[PLAYER COIN] SPEND {cost} → remaining: {playerCoins}");
+        // Debug.Log($"[PLAYER COIN] SPEND {cost} → remaining: {playerCoins}");
         UpdatePlayerUI();
         return true;
     }
@@ -75,7 +75,7 @@ public class CoinManager : MonoBehaviour
         enemyCoins += amount;
 
         // buat liat cara kerja AI
-        Debug.Log($"[AI COIN] +{amount} → total: {enemyCoins}");
+        // Debug.Log($"[AI COIN] +{amount} → total: {enemyCoins}");
     }
 
     public bool TrySpendEnemyCoins(int cost)
@@ -87,7 +87,7 @@ public class CoinManager : MonoBehaviour
         }
 
         enemyCoins -= cost;
-        Debug.Log($"[AI COIN] SPEND {cost} → remaining: {enemyCoins}");
+        // Debug.Log($"[AI COIN] SPEND {cost} → remaining: {enemyCoins}");
         return true;
     }
 
