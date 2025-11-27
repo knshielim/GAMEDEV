@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: -383460252821445077}
   - component: {fileID: 7344992832671502506}
   - component: {fileID: -7945318481463718926}
-  - component: {fileID: 4852714880837450024}
   m_Layer: 0
   m_Name: Orc_Warrior
   m_TagString: Untagged
@@ -163,12 +162,6 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-  attackRange: 0.5
-  useProjectile: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
 --- !u!114 &-261597300675651941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
+<<<<<<< HEAD
 --- !u!58 &4852714880837450024
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -304,3 +298,5 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 3
+=======
+>>>>>>> parent of 847ad9a (long range attack)

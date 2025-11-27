@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: -2517659429454195603}
   - component: {fileID: 6185629298431111731}
   - component: {fileID: 192121436249554850}
-  - component: {fileID: 4135105983054199888}
   m_Layer: 0
   m_Name: Youkai_Gotoku
   m_TagString: Untagged
@@ -235,12 +234,6 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-  attackRange: 0.5
-  useProjectile: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
 --- !u!114 &6185629298431111731
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
+<<<<<<< HEAD
 --- !u!58 &4135105983054199888
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -304,3 +298,5 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
+=======
+>>>>>>> parent of 847ad9a (long range attack)

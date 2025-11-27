@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 1591289793229868450}
   - component: {fileID: -1749644924275098023}
   - component: {fileID: -1079817738662525184}
-  - component: {fileID: -1220112930663388252}
   m_Layer: 0
   m_Name: Youkai_Yurei
   m_TagString: Untagged
@@ -235,12 +234,6 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-  attackRange: 2
-  useProjectile: 1
-  projectilePrefab: {fileID: 5022884809292046476, guid: 7f8c45e7080f88d43a5be0acdabc5612, type: 3}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
 --- !u!114 &-1749644924275098023
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
+<<<<<<< HEAD
 --- !u!58 &-1220112930663388252
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -304,3 +298,5 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
+=======
+>>>>>>> parent of 847ad9a (long range attack)

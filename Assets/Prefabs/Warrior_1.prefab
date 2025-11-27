@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: -3641950270739567514}
   - component: {fileID: 7016398898809045903}
   - component: {fileID: -4104101187897967101}
-  - component: {fileID: -2169356222263922854}
   m_Layer: 0
   m_Name: Warrior_1
   m_TagString: Untagged
@@ -235,12 +234,6 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-  attackRange: 0.5
-  useProjectile: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
 --- !u!114 &7016398898809045903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
+<<<<<<< HEAD
 --- !u!58 &-2169356222263922854
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -304,3 +298,5 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 3
+=======
+>>>>>>> parent of 847ad9a (long range attack)
