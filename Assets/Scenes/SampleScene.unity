@@ -1519,7 +1519,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -81.49995, y: 300.0001}
+  m_AnchoredPosition: {x: -81.49995, y: 300}
   m_SizeDelta: {x: 163, y: 600}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &237921229
@@ -5890,7 +5890,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 385056808}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999953
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8828,7 +8828,7 @@ MonoBehaviour:
   recipeDescriptionText: {fileID: 70290581}
   craftButton: {fileID: 853892908}
   messageText: {fileID: 1904807216}
-  messageText2: {fileID: 0}
+  messageText2: {fileID: 318565516}
   iconContainer: {fileID: 1566032107}
   iconPrefab: {fileID: 4020875902541001465, guid: c57d0a114dd55164187b236eadb28b23, type: 3}
 --- !u!4 &1435610221
