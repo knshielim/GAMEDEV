@@ -55,10 +55,10 @@ public class UnitHealthBarController : MonoBehaviour
         // Instantiate health bar as child of this unit
         // This ensures the health bar moves with the unit
         healthBarInstance = Instantiate(HealthBarPrefab, transform);
-        
+
         // Set local position with offset
         healthBarInstance.transform.localPosition = new Vector3(0, yOffset, 0);
-        
+
         // Ensure the rotation is clean (important when parented)
         healthBarInstance.transform.localRotation = Quaternion.identity;
         
@@ -128,10 +128,10 @@ public class UnitHealthBarController : MonoBehaviour
         }
 
         healthSlider.value = targetUnit.CurrentHealth;
-        
+
         // Show health bar only when damaged or unit is nearly dead
         bool shouldShow = targetUnit.CurrentHealth < targetUnit.MaxHealth && targetUnit.CurrentHealth > 0;
-        
+
         if (healthBarInstance != null)
         {
             healthBarInstance.SetActive(shouldShow);

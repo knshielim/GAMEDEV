@@ -84,7 +84,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &2701230982894834260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,8 +148,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7368123415326265563}
   - component: {fileID: 5609500127959738596}
-  - component: {fileID: 7966444339642593191}
-  - component: {fileID: 5056958624688756619}
   m_Layer: 5
   m_Name: HealthBarSlider
   m_TagString: Untagged
@@ -229,69 +227,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7966444339642593191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4379711008598828078}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
-  baseMaxHealth: 20
-  baseMoveSpeed: 1.5
-  baseAttackSpeed: 1
-  baseAttackPoints: 3
-  deathDuration: 1
-  _maxHealth: 20
-  moveSpeed: 0
-  attackSpeed: 0
-  attackPoints: 0
-  currentHealth: 0
-  isDead: 0
-  animator: {fileID: 0}
-  targetTower: {fileID: 0}
-  attackRange: 0.5
-  useProjectile: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
---- !u!114 &5056958624688756619
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4379711008598828078}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed81e6497a4d64296a4fe7d7c8569ce0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  troopData: {fileID: 0}
-  baseMaxHealth: 20
-  baseMoveSpeed: 1.5
-  baseAttackSpeed: 1
-  baseAttackPoints: 3
-  deathDuration: 1
-  _maxHealth: 20
-  moveSpeed: 0
-  attackSpeed: 0
-  attackPoints: 0
-  currentHealth: 0
-  isDead: 0
-  animator: {fileID: 0}
-  attackRange: 0.5
-  useProjectile: 0
-  projectilePrefab: {fileID: 0}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
-  projectileLifetime: 3
 --- !u!1 &4505279122349157438
 GameObject:
   m_ObjectHideFlags: 0
