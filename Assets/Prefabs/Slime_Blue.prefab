@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1727386457277181258}
   - component: {fileID: 8962614978844121706}
   - component: {fileID: -6093323252443113835}
+  - component: {fileID: -1781886655568381833}
   m_Layer: 0
   m_Name: Slime_Blue
   m_TagString: Troop
@@ -234,6 +235,12 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 6775854471411913666}
+  attackRange: 0.5
+  useProjectile: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  projectileSpeed: 8
+  projectileLifetime: 3
 --- !u!114 &8962614978844121706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +269,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
-<<<<<<< HEAD
 --- !u!58 &-1781886655568381833
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -298,5 +304,3 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
-=======
->>>>>>> parent of 847ad9a (long range attack)

@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: -8052224822335223023}
   - component: {fileID: 5637868415246185409}
   - component: {fileID: -7575863056672451190}
+  - component: {fileID: -1712622814405563464}
   m_Layer: 0
   m_Name: Orc_Shaman
   m_TagString: Untagged
@@ -162,6 +163,12 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
+  attackRange: 2
+  useProjectile: 1
+  projectilePrefab: {fileID: 5022884809292046476, guid: 7f8c45e7080f88d43a5be0acdabc5612, type: 3}
+  projectileSpawnPoint: {fileID: 0}
+  projectileSpeed: 8
+  projectileLifetime: 3
 --- !u!114 &-8692723915280938194
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +269,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
-<<<<<<< HEAD
 --- !u!58 &-1712622814405563464
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -298,5 +304,3 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 3
-=======
->>>>>>> parent of 847ad9a (long range attack)

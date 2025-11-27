@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: -6012451275426121219}
   - component: {fileID: 5077955859226773753}
   - component: {fileID: 3676798875598240065}
+  - component: {fileID: -6054989463562711721}
   m_Layer: 0
   m_Name: Slime_Red
   m_TagString: Untagged
@@ -234,6 +235,12 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
+  attackRange: 0.5
+  useProjectile: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  projectileSpeed: 8
+  projectileLifetime: 3
 --- !u!114 &5077955859226773753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +269,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFacingRight: 0
-<<<<<<< HEAD
 --- !u!58 &-6054989463562711721
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -298,5 +304,3 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
-=======
->>>>>>> parent of 847ad9a (long range attack)

@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8979725542805602373}
   - component: {fileID: 2884597579646610470}
   - component: {fileID: -4213778098897159577}
+  - component: {fileID: 4219759689354356371}
   m_Layer: 0
   m_Name: Slime_Green
   m_TagString: Enemy
@@ -262,7 +263,6 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-<<<<<<< HEAD
   attackRange: 0.5
   useProjectile: 0
   projectilePrefab: {fileID: 0}
@@ -304,5 +304,3 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
-=======
->>>>>>> parent of 847ad9a (long range attack)
