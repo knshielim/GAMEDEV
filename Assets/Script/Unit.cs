@@ -9,7 +9,7 @@ public abstract class Unit : MonoBehaviour
     public event Action OnHealthChanged;
 
     [Header("Config (Data Driven)")]
-    [SerializeField] private TroopData troopData;
+    [SerializeField] protected TroopData troopData;
 
     [Header("Base Stats (fallback if troopData = null)")]
     [SerializeField] private float baseMaxHealth = 20f;

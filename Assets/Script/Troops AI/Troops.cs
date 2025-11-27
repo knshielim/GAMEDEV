@@ -33,7 +33,15 @@ public class Troops : Unit
         base.Start();
         UnitTeam = Team.Player;
         
-        // Set up collision filtering so friendly units can overlap
+        if (troopData != null)
+        {
+            attackRange = troopData.attackRange;
+            useProjectile = troopData.isRanged;
+            projectilePrefab = troopData.projectilePrefab;
+            projectileSpeed = troopData.projectileSpeed;
+            projectileLifetime = troopData.projectileLifetime;
+        }
+
         SetupFriendlyCollisionIgnore();
     }
 

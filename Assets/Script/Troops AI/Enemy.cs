@@ -8,6 +8,26 @@ public class Enemy : Unit
     private List<Unit> targetsInRange = new List<Unit>();
     private Tower targetTower;
 
+    [Header("Attack Settings")]
+    [Tooltip("How far this troop can attack. Used for both melee and ranged units.")]
+    [SerializeField] private float attackRange = 0.5f;
+
+    [Header("Projectile (for ranged troops)")]
+    [Tooltip("If true, this troop will use projectiles instead of direct melee hits.")]
+    [SerializeField] private bool useProjectile = false;
+
+    [Tooltip("Projectile prefab to spawn when attacking.")]
+    [SerializeField] private GameObject projectilePrefab;
+
+    [Tooltip("Optional spawn point for the projectile. If null, uses this transform position.")]
+    [SerializeField] private Transform projectileSpawnPoint;
+
+    [Tooltip("How fast the projectile travels.")]
+    [SerializeField] private float projectileSpeed = 8f;
+
+    [Tooltip("How long before the projectile is automatically destroyed.")]
+    [SerializeField] private float projectileLifetime = 3f;
+
     protected override void Start()
     {
         base.Start();
@@ -16,7 +36,15 @@ public class Enemy : Unit
         if (TryGetComponent<SpriteRenderer>(out var sr))
             sr.flipX = true;
         
-        // Set up collision filtering so friendly units can overlap
+        if (troopData != null)
+        {
+            attackRange = troopData.attackRange;
+            useProjectile = troopData.isRanged;
+            projectilePrefab = troopData.projectilePrefab;
+            projectileSpeed = troopData.projectileSpeed;
+            projectileLifetime = troopData.projectileLifetime;
+        }
+
         SetupFriendlyCollisionIgnore();
     }
 
