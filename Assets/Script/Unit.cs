@@ -72,6 +72,45 @@ public abstract class Unit : MonoBehaviour
         OnHealthChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Makes this unit ignore physical collisions with ALL other units (both friendly and enemy),
+    /// allowing units to overlap while still detecting enemies via triggers for combat.
+    /// Call this AFTER UnitTeam is set (e.g., in derived Start() methods).
+    /// </summary>
+    protected void SetupFriendlyCollisionIgnore()
+    {
+        // Get all colliders on this unit
+        Collider2D[] myColliders = GetComponents<Collider2D>();
+        if (myColliders.Length == 0) return;
+
+        // Find all other units in the scene
+        Unit[] allUnits = FindObjectsOfType<Unit>();
+        
+        foreach (Unit otherUnit in allUnits)
+        {
+            // Skip self
+            if (otherUnit == this) continue;
+            
+            // Ignore physical collisions with ALL other units (friendly AND enemy)
+            // This prevents units from pushing each other apart
+            // Trigger colliders are kept active so OnTriggerEnter2D still works for combat detection
+            Collider2D[] otherColliders = otherUnit.GetComponents<Collider2D>();
+            
+            foreach (Collider2D myCol in myColliders)
+            {
+                foreach (Collider2D otherCol in otherColliders)
+                {
+                    // Only ignore physical collisions (non-trigger colliders)
+                    // Triggers are kept active so OnTriggerEnter2D still works for enemy detection
+                    if (myCol != null && otherCol != null && !myCol.isTrigger && !otherCol.isTrigger)
+                    {
+                        Physics2D.IgnoreCollision(myCol, otherCol, true);
+                    }
+                }
+            }
+        }
+    }
+
     protected virtual void Update()
     {
         if (isDead) return;

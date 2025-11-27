@@ -6,6 +6,7 @@ public class Enemy : Unit
 {
     private Unit currentTarget;
     private List<Unit> targetsInRange = new List<Unit>();
+    private Tower targetTower;
 
     protected override void Start()
     {
@@ -14,6 +15,9 @@ public class Enemy : Unit
 
         if (TryGetComponent<SpriteRenderer>(out var sr))
             sr.flipX = true;
+        
+        // Set up collision filtering so friendly units can overlap
+        SetupFriendlyCollisionIgnore();
     }
 
     protected override void Move()
@@ -21,6 +25,7 @@ public class Enemy : Unit
         // Remove dead targets
         targetsInRange.RemoveAll(t => t == null || t.isDead);
 
+        // PRIORITY 1: Attack enemy units first (must clear enemies before attacking tower)
         if (targetsInRange.Count > 0)
         {
             // Pick closest target
@@ -51,7 +56,30 @@ public class Enemy : Unit
             return;
         }
 
-        // No targets, move left
+        // PRIORITY 2: If no enemy units, then move toward/attack tower
+        if (targetTower != null)
+        {
+            float towerDistance = Vector2.Distance(transform.position, targetTower.transform.position);
+
+            if (towerDistance <= 0.5f)
+            {
+                isAttacking = true;
+                if (rb != null)
+                    rb.velocity = Vector2.zero;
+                SetAnimationState(false, true);
+                return;
+            }
+            else
+            {
+                Vector2 dirToTower = (targetTower.transform.position - transform.position).normalized;
+                transform.Translate(dirToTower * moveSpeed * Time.deltaTime);
+                SetAnimationState(true, false);
+                isAttacking = false;
+                return;
+            }
+        }
+
+        // PRIORITY 3: No targets at all, move left
         transform.Translate(Vector2.left * moveSpeed * Time.deltaTime);
         SetAnimationState(true, false);
         isAttacking = false;
@@ -73,7 +101,16 @@ public class Enemy : Unit
             }
         }
 
-        PerformAttack(currentTarget.GetComponent<Collider2D>());
+        if (currentTarget != null)
+        {
+            PerformAttack(currentTarget.GetComponent<Collider2D>());
+            return;
+        }
+
+        if (targetTower != null)
+        {
+            PerformAttackOnTower();
+        }
     }
 
     protected override void PerformAttack(Collider2D targetCollider)
@@ -96,25 +133,53 @@ public class Enemy : Unit
         }
     }
 
+    private void PerformAttackOnTower()
+    {
+        if (targetTower == null) return;
+
+        targetTower.TakeDamage((int)attackPoints);
+        Debug.Log($"[ATTACK] {gameObject.name} dealt {attackPoints} damage to {targetTower.owner} tower " +
+                  $"(HP: {targetTower.currentHealth}/{targetTower.maxHealth})");
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         Unit target = other.GetComponent<Unit>();
-        if (target == null || target.UnitTeam == UnitTeam || target.isDead) return;
+        if (target != null && target.UnitTeam != UnitTeam && !target.isDead)
+        {
+            if (!targetsInRange.Contains(target))
+            {
+                targetsInRange.Add(target);
+                Debug.Log($"[Enemy] {gameObject.name} detected enemy {target.gameObject.name} in range. Total enemies: {targetsInRange.Count}");
+            }
+            return;
+        }
 
-        if (!targetsInRange.Contains(target))
-            targetsInRange.Add(target);
+        Tower tower = other.GetComponent<Tower>();
+        if (tower != null && tower.owner == Tower.TowerOwner.Player)
+        {
+            targetTower = tower;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         Unit target = other.GetComponent<Unit>();
-        if (target == null) return;
-
-        targetsInRange.Remove(target);
-
-        if (currentTarget == target)
+        if (target != null)
         {
-            currentTarget = null;
+            targetsInRange.Remove(target);
+
+            if (currentTarget == target)
+            {
+                currentTarget = null;
+                isAttacking = false;
+            }
+        }
+
+        Tower tower = other.GetComponent<Tower>();
+        if (tower != null && tower == targetTower)
+        {
+            targetTower = null;
             isAttacking = false;
         }
     }
