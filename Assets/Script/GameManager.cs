@@ -7,9 +7,7 @@ public enum GameLevel
 {
     Level1 = 1,
     Level2 = 2,
-    Level3 = 3,
-    Level4 = 4,
-    Level5 = 5
+    Level3 = 3
 }
 
 public class GameManager : MonoBehaviour
@@ -65,38 +63,49 @@ public class GameManager : MonoBehaviour
 
     // Dipanggil dari Tower:
     // GameManager.Instance.TowerDestroyed(this);
-    public void TowerDestroyed(Tower destroyedTower)
+public void TowerDestroyed(Tower destroyedTower)
+{
+    if (isGameOver) return;
+
+    isGameOver = true;
+
+    string message = "";
+
+    // Check which tower was destroyed
+    if (destroyedTower == playerTower || destroyedTower.owner == Tower.TowerOwner.Player)
     {
-        if (isGameOver) return; // Biar nggak ke-trigger dua kali
-
-        isGameOver = true;
-
-        string message = "";
-
-        // Cek tower siapa yang hancur
-        if (destroyedTower == playerTower || destroyedTower.owner == Tower.TowerOwner.Player)
-        {
-            message = "YOU LOSE!";
-        }
-        else if (destroyedTower == aiTower || destroyedTower.owner == Tower.TowerOwner.Enemy)
-        {
-            message = "YOU WIN!";
-        }
-        else
-        {
-            message = "GAME OVER";
-        }
-
-        // Tampilkan UI Game Over
+        message = "YOU LOSE!";
+        
+        // Show game over UI
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
-
         if (gameOverText != null)
             gameOverText.text = message;
-
-        // Hentikan game (opsional, tapi enak buat Phase 1)
+            
         Time.timeScale = 0f;
     }
+    else if (destroyedTower == aiTower || destroyedTower.owner == Tower.TowerOwner.Enemy)
+    {
+        message = "YOU WIN!";
+        
+        // Don't show game over panel for wins - let LevelManager handle it
+        // LevelManager will automatically load next level after 2 seconds
+        Debug.Log($"Level {currentLevel} completed! Loading next level...");
+        
+        // The level transition is handled by Tower.cs calling LevelManager.Instance.LevelCompleted()
+    }
+    else
+    {
+        message = "GAME OVER";
+        
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(true);
+        if (gameOverText != null)
+            gameOverText.text = message;
+            
+        Time.timeScale = 0f;
+    }
+}
 
 
     public void OnSummonButtonClick()

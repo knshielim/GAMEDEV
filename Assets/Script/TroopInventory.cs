@@ -38,6 +38,13 @@ public class TroopInventory : MonoBehaviour
     [Tooltip("Border Images for each inventory slot (used for selection highlight).")]
     public List<Image> slotBorders;
     
+    [Header("Selection Visual Settings")]
+    [Tooltip("Color for selected slot border")]
+    public Color selectedBorderColor = Color.yellow;
+    
+    [Tooltip("Width of the selected border")]
+    public float selectedBorderWidth = 4f;
+    
     [Header("Merge System")]
     [Tooltip("List of merge buttons (one per slot)")]
     public List<Button> mergeButtons;
@@ -47,6 +54,11 @@ public class TroopInventory : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
 
         // Ensure list matches slot count
@@ -70,22 +82,45 @@ public class TroopInventory : MonoBehaviour
             if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
             {
                 mergeButtons[i].onClick.AddListener(() => MergeUnits(index));
-                mergeButtons[i].gameObject.SetActive(false); // Hide by default
+                mergeButtons[i].gameObject.SetActive(false);
+            }
+            
+            // Setup borders - ensure they're properly configured
+            if (slotBorders != null && i < slotBorders.Count && slotBorders[i] != null)
+            {
+                // Set border color
+                slotBorders[i].color = selectedBorderColor;
+                
+                // Initially hide all borders
+                slotBorders[i].gameObject.SetActive(false);
+                
+                Debug.Log($"[Inventory] Border {i} configured: {slotBorders[i].name}");
             }
         }
 
         RefreshUI();
+        Debug.Log($"[Inventory] Initialized with {slotImages.Count} slots, {slotCountTexts.Count} count texts, {slotBorders.Count} borders");
     }
 
     public bool AddTroop(TroopData troop)
     {
-        // 1. Try to stack first (max 3 per slot)
+        if (troop == null)
+        {
+            Debug.LogWarning("[Inventory] Attempted to add null troop!");
+            return false;
+        }
+
+        // 1. Try to stack first (max per slot)
         for (int i = 0; i < storedTroops.Count; i++)
         {
             if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
             {
                 storedTroops[i].count++;
-                Debug.Log($"[TroopInventory] Added {troop.displayName} to slot {i}, count: {storedTroops[i].count}");
+                Debug.Log($"[TroopInventory] Stacked {troop.displayName} in slot {i}, count: {storedTroops[i].count}");
+                
+                // ADDED: Always try to combine immediately after adding a unit
+                TryAutoCombine(); 
+                
                 RefreshUI();
                 return true;
             }
@@ -104,7 +139,7 @@ public class TroopInventory : MonoBehaviour
             }
         }
 
-        Debug.Log("[Inventory] FULL!");
+        Debug.Log("[Inventory] FULL! Cannot add more troops.");
         return false;
     }
 
@@ -120,15 +155,23 @@ public class TroopInventory : MonoBehaviour
     {
         if (index < 0 || index >= storedTroops.Count)
             return;
-            
-        storedTroops[index].troop = null;
-        storedTroops[index].count = 0;
+        
+        // Decrease count instead of clearing entirely
+        if (storedTroops[index].count > 1)
+        {
+            storedTroops[index].count--;
+        }
+        else
+        {
+            storedTroops[index].troop = null;
+            storedTroops[index].count = 0;
+        }
+        
+        TryAutoCombine();
+
         RefreshUI();
     }
     
-    /// <summary>
-    /// Merge 3 units of the same rarity into 1 unit of the next rarity
-    /// </summary>
     public void MergeUnits(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= storedTroops.Count)
@@ -154,7 +197,7 @@ public class TroopInventory : MonoBehaviour
             return;
         }
         
-        // Consume the 3 units
+        // Consume the units
         slot.count -= maxUnitsPerSlot;
         if (slot.count <= 0)
         {
@@ -171,12 +214,11 @@ public class TroopInventory : MonoBehaviour
             
             if (added)
             {
-                Debug.Log($"[Merge] Successfully merged 3x {currentRarity} into 1x {upgradedTroop.displayName} ({nextRarity})!");
+                Debug.Log($"✨ [Merge] Successfully merged 3x {currentRarity} into 1x {upgradedTroop.displayName} ({nextRarity})!");
             }
             else
             {
                 Debug.LogWarning("[Merge] Inventory full! Could not add merged troop.");
-                // TODO: Refund the consumed units
             }
         }
         else
@@ -185,6 +227,80 @@ public class TroopInventory : MonoBehaviour
         }
         
         RefreshUI();
+    }
+
+    private void TryAutoCombine()
+    {
+        Dictionary<string, List<(int index, StoredTroopSlot slot)>> troopsById =
+            new Dictionary<string, List<(int index, StoredTroopSlot slot)>>();
+
+        for (int i = 0; i < storedTroops.Count; i++)
+        {
+            var slot = storedTroops[i];
+            if (slot.troop != null && slot.count > 0)
+            {
+                string troopId = slot.troop.id; 
+                
+                if (!troopsById.ContainsKey(troopId))
+                {
+                    troopsById[troopId] = new List<(int index, StoredTroopSlot slot)>();
+                }
+                troopsById[troopId].Add((i, slot));
+            }
+        }
+
+        foreach (var kvp in troopsById)
+        {
+            List<(int index, StoredTroopSlot slot)> slotsOfType = kvp.Value;
+            string troopId = kvp.Key;
+
+            if (slotsOfType.Count < 2) continue; 
+
+            slotsOfType.Sort((a, b) => a.slot.count.CompareTo(b.slot.count));
+
+            for (int i = 0; i < slotsOfType.Count; i++)
+            {
+                (int sourceIndex, StoredTroopSlot sourceSlot) = slotsOfType[i];
+                
+                if (sourceSlot.count <= 0 || sourceSlot.count >= maxUnitsPerSlot) continue; 
+
+                List<(int index, StoredTroopSlot slot)> targets = new List<(int, StoredTroopSlot)>();
+                for(int j = 0; j < slotsOfType.Count; j++)
+                {
+                    if (i != j && slotsOfType[j].slot.count < maxUnitsPerSlot && slotsOfType[j].slot.count > 0)
+                    {
+                        targets.Add(slotsOfType[j]);
+                    }
+                }
+                
+                targets.Sort((a, b) => b.slot.count.CompareTo(a.slot.count));
+
+                foreach ((int targetIndex, StoredTroopSlot targetSlot) in targets)
+                {
+                    
+                    int spaceInTarget = maxUnitsPerSlot - targetSlot.count;
+                    int amountToMove = Mathf.Min(spaceInTarget, sourceSlot.count);
+                    
+                    if (amountToMove > 0)
+                    {
+                        targetSlot.count += amountToMove;
+                        sourceSlot.count -= amountToMove;
+                        
+                        Debug.Log($"[AutoCombine] Moved {amountToMove}x {troopId} from slot {sourceIndex} (now {sourceSlot.count}) to slot {targetIndex} (now {targetSlot.count}).");
+                        
+                        if (sourceSlot.count <= 0)
+                        {
+                            sourceSlot.troop = null;
+                            sourceSlot.count = 0;
+                            Debug.Log($"[AutoCombine] Source slot {sourceIndex} is now empty.");
+                        }
+                        
+                        TryAutoCombine();
+                        return; 
+                    }
+                }
+            }
+        }
     }
     
     private TroopRarity GetNextRarity(TroopRarity current)
@@ -198,11 +314,9 @@ public class TroopInventory : MonoBehaviour
             case TroopRarity.Epic:
                 return TroopRarity.Legendary;
             case TroopRarity.Legendary:
-                Debug.LogWarning("[Merge] Legendary is the highest rarity that can be merged. Cannot merge further.");
-                return TroopRarity.Legendary; // Max mergeable rarity
+                return TroopRarity.Legendary;
             case TroopRarity.Mythic:
-                Debug.LogWarning("[Merge] Mythic troops cannot be merged.");
-                return TroopRarity.Mythic; // Mythic cannot be merged
+                return TroopRarity.Mythic;
             default:
                 return current;
         }
@@ -216,7 +330,6 @@ public class TroopInventory : MonoBehaviour
             return null;
         }
         
-        // Use GachaManager's public method
         return GachaManager.Instance.GetRandomTroopOfRarity(rarity);
     }
 
@@ -226,36 +339,55 @@ public class TroopInventory : MonoBehaviour
         {
             var slot = storedTroops[i];
 
+            // Update slot image
             if (slot.troop == null)
             {
                 slotImages[i].sprite = emptySlotSprite;
-                if (i < slotCountTexts.Count)
+                slotImages[i].color = Color.white;
+                
+                // Clear count text
+                if (i < slotCountTexts.Count && slotCountTexts[i] != null)
+                {
                     slotCountTexts[i].text = "";
+                }
                 
                 // Hide merge button
                 if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
+                {
                     mergeButtons[i].gameObject.SetActive(false);
+                }
             }
             else
             {
+                // Set troop sprite
                 SpriteRenderer sr = slot.troop.playerPrefab?.GetComponent<SpriteRenderer>();
-                if (sr != null)
+                if (sr != null && sr.sprite != null)
+                {
                     slotImages[i].sprite = sr.sprite;
-                    
-                if (i < slotCountTexts.Count)
-                    slotCountTexts[i].text = "x" + slot.count;
+                    slotImages[i].color = Color.white;
+                }
                 
-                // Show merge button if count == maxUnitsPerSlot
+                // Update count text - ALWAYS SHOW COUNT
+                if (i < slotCountTexts.Count && slotCountTexts[i] != null)
+                {
+                    slotCountTexts[i].text = "x" + slot.count;
+                    slotCountTexts[i].gameObject.SetActive(true);
+                    
+                    // Make text more visible
+                    slotCountTexts[i].color = Color.white;
+                    slotCountTexts[i].fontSize = 24;
+                    slotCountTexts[i].fontStyle = FontStyles.Bold;
+                    
+                    Debug.Log($"[Inventory] Slot {i}: {slot.troop.displayName} x{slot.count}");
+                }
+                
+                // Show merge button if applicable
                 if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
                 {
                     bool canMerge = slot.count >= maxUnitsPerSlot && slot.troop.rarity != TroopRarity.Mythic;
                     mergeButtons[i].gameObject.SetActive(canMerge);
                 }
             }
-
-            // Hide border by default
-            if (slotBorders != null && i < slotBorders.Count)
-                slotBorders[i].gameObject.SetActive(false);
         }
     }
 }

@@ -18,6 +18,8 @@ public class MythicCombinationManager : MonoBehaviour
     public GameObject recipeButtonPrefab;
     public TextMeshProUGUI recipeDescriptionText;
     public Button craftButton;
+    public TextMeshProUGUI messageText;
+    public TextMeshProUGUI messageText2;
     
     private MythicRecipe selectedRecipe;
     
@@ -48,6 +50,32 @@ public class MythicCombinationManager : MonoBehaviour
         RefreshRecipeList();
     }
     
+    private void DisplayMessage(string message)
+    {
+        if (messageText != null)
+        {
+            messageText.text = message;
+        }
+        else
+        {
+            // Fallback to console if messageText UI is not set up
+            Debug.Log($"[Mythic Combination Message] {message}");
+        }
+    }
+
+    private void DisplayMessage2(string message)
+    {
+        if (messageText2 != null)
+        {
+            messageText2.text = message;
+        }
+        else
+        {
+            // Fallback to console if messageText UI is not set up
+            Debug.Log($"[Mythic Combination Message] {message}");
+        }
+    }
+
     public void OpenMythicPanel()
     {
         if (mythicCombinationPanel != null)
@@ -110,6 +138,9 @@ public class MythicCombinationManager : MonoBehaviour
     {
         selectedRecipe = recipe;
         
+        DisplayMessage("");
+        DisplayMessage2("");
+
         // Clear old icons
         foreach (Transform child in iconContainer)
             Destroy(child.gameObject);
@@ -150,20 +181,26 @@ public class MythicCombinationManager : MonoBehaviour
     
     private void CraftSelectedRecipe()
     {
+        DisplayMessage("");
+        DisplayMessage2("");
+
         if (selectedRecipe == null)
         {
+            DisplayMessage2("Select a recipe!");
             Debug.LogWarning("[MythicCombination] No recipe selected!");
             return;
         }
         
         Dictionary<TroopData, int> availableTroops = GetAvailableTroopsFromInventory();
-        
+
+        // 1. Check if the player has enough ingredients
         if (!selectedRecipe.CanCraft(availableTroops))
         {
-            Debug.LogWarning("[MythicCombination] Cannot craft: missing ingredients!");
+            DisplayMessage("Not enough ingredients!");
+            Debug.LogWarning($"[MythicCombination] Failed to craft {selectedRecipe.recipeName}: Not enough ingredients.");
             return;
         }
-        
+    
         // Consume ingredients
         foreach (var ingredient in selectedRecipe.ingredients)
         {

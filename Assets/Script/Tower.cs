@@ -198,6 +198,12 @@ public class Tower : MonoBehaviour
         {
             GameManager.Instance.TowerDestroyed(this);
         }
+
+        // Trigger level completion when enemy tower is destroyed
+        if (owner == TowerOwner.Enemy && LevelManager.Instance != null)
+        {
+            LevelManager.Instance.LevelCompleted();
+        }
     }
  
     public void TakeDamage(int damage)
