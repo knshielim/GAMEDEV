@@ -2,10 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+
+public enum GameLevel
+{
+    Level1 = 1,
+    Level2 = 2,
+    Level3 = 3,
+    Level4 = 4,
+    Level5 = 5
+}
+
 public class GameManager : MonoBehaviour
 {
     // Singleton, supaya bisa diakses dari mana saja lewat GameManager.Instance
     public static GameManager Instance { get; private set; }
+
+    [Header("Game Progress / Difficulty")]
+    [Tooltip("1 = easiest, 5 = hardest")]
+    public GameLevel currentLevel = GameLevel.Level1;
 
     [Header("Tower Reference")]
     public Tower playerTower;
@@ -21,14 +35,15 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         // Setup Singleton
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);   // kalau pake banyak scene
+        Debug.Log($"[GAME START] Current Level = {currentLevel}");
     }
 
     private void Start()

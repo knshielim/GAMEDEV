@@ -53,7 +53,21 @@ public class TroopDeployManager : MonoBehaviour
         }
 
         // Instantiate the troop
-        Instantiate(troop.prefab, playerTowerSpawnPoint.position, Quaternion.identity);
+        GameObject troopObj =
+            Instantiate(troop.playerPrefab, playerTowerSpawnPoint.position, Quaternion.identity);
+
+        // Pastikan clone-nya dapat TroopData yang benar
+        Unit unit = troopObj.GetComponent<Unit>();
+        if (unit != null)
+        {
+            unit.SetTroopData(troop);
+        }
+        else
+        {
+            Debug.LogWarning($"[DEPLOY] Spawned {troopObj.name} but it has no Unit component.");
+        }
+
+
 
         // Remove from inventory
         storedTroopDeployed(selectedTroopIndex);

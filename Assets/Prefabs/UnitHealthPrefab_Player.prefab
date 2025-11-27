@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8045276621439484800}
   - component: {fileID: 2701230982894834260}
   m_Layer: 5
-  m_Name: UnitHealthPrefab
+  m_Name: UnitHealthPrefab_Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

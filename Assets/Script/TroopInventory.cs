@@ -238,7 +238,7 @@ public class TroopInventory : MonoBehaviour
             }
             else
             {
-                SpriteRenderer sr = slot.troop.prefab?.GetComponent<SpriteRenderer>();
+                SpriteRenderer sr = slot.troop.playerPrefab?.GetComponent<SpriteRenderer>();
                 if (sr != null)
                     slotImages[i].sprite = sr.sprite;
                     

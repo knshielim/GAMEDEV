@@ -19,4 +19,11 @@ MonoBehaviour:
   attack: 11
   moveSpeed: 1.5
   attackInterval: 1.1
-  prefab: {fileID: 8163048701096252919, guid: f1afd04908b2d8e408096d171b334cf3, type: 3}
+  level: 1
+  isRanged: 0
+  attackRange: 0.5
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 8
+  projectileLifetime: 3
+  playerPrefab: {fileID: 8163048701096252919, guid: f1afd04908b2d8e408096d171b334cf3, type: 3}
+  enemyPrefab: {fileID: 8163048701096252919, guid: 643d76f16d430f34f9297cb07fb9cba8, type: 3}

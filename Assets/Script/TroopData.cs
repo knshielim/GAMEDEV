@@ -28,6 +28,10 @@ public class TroopData : ScriptableObject
     public float moveSpeed;        // jalan ke depan seberapa cepat
     public float attackInterval;   // waktu antar serangan (detik)
 
+    [Header("Progression")]
+    [Tooltip("This unit's level (1-5). Used for stat scaling.")]
+    [Range(1, 5)] public int level = 1;
+
     [Header("Attack / Skill")]
     [Tooltip("If true, this troop will attack using projectiles instead of melee.")]
     public bool isRanged;
@@ -46,5 +50,9 @@ public class TroopData : ScriptableObject
     public float projectileLifetime = 3f;
 
     [Header("Prefab Reference")]
-    public GameObject prefab;      // prefab unit (Slime_Blue, Warrior_1, dst)
+    [Tooltip("Prefab used by PLAYER (Troops).")]
+    public GameObject playerPrefab;
+
+    [Tooltip("Prefab used by ENEMY AI (Enemy).")]
+    public GameObject enemyPrefab;
 }

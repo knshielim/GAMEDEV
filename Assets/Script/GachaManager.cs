@@ -151,13 +151,13 @@ public class GachaManager : MonoBehaviour
     private void SpawnTroop(TroopData troop)
     {
         Debug.Log("[Gacha] SpawnTroop called for: " + troop.displayName + " | time: " + Time.time);
-        if (troop.prefab == null || playerSpawnPoint == null)
+        if (troop.playerPrefab == null || playerSpawnPoint == null)
         {
-            Debug.LogError("[Gacha] Cannot spawn! Prefab or Spawn Point is missing.");
+            Debug.LogError("[Gacha] Cannot spawn! Player prefab or Spawn Point is missing.");
             return;
         }
 
-        GameObject newUnit = Instantiate(troop.prefab, playerSpawnPoint.position, Quaternion.identity);
+        GameObject newUnit = Instantiate(troop.playerPrefab, playerSpawnPoint.position, Quaternion.identity);
         Unit unitScript = newUnit.GetComponent<Unit>();
 
         if (unitScript != null)
@@ -169,6 +169,7 @@ public class GachaManager : MonoBehaviour
             Debug.LogError($"[Gacha] Instantiated prefab '{troop.displayName}' is missing the 'Unit' component.");
         }
     }
+
 
     private static void InitializeUnitStats(Unit unit, TroopData troopData)
     {

@@ -15,11 +15,10 @@ GameObject:
   - component: {fileID: 4304571500066644306}
   - component: {fileID: 980828100698480037}
   - component: {fileID: 8979725542805602373}
-  - component: {fileID: 2884597579646610470}
   - component: {fileID: -4213778098897159577}
   - component: {fileID: 4219759689354356371}
   m_Layer: 0
-  m_Name: Slime_Green
+  m_Name: Slime_Green_Player
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -213,31 +212,6 @@ MonoBehaviour:
   HealthBarPrefab: {fileID: 1796298459179782374, guid: 7bd8c3d98d518274e8ef6a69c05a42fa, type: 3}
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!114 &2884597579646610470
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1985306042837692627}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8a6a3606af8143eda2b9c912ce5aed6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  troopData: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
-  baseMaxHealth: 20
-  baseMoveSpeed: 1.5
-  baseAttackSpeed: 1
-  baseAttackPoints: 3
-  deathDuration: 1
-  _maxHealth: 20
-  moveSpeed: 0
-  attackSpeed: 0
-  attackPoints: 0
-  currentHealth: 0
-  isDead: 0
-  animator: {fileID: 0}
 --- !u!114 &-4213778098897159577
 MonoBehaviour:
   m_ObjectHideFlags: 0

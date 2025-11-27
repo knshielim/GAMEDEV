@@ -129,9 +129,9 @@ public class MythicCombinationManager : MonoBehaviour
                  img = iconPair.GetComponentInChildren<Image>();
             }
             
-            if (ingredient.requiredTroop?.prefab != null)
+            if (ingredient.requiredTroop?.playerPrefab != null)
             {
-                var sr = ingredient.requiredTroop.prefab.GetComponent<SpriteRenderer>();
+                var sr = ingredient.requiredTroop.playerPrefab.GetComponent<SpriteRenderer>();
                 if (sr?.sprite != null)
                     img.sprite = sr.sprite;
             }

@@ -8,6 +8,15 @@ public abstract class Unit : MonoBehaviour
 {
     public event Action OnHealthChanged;
 
+    // --- STAT SCALING TABLES ---
+    // index rarity: (int)TroopRarity -> 0..4
+    protected static readonly float[] RarityHpMult   = { 1.0f, 1.3f, 1.7f, 2.2f, 3.0f };
+    protected static readonly float[] RarityAtkMult  = { 1.0f, 1.4f, 1.9f, 2.5f, 3.3f };
+    protected static readonly float[] RaritySpdMult  = { 1.0f, 1.1f, 1.2f, 1.3f, 1.4f };
+
+    // level 1–5 → index 0–4
+    protected static readonly float[] LevelMult      = { 1.0f, 1.2f, 1.45f, 1.75f, 2.1f };
+
     [Header("Config (Data Driven)")]
     [SerializeField] protected TroopData troopData;
 
@@ -45,15 +54,47 @@ public abstract class Unit : MonoBehaviour
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        // Debug.Log($"[UNIT-DEBUG] {name} Team:{UnitTeam} troopData:{troopData}", this);
+
+        // Debug.Log($"[UNIT-DEBUG] {name} troopData = {troopData}", this);
         MaxHealth = baseMaxHealth;
 
         if (troopData != null)
         {
-            MaxHealth = troopData.maxHealth;
-            moveSpeed = troopData.moveSpeed;
-            attackSpeed = 1f / Mathf.Max(0.01f, troopData.attackInterval); // interval → speed
-            attackPoints = troopData.attack;
-            Debug.Log($"[UNIT] Using TroopData {troopData.displayName} | HP:{MaxHealth} ATK:{attackPoints} MS:{moveSpeed}");
+            // 1. take base stats from TroopData
+            float baseHp    = troopData.maxHealth;
+            float baseAtk   = troopData.attack;
+            float baseMove  = troopData.moveSpeed;
+
+            // 2. calculate the rarity index & level
+            int rarityIndex = (int)troopData.rarity;
+            int levelIndex;
+            if (GameManager.Instance != null)
+            {
+                int stageLevel = (int)GameManager.Instance.currentLevel; // 1–5
+                levelIndex = Mathf.Clamp(stageLevel - 1, 0, 4);          // 0–4
+            }
+            else
+            {
+                // fallback
+                levelIndex = Mathf.Clamp(troopData.level - 1, 0, 4);
+            }
+
+            // 3. take the multiplier
+            float hpMul   = RarityHpMult[rarityIndex]  * LevelMult[levelIndex];
+            float atkMul  = RarityAtkMult[rarityIndex] * LevelMult[levelIndex];
+            float moveMul = RaritySpdMult[rarityIndex] * LevelMult[levelIndex];
+
+            // 4. apply to runtime stat
+            MaxHealth    = baseHp  * hpMul;
+            moveSpeed    = baseMove * moveMul;
+            attackPoints = baseAtk * atkMul;
+
+            // Attack Speed ​​still uses Attack Interval
+            attackSpeed = 1f / Mathf.Max(0.01f, troopData.attackInterval);
+
+            //Debug.Log($"[UNIT] {troopData.displayName} R:{troopData.rarity} L:{troopData.level} | " +
+            //          $"HP:{MaxHealth} ATK:{attackPoints} MS:{moveSpeed}");
         }
         else
         {
@@ -168,6 +209,7 @@ public abstract class Unit : MonoBehaviour
 
         isDead = true;
         isAttacking = false;
+        Debug.Log($"[DEATH] {gameObject.name} died. Team:{UnitTeam}");
 
         Debug.Log($"[DEATH] {gameObject.name} starting death sequence");
 
@@ -217,4 +259,8 @@ public abstract class Unit : MonoBehaviour
     }
 
     protected void SetTeam(Team team) => UnitTeam = team;
+    public void SetTroopData(TroopData data)
+    {
+        troopData = data;
+    }
 }

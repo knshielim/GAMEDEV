@@ -43,6 +43,7 @@ public class Troops : Unit
         }
 
         SetupFriendlyCollisionIgnore();
+        Debug.Log($"[TEAM DEBUG] {name} team = {UnitTeam}");
     }
 
     protected override void Move()

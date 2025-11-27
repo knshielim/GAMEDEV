@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class EnemyDeployManager : MonoBehaviour
 {
+    [Header("Tower Reference")]
+    [SerializeField] private Tower playerTower; 
+
     [Header("Spawn Settings")]
     [Tooltip("Where enemy troops will appear (usually in front of the enemy tower).")]
     public Transform enemySpawnPoint;
@@ -49,14 +52,27 @@ public class EnemyDeployManager : MonoBehaviour
         // Pick a random troop data
         int index = Random.Range(0, availableEnemyTroops.Count);
         TroopData data = availableEnemyTroops[index];
-        if (data == null || data.prefab == null)
+        if (data == null || (data.enemyPrefab == null && data.playerPrefab == null))
         {
-            Debug.LogWarning("[EnemyDeploy] Selected TroopData or prefab is null.");
+            Debug.LogWarning("[EnemyDeploy] Selected TroopData or prefabs are null.");
             return;
         }
 
-        GameObject enemyObj = Instantiate(data.prefab, enemySpawnPoint.position, Quaternion.identity);
-        
+        GameObject prefabToUse = data.enemyPrefab != null ? data.enemyPrefab : data.playerPrefab;
+        GameObject enemyObj = Instantiate(prefabToUse, enemySpawnPoint.position, Quaternion.identity);
+        Enemy enemyUnit = enemyObj.GetComponent<Enemy>();
+        if (enemyUnit != null)
+        {
+            enemyUnit.SetTroopData(data);
+            enemyUnit.SetTargetTower(playerTower);
+            Debug.Log($"[EnemyDeploy] Successfully spawned {data.displayName}...");
+        }
+        else
+        {
+            Debug.LogWarning($"[EnemyDeploy] Spawned '{data.displayName}' but no Enemy component found.");
+        }
+
+        /*
         // Swap Troops script to Enemy script (since we use the same prefabs for both)
         Troops troopsScript = enemyObj.GetComponent<Troops>();
         if (troopsScript != null)
@@ -66,7 +82,7 @@ public class EnemyDeployManager : MonoBehaviour
             
             // Add the Enemy component
             Enemy enemyUnit = enemyObj.AddComponent<Enemy>();
-            
+            enemyUnit.SetTroopData(data);
             Debug.Log($"[EnemyDeploy] Successfully spawned {data.displayName} (converted from Troops to Enemy) at {enemySpawnPoint.position}. Remaining coins: {CoinManager.Instance.enemyCoins}");
         }
         else
@@ -75,6 +91,7 @@ public class EnemyDeployManager : MonoBehaviour
             Enemy enemyUnit = enemyObj.GetComponent<Enemy>();
             if (enemyUnit != null)
             {
+                enemyUnit.SetTroopData(data); 
                 Debug.Log($"[EnemyDeploy] Successfully spawned {data.displayName} (already has Enemy script) at {enemySpawnPoint.position}. Remaining coins: {CoinManager.Instance.enemyCoins}");
             }
             else
@@ -82,6 +99,7 @@ public class EnemyDeployManager : MonoBehaviour
                 Debug.LogWarning($"[EnemyDeploy] Spawned prefab '{data.displayName}' has neither Troops nor Enemy component!");
             }
         }
+        */
     }
 }
 

@@ -60,10 +60,10 @@ public class MythicRecipe : ScriptableObject
     
     private string GetSpriteNameFromTroop(TroopData troop)
     {
-        if (troop == null || troop.prefab == null)
+        if (troop == null || troop.playerPrefab == null)
             return null;
             
-        SpriteRenderer sr = troop.prefab.GetComponent<SpriteRenderer>();
+        SpriteRenderer sr = troop.playerPrefab.GetComponent<SpriteRenderer>();
         if (sr != null && sr.sprite != null)
         {
             return sr.sprite.name;
