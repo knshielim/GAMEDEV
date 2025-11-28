@@ -141,10 +141,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
+  m_IsTrigger: 0
+  m_UsedByEffector: 1
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.14368945, y: -2.981538}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -155,7 +155,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 6, y: 6}
+  m_Size: {x: 3.1741266, y: 2.0485663}
   m_EdgeRadius: 0
 --- !u!50 &1168801910170651427
 Rigidbody2D:
@@ -209,7 +209,8 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 6775854471411913666}
-  attackRange: 0.5
+  targetTower: {fileID: 0}
+  attackRange: 2
   useProjectile: 0
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
@@ -228,6 +229,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HealthBarPrefab: {fileID: 1796298459179782374, guid: 7bd8c3d98d518274e8ef6a69c05a42fa, type: 3}
+  yOffset: 1.5
+  canvasScale: 0.05
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &-6093323252443113835
@@ -275,6 +278,6 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -1.9757172}
   serializedVersion: 2
-  m_Radius: 4
+  m_Radius: 2.024283

@@ -33,7 +33,7 @@ Transform:
   m_GameObject: {fileID: 5385030817546445256}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -42.579998, y: 10.699999, z: 10}
+  m_LocalPosition: {x: -42.47, y: 10.84, z: 10}
   m_LocalScale: {x: 0.6331, y: 0.6331, z: 0.6331}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -142,9 +142,9 @@ BoxCollider2D:
     serializedVersion: 2
     m_Bits: 4294967295
   m_IsTrigger: 0
-  m_UsedByEffector: 0
+  m_UsedByEffector: 1
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.08382183, y: -2.6223154}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -155,7 +155,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 8, y: 8}
+  m_Size: {x: 3.282219, y: 2.7553692}
   m_EdgeRadius: 0
 --- !u!50 &-1702740244424558431
 Rigidbody2D:
@@ -209,7 +209,8 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
-  attackRange: 0.5
+  targetTower: {fileID: 0}
+  attackRange: 2
   useProjectile: 0
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
@@ -228,6 +229,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HealthBarPrefab: {fileID: 1796298459179782374, guid: 7bd8c3d98d518274e8ef6a69c05a42fa, type: 3}
+  yOffset: 1.5
+  canvasScale: 0.05
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &3676798875598240065
@@ -272,9 +275,9 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.047896117, y: -2.8977194}
   serializedVersion: 2
-  m_Radius: 4
+  m_Radius: 1.630736
