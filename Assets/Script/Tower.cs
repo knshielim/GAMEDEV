@@ -47,6 +47,19 @@ public class Tower : MonoBehaviour
     [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
     public Sprite unaffordableSprite;
 
+    [Header("Win/Loss UI")]
+    [Tooltip("Panel to show when player loses (player tower destroyed)")]
+    public GameObject gameOverPanel;
+    
+    [Tooltip("Panel to show when player wins (enemy tower destroyed)")]
+    public GameObject victoryPanel;
+    
+    [Tooltip("Text to display game over message")]
+    public TextMeshProUGUI gameOverText;
+    
+    [Tooltip("Text to display victory message")]
+    public TextMeshProUGUI victoryText;
+
     void Awake() 
     {
         currentHealth = maxHealth; 
@@ -55,7 +68,6 @@ public class Tower : MonoBehaviour
     private void Start()
     {
         currentHealth = maxHealth;
-
         coinsPerTick = CalculateCoinRate(level); 
 
         Debug.Log($"[{owner} TOWER] Start HP: {currentHealth}/{maxHealth}");
@@ -64,6 +76,12 @@ public class Tower : MonoBehaviour
         {
             UpdateUpgradeUI();
         }
+
+        // Ensure UI panels are hidden at start
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
+        if (victoryPanel != null)
+            victoryPanel.SetActive(false);
     }
 
     private void Update()
@@ -147,7 +165,7 @@ public class Tower : MonoBehaviour
             }
         }
 
-        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";        
+        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";        
     }
 
     public void UpgradeTower()
@@ -199,10 +217,84 @@ public class Tower : MonoBehaviour
             GameManager.Instance.TowerDestroyed(this);
         }
 
-        // Trigger level completion when enemy tower is destroyed
-        if (owner == TowerOwner.Enemy && LevelManager.Instance != null)
+        if (owner == TowerOwner.Player)
+        {
+            // PLAYER LOST - Show Game Over screen
+            ShowGameOver();
+        }
+        else if (owner == TowerOwner.Enemy)
+        {
+            // PLAYER WON - Show Victory screen and proceed to next level
+            ShowVictory();
+        }
+    }
+
+    private void ShowGameOver()
+    {
+        Debug.Log("[TOWER] Player Tower Destroyed - GAME OVER");
+
+        // Stop game time
+        Time.timeScale = 0f;
+
+        // Show game over panel
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+            
+            if (gameOverText != null)
+            {
+                gameOverText.text = "Your Tower was Destroyed";
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[TOWER] gameOverPanel is not assigned in Inspector!");
+        }
+    }
+
+    private void ShowVictory()
+    {
+        Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
+
+        // Show victory panel
+        if (victoryPanel != null)
+        {
+            victoryPanel.SetActive(true);
+            
+            if (victoryText != null)
+            {
+                if (GameManager.Instance != null)
+                {
+                    int currentLevel = (int)GameManager.Instance.currentLevel;
+                    
+                    if (currentLevel >= 3)
+                    {
+                        victoryText.text = "🎉 VICTORY! 🎉\nYou've Completed All Levels!\nCongratulations!";
+                    }
+                    else
+                    {
+                        victoryText.text = $"🎉 LEVEL {currentLevel} COMPLETE! 🎉\nProceeding to Level {currentLevel + 1}...";
+                    }
+                }
+                else
+                {
+                    victoryText.text = "🎉 VICTORY! 🎉\nEnemy Tower Destroyed!";
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[TOWER] victoryPanel is not assigned in Inspector!");
+        }
+
+        // Trigger level completion (LevelManager will handle scene transition)
+        if (LevelManager.Instance != null)
         {
             LevelManager.Instance.LevelCompleted();
+        }
+        else
+        {
+            Debug.LogWarning("[TOWER] LevelManager not found! Cannot proceed to next level.");
         }
     }
  

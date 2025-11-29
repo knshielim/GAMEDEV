@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class LevelManager : MonoBehaviour
 {
@@ -9,9 +10,15 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private int totalLevels = 3;
     private int currentLevel = 1;
     
-    [Header("UI References (Optional)")]
+    [Header("UI References (Optional - Tower handles these)")]
     [SerializeField] private GameObject winPanel;
     [SerializeField] private GameObject gameOverPanel;
+    
+    [Header("Transition Settings")]
+    [Tooltip("Delay before loading next level after victory")]
+    [SerializeField] private float levelTransitionDelay = 2f;
+    
+    private bool isTransitioning = false;
     
     private void Awake()
     {
@@ -24,6 +31,7 @@ public class LevelManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
     
@@ -31,66 +39,112 @@ public class LevelManager : MonoBehaviour
     {
         // Get current level from scene build index
         currentLevel = SceneManager.GetActiveScene().buildIndex;
+        
+        // If scene 0 is main menu, adjust
+        if (currentLevel == 0)
+            currentLevel = 1;
+            
+        Debug.Log($"[LevelManager] Started Level {currentLevel}/{totalLevels}");
+        
+        // Ensure time scale is normal
+        Time.timeScale = 1f;
     }
     
-    // Call this when player wins the level
+    // Call this when player wins the level (called by Tower when enemy tower dies)
     public void LevelCompleted()
     {
-        Debug.Log("Level " + currentLevel + " completed!");
-        
-        // Show win panel if assigned
-        if (winPanel != null)
-        {
-            winPanel.SetActive(true);
-        }
+        if (isTransitioning)
+            return;
+            
+        Debug.Log($"[LevelManager] Level {currentLevel} completed!");
         
         // Check if there are more levels
         if (currentLevel < totalLevels)
         {
-            // Wait a bit before loading next level (optional)
-            Invoke("LoadNextLevel", 2f);
+            StartCoroutine(LoadNextLevelDelayed());
         }
         else
         {
-            Debug.Log("All levels completed! Game finished!");
-            Invoke("GameCompleted", 2f);
+            // All levels completed
+            Debug.Log("[LevelManager] 🎉 All levels completed! Game finished!");
+            StartCoroutine(GameCompletedDelayed());
         }
+    }
+    
+    private IEnumerator LoadNextLevelDelayed()
+    {
+        isTransitioning = true;
+        
+        Debug.Log($"[LevelManager] Loading next level in {levelTransitionDelay} seconds...");
+        
+        // Wait before transitioning
+        yield return new WaitForSeconds(levelTransitionDelay);
+        
+        LoadNextLevel();
+    }
+    
+    private IEnumerator GameCompletedDelayed()
+    {
+        isTransitioning = true;
+        
+        Debug.Log("[LevelManager] Game completed! Returning to main menu in 4 seconds...");
+        
+        // Wait longer for final victory
+        yield return new WaitForSeconds(4f);
+        
+        LoadMainMenu();
     }
     
     // Load the next level
     public void LoadNextLevel()
     {
-        int nextLevel = currentLevel + 1;
+        int nextSceneIndex = currentLevel + 1;
         
-        if (nextLevel <= totalLevels)
+        Debug.Log($"[LevelManager] Loading scene index {nextSceneIndex}");
+        
+        if (nextSceneIndex <= totalLevels)
         {
-            SceneManager.LoadScene(nextLevel);
+            // Reset time scale before loading
+            Time.timeScale = 1f;
+            
+            SceneManager.LoadScene(nextSceneIndex);
+        }
+        else
+        {
+            Debug.LogWarning("[LevelManager] No more levels! Returning to main menu.");
+            LoadMainMenu();
         }
     }
     
-    // Restart current level
+    // Restart current level (called by Restart button)
     public void RestartLevel()
     {
-        SceneManager.LoadScene(currentLevel);
+        Debug.Log($"[LevelManager] Restarting level {currentLevel}");
+        
+        // Reset time scale
+        Time.timeScale = 1f;
+        
+        // Reload current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
     // Go to main menu (scene 0)
     public void LoadMainMenu()
     {
+        Debug.Log("[LevelManager] Loading main menu (scene 0)");
+        
+        // Reset time scale
+        Time.timeScale = 1f;
+        
         SceneManager.LoadScene(0);
     }
     
-    // Called when all levels are completed
-    private void GameCompleted()
-    {
-        // You can load a "Victory" scene or main menu
-        LoadMainMenu();
-    }
-    
-    // Call this when player fails/dies
+    // Call this when player fails/dies (called by Tower when player tower dies)
     public void GameOver()
     {
-        Debug.Log("Game Over!");
+        Debug.Log("[LevelManager] Game Over!");
+        
+        // Time is already frozen by Tower.cs
         
         if (gameOverPanel != null)
         {
@@ -107,5 +161,10 @@ public class LevelManager : MonoBehaviour
     public int GetTotalLevels()
     {
         return totalLevels;
+    }
+    
+    public bool IsLastLevel()
+    {
+        return currentLevel >= totalLevels;
     }
 }
