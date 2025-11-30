@@ -137,12 +137,15 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   animator: {fileID: 0}
+  targetTower: {fileID: 0}
   attackRange: 0.5
   useProjectile: 0
   projectilePrefab: {fileID: 0}
   projectileSpawnPoint: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
+  towerStopDistance: 3
+  moveRight: 0
 --- !u!114 &-261597300675651941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,6 +159,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HealthBarPrefab: {fileID: 1796298459179782374, guid: 7bd8c3d98d518274e8ef6a69c05a42fa, type: 3}
+  yOffset: 1.5
+  canvasScale: 0.05
   PlayerColor: {r: 0, g: 1, b: 0, a: 1}
   EnemyColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!61 &-383460252821445077

@@ -18,6 +18,10 @@ public class Troops : Unit
     [SerializeField] private Transform projectileSpawnPoint;
     [SerializeField] private float projectileSpeed = 8f;
     [SerializeField] private float projectileLifetime = 3f;
+    //[SerializeField] private float towerRangedDistance = 3f; // stopping distance from tower for ranged
+
+    [SerializeField] private float towerStopDistance = 3f;
+    [SerializeField] private bool moveRight = true; // Player = true, Enemy = false
 
     protected override void Start()
     {
@@ -69,6 +73,11 @@ public class Troops : Unit
                 else
                 {
                     Vector2 dir = (currentTarget.transform.position - transform.position).normalized;
+                    
+                    // Lock movement on the X axis only
+                    dir.y = 0f;
+                    dir = dir.normalized;
+                    
                     transform.Translate(dir * moveSpeed * Time.deltaTime);
                     SetAnimationState(true, false); // walk anim
                     isAttacking = false;
@@ -78,6 +87,37 @@ public class Troops : Unit
         }
 
         // PRIORITY 2: Attack tower if no enemies
+        if (targetTower != null)
+        {
+            // Hit stop-position instead of center of tower
+            float dir = moveRight ? -1f : 1f; 
+            float targetX = targetTower.transform.position.x + dir * towerStopDistance;
+
+            Vector2 stopPos = new Vector2(targetX, transform.position.y);
+            float distX = Mathf.Abs(transform.position.x - stopPos.x);
+
+            if (distX <= 0.05f) 
+            {
+                // Stop & attack tower
+                isAttacking = true;
+                if (rb != null) rb.velocity = Vector2.zero;
+                SetAnimationState(false, true);
+                return;
+            }
+            else
+            {
+                // Move to the stop position
+                Vector2 moveDir = (stopPos - (Vector2)transform.position).normalized;
+                transform.Translate(moveDir * moveSpeed * Time.deltaTime);
+
+                SetAnimationState(true, false);
+                isAttacking = false;
+                return;
+            }
+        }
+
+
+        /*
         if (targetTower != null)
         {
             float towerDistance = Vector2.Distance(transform.position, targetTower.transform.position);
@@ -91,12 +131,16 @@ public class Troops : Unit
             else
             {
                 Vector2 dirToTower = (targetTower.transform.position - transform.position).normalized;
+                // Lock movement on the X axis only
+                dirToTower.y = 0f;
+                dirToTower = dirToTower.normalized;
+                
                 transform.Translate(dirToTower * moveSpeed * Time.deltaTime);
                 SetAnimationState(true, false);
                 isAttacking = false;
                 return;
             }
-        }
+        }*/
 
         // PRIORITY 3: Move forward if no target
         transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);

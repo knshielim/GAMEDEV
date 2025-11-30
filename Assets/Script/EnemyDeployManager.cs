@@ -28,6 +28,15 @@ public class EnemyDeployManager : MonoBehaviour
     [Tooltip("Time between mythic spawns (in seconds).")]
     public float mythicSpawnInterval = 60f;
 
+    //for testing only
+    [Header("Testing Single Troop Spawn")]
+    [SerializeField] private bool debugUseSingleTroop = false;
+    [SerializeField] private TroopData debugSingleTroop;
+    [SerializeField] private bool debugSpawnOnlyOnce = false;
+    private bool debugHasSpawned = false;
+    // ---------------------
+
+
     // Internal state
     private float _spawnTimer;
     private float _mythicTimer;
@@ -67,6 +76,7 @@ public class EnemyDeployManager : MonoBehaviour
 
         ApplyLevelSettings();
         _mythicTimer = mythicSpawnInterval;
+
     }
 
     private void InitializeLevelConfigs()
@@ -173,6 +183,18 @@ public class EnemyDeployManager : MonoBehaviour
         if (enemySpawnPoint == null || CoinManager.Instance == null || availableEnemyTroops.Count == 0)
             return;
 
+        // 🔹 DEBUG: want to spawn just 1 troop for testing
+        if (debugUseSingleTroop && debugSpawnOnlyOnce)
+        {
+            if (!debugHasSpawned)
+            {
+                TrySpawnEnemy();      
+                debugHasSpawned = true;
+            }
+            return; // stop here, to not run normal AI
+        }
+        
+        // --- AI normal ---
         // Regular spawn timer
         _spawnTimer += Time.deltaTime;
         if (_spawnTimer >= currentSpawnInterval)
@@ -231,8 +253,21 @@ public class EnemyDeployManager : MonoBehaviour
             return;
         }
 
+        TroopData selectedTroop = null;
+
+        // 🔹 MODE TESTING: use 1 troop only
+        if (debugUseSingleTroop && debugSingleTroop != null)
+        {
+            selectedTroop = debugSingleTroop;
+        }
+        else
+        {
+            // Select troop based on rarity weights for current level
+            selectedTroop = SelectTroopByRarity();
+        }
+
         // Select troop based on rarity weights for current level
-        TroopData selectedTroop = SelectTroopByRarity();
+        // TroopData selectedTroop = SelectTroopByRarity();
 
         if (selectedTroop == null)
         {

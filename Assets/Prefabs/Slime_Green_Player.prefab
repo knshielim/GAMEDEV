@@ -246,6 +246,8 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
+  towerStopDistance: 3
+  moveRight: 1
 --- !u!58 &4219759689354356371
 CircleCollider2D:
   m_ObjectHideFlags: 0

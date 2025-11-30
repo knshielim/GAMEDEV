@@ -28,6 +28,10 @@ public class Enemy : Unit
 
     [Tooltip("How long before the projectile is automatically destroyed.")]
     [SerializeField] private float projectileLifetime = 3f;
+    [SerializeField] private float towerRangedDistance = 3f;
+
+    [SerializeField] private float towerStopDistance = 3f;
+    [SerializeField] private bool moveRight = false; // Enemy walk to the left
 
     protected override void Start()
     {
@@ -54,6 +58,7 @@ public class Enemy : Unit
             cc.radius = attackRange;
             cc.isTrigger = true;
         }
+        Debug.Log($"[Enemy START] {name} isRanged from TroopData = {troopData.isRanged}, useProjectile = {useProjectile}");
     }
 
     public void SetTargetTower(Tower tower)
@@ -87,6 +92,8 @@ public class Enemy : Unit
                 else
                 {
                     Vector2 dir = (currentTarget.transform.position - transform.position).normalized;
+                    dir.y = 0f;
+                    dir = dir.normalized;
                     transform.Translate(dir * moveSpeed * Time.deltaTime);
                     SetAnimationState(true, false); // walk anim
                     isAttacking = false;
@@ -96,6 +103,64 @@ public class Enemy : Unit
         }
 
         // PRIORITY 2: Attack tower
+        if (targetTower != null)
+        {
+            if (targetTower == null)
+                Debug.Log($"{name} RANGED but NO TOWER!");
+            
+            // RANGED TROOPS (useProjectile)
+            if (useProjectile)
+            {
+                float distX = Mathf.Abs(transform.position.x - targetTower.transform.position.x);
+
+                // too far from the shooting range → move forward
+                if (distX > towerRangedDistance + 0.1f)
+                {
+                    float dirSign = moveRight ? 1f : -1f; // player ke kanan, enemy ke kiri
+                    Vector2 moveDir = new Vector2(dirSign, 0f);
+                    transform.Translate(moveDir * moveSpeed * Time.deltaTime);
+
+                    SetAnimationState(true, false); // jalan
+                    isAttacking = false;
+                    return;
+                }
+
+                // Already within shooting range → stay & shoot
+                isAttacking = true;
+                if (rb != null) rb.velocity = Vector2.zero;
+                SetAnimationState(false, true); // attack anim
+                Debug.Log($"[RANGED ATTACK] {name} STOP distX={distX}, towerRangedDistance={towerRangedDistance}");
+                return;
+            }
+
+            // MELEE TROOPS (default)
+            float dirStop = moveRight ? -1f : 1f;
+            float targetX = targetTower.transform.position.x + dirStop * towerStopDistance;
+
+            Vector2 stopPos = new Vector2(targetX, transform.position.y);
+            float stopDistX = Mathf.Abs(transform.position.x - stopPos.x);
+
+            if (stopDistX <= 0.05f)
+            {
+                // Already in front of the tower → attack
+                isAttacking = true;
+                if (rb != null) rb.velocity = Vector2.zero;
+                SetAnimationState(false, true);
+                return;
+            }
+            else
+            {
+                // Walk to the front of the tower
+                Vector2 moveDir = (stopPos - (Vector2)transform.position).normalized;
+                transform.Translate(moveDir * moveSpeed * Time.deltaTime);
+
+                SetAnimationState(true, false);
+                isAttacking = false;
+                return;
+            }
+        }
+
+        /*
         if (targetTower != null)
         {
             float towerDistance = Vector2.Distance(transform.position, targetTower.transform.position);
@@ -109,12 +174,14 @@ public class Enemy : Unit
             else
             {
                 Vector2 dirToTower = (targetTower.transform.position - transform.position).normalized;
+                dirToTower.y = 0f;
+                dirToTower = dirToTower.normalized;
                 transform.Translate(dirToTower * moveSpeed * Time.deltaTime);
                 SetAnimationState(true, false);
                 isAttacking = false;
                 return;
             }
-        }
+        }*/
 
         // PRIORITY 3: Move left if no targets
         transform.Translate(Vector2.left * moveSpeed * Time.deltaTime);
@@ -140,8 +207,18 @@ public class Enemy : Unit
 
         if (targetTower != null)
         {
-            PerformAttackOnTower();
-            return;
+            float distX = Mathf.Abs(transform.position.x - targetTower.transform.position.x);
+
+            // Minimum distance to be allowed to hit the tower
+            float neededDist = useProjectile
+                ? towerRangedDistance + 0.2f
+                : towerStopDistance + 0.2f;
+
+            if (distX <= neededDist)
+            {
+                PerformAttackOnTower();
+                return;
+            }
         }
 
         isAttacking = false;
@@ -190,7 +267,6 @@ public class Enemy : Unit
             {
                 targetTower = tower;
                 Debug.Log($"[Enemy] {name} detected ENEMY tower: {tower.name}");
-                PerformAttackOnTower();
             }
             return;
         }
