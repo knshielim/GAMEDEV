@@ -1598,7 +1598,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -81.49995, y: 300}
+  m_AnchoredPosition: {x: -81.49995, y: 299.99997}
   m_SizeDelta: {x: 163, y: 600}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &237921229
@@ -6715,8 +6715,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 385056809}
   m_HandleRect: {fileID: 385056808}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.9999945
+  m_Value: 1
+  m_Size: 0.99676055
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15316,7 +15316,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 93e75359d4a0ddd4b81ec1a80435849f, type: 2}
   mythicSpawnInterval: 60
   debugUseSingleTroop: 1
-  debugSingleTroop: {fileID: 11400000, guid: de7c75e465c2e7d45bd79ec495be62e0, type: 2}
+  debugSingleTroop: {fileID: 11400000, guid: c790f131b0555cd459791918c75b0ce0, type: 2}
   debugSpawnOnlyOnce: 1
 --- !u!4 &1976493372
 Transform:
