@@ -30,7 +30,7 @@ public class Enemy : Unit
     [SerializeField] private float projectileLifetime = 3f;
     [SerializeField] private float towerRangedDistance = 3f;
 
-    [SerializeField] private float towerStopDistance = 3f;
+    [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = false; // Enemy walk to the left
 
     protected override void Start()

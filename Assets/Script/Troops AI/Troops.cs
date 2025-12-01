@@ -20,7 +20,7 @@ public class Troops : Unit
     [SerializeField] private float projectileLifetime = 3f;
     //[SerializeField] private float towerRangedDistance = 3f; // stopping distance from tower for ranged
 
-    [SerializeField] private float towerStopDistance = 3f;
+    [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = true; // Player = true, Enemy = false
 
     protected override void Start()

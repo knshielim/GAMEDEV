@@ -210,13 +210,14 @@ MonoBehaviour:
   isDead: 0
   animator: {fileID: 0}
   targetTower: {fileID: 0}
-  attackRange: 0.5
+  attackRange: 15
   useProjectile: 0
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 5022884809292046476, guid: 333b758b1fe41d94b96faf9c0ff4b6b2, type: 3}
   projectileSpawnPoint: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
-  towerStopDistance: 3
+  towerRangedDistance: 15
+  towerStopDistance: 15
   moveRight: 0
 --- !u!114 &-1749644924275098023
 MonoBehaviour:

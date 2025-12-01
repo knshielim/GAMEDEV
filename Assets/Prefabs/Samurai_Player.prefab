@@ -144,7 +144,7 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
-  towerStopDistance: 3
+  towerStopDistance: 4
   moveRight: 1
 --- !u!114 &7964213798989366283
 MonoBehaviour:
