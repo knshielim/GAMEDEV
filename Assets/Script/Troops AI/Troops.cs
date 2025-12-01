@@ -287,5 +287,22 @@ private IEnumerator DestroyAfterDeath()
     }
     Destroy(gameObject);
 }
+
+private void ShootProjectile(Unit target)
+{
+    if (!useProjectile || projectilePrefab == null || projectileSpawnPoint == null)
+        return;
+
+    GameObject proj = Instantiate(projectilePrefab, projectileSpawnPoint.position, Quaternion.identity);
+
+    Vector2 dir = (target.transform.position - projectileSpawnPoint.position).normalized;
+
+    Rigidbody2D rb = proj.GetComponent<Rigidbody2D>();
+    if (rb != null)
+        rb.velocity = dir * projectileSpeed;
+
+    Destroy(proj, projectileLifetime);
+}
+
 }
 
