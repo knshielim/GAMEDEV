@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemyDeployManager : MonoBehaviour
 {
+     public static bool tutorialActive = false;
     [Header("Tower Reference")]
     [SerializeField] private Tower playerTower;
 
@@ -27,6 +28,7 @@ public class EnemyDeployManager : MonoBehaviour
 
     [Tooltip("Time between mythic spawns (in seconds).")]
     public float mythicSpawnInterval = 60f;
+
 
     //for testing only
     [Header("Testing Single Troop Spawn")]
@@ -56,6 +58,8 @@ public class EnemyDeployManager : MonoBehaviour
     }
 
     private Dictionary<int, LevelConfig> levelConfigs;
+
+    public static EnemyDeployManager Instance { get; private set; }
 
     private void Awake()
     {
@@ -177,6 +181,10 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void Update()
     {
+            // STOP ENEMY SPAWNING DURING TUTORIAL
+         if (tutorialActive)
+             return;
+
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
             return;
 
@@ -363,6 +371,36 @@ public class EnemyDeployManager : MonoBehaviour
             Debug.LogWarning($"[EnemyDeploy] Spawned '{data.displayName}' but no Enemy component found.");
         }
     }
+
+    
+    public void SpawnSpecificEnemy(TroopData troop)
+    {
+    if (tutorialActive) return; // prevent random AI from spawning
+
+    if (troop == null || enemySpawnPoint == null) return;
+
+    GameObject prefab = troop.enemyPrefab;
+    if (prefab == null)
+    {
+        Debug.LogWarning($"[EnemyDeployManager] TroopData '{troop.displayName}' has no prefab.");
+        return;
+    }
+
+    GameObject enemyObj = Instantiate(prefab, enemySpawnPoint.position, Quaternion.identity);
+    Enemy enemyUnit = enemyObj.GetComponent<Enemy>();
+    if (enemyUnit != null)
+    {
+        enemyUnit.SetTroopData(troop);
+
+        // 🔥 FIX: Always use the correct PLAYER tower (assigned in Inspector)
+        if (playerTower != null)
+            enemyUnit.SetTargetTower(playerTower);
+        else
+            Debug.LogError("[EnemyDeployManager] Player tower reference is missing!");
+    }
+    }
+
+
 
     // Public method to get current difficulty info (useful for UI)
     public string GetDifficultyInfo()

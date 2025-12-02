@@ -9,27 +9,29 @@ using System;
 public class RarityDropRate
 {
     public TroopRarity rarity;
-    [Range(0f, 100f)]
-    public float dropPercentage;
+    [Range(0f, 100f)] public float dropPercentage;
 }
 
 public class GachaManager : MonoBehaviour
 {
     public static GachaManager Instance { get; private set; }
 
+    public bool tutorialLocked = false;
+
+
     [Header("Gacha Configuration")]
     [Tooltip("The coin cost to perform one summon.")]
     [SerializeField] private int summonCost = 100;
 
     [Header("Gacha Cost Escalation")]
-    [Tooltip("Kenaikan harga setiap kali melakukan 1x summon.")]
+    [Tooltip("Increase cost per 1x summon.")]
     [SerializeField] private int summonCostIncrease = 25;
     private int summonsSinceReset = 0;
 
-    [Tooltip("List of ALL TroopData ScriptableObjects available to be summoned.")]
+    [Tooltip("All TroopData ScriptableObjects available.")]
     [SerializeField] private List<TroopData> allAvailableTroops;
 
-    [Tooltip("The percentage chance for each rarity. The total should sum to 100.")]
+    [Tooltip("Drop rates for each rarity.")]
     [SerializeField] private List<RarityDropRate> dropRates = new List<RarityDropRate>
     {
         new RarityDropRate { rarity = TroopRarity.Common, dropPercentage = 50f },
@@ -40,101 +42,96 @@ public class GachaManager : MonoBehaviour
     };
 
     [Header("Spawn Position")]
-    [Tooltip("The transform where the player's summoned troops will appear.")]
     [SerializeField] private Transform playerSpawnPoint;
 
     [Header("Upgrade Settings")]
     [SerializeField, Range(0, 10)] private int upgradeLevel = 0;
 
-    [Header("UI References (Player Only)")]
-    [Tooltip("The Text component on the Upgrade button that shows the price.")]
+    [Header("UI References")]
     public TextMeshProUGUI upgradeButtonText;
-
-    [Tooltip("The Image component of the Upgrade Button to change its visual.")]
     public Image upgradeButtonImage;
-
-    [Tooltip("The sprite to display when the upgrade CAN be afforded (original).")]
     public Sprite affordableSprite;
-
-    [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
     public Sprite unaffordableSprite;
 
-    // Cache for troop filtering by rarity
     private Dictionary<TroopRarity, List<TroopData>> _troopsByRarity;
+    private bool tutorialFirstSummonDone = false;
 
-    // Properties
     public int SummonCost => summonCost;
     public int UpgradeLevel => upgradeLevel;
 
-    private void Awake()
+   private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Debug.LogWarning($"Multiple GachaManager instances detected. Destroying {gameObject.name}.");
-            Destroy(gameObject);
-        }
-
-        InitializeTroopCache();
-        ApplyUpgradeRates();
-        ValidateDropRates();
+    if (Instance == null) Instance = this;
+    else
+    {
+        Destroy(gameObject);
+        return;
     }
 
-    private void Update()
-    {
-        UpdateUpgradeUI();
+    // If TutorialManager is disabled, allow summoning normally
+    tutorialLocked = false;
+
+    InitializeTroopCache();
+    ApplyUpgradeRates();
+    ValidateDropRates();
     }
+
 
     // -------------------- SUMMON FUNCTION --------------------
-    public TroopData SummonTroop()
+    public TroopData SummonTroop(TroopData tutorialTroop = null)
     {
-        Debug.Log("[Gacha] SummonTroop is called: " + Time.time);
+        // -------------------- TUTORIAL OVERRIDE --------------------
+        if (!tutorialFirstSummonDone && tutorialTroop != null)
+        {
+            tutorialFirstSummonDone = true;
+
+            // Add tutorial troop to inventory only (no spawn)
+            if (TroopInventory.Instance != null)
+            {
+                bool added = TroopInventory.Instance.AddTroop(tutorialTroop);
+                if (added)
+                    Debug.Log($"[Tutorial Gacha] Added tutorial troop to inventory: {tutorialTroop.displayName}");
+                else
+                    Debug.LogWarning("[Tutorial Gacha] Failed to add tutorial troop, inventory may be full.");
+            }
+
+            return tutorialTroop;
+        }
+
+        // -------------------- NORMAL SUMMON --------------------
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
         {
-            Debug.Log("[Gacha] Cannot summon: Game is Over.");
+            Debug.Log("[Gacha] Cannot summon: Game is over.");
             return null;
         }
 
-        // Calculate current cost
         int currentCost = GetCurrentSummonCost();
-
-        // Spend coins
         if (CoinManager.Instance == null || !CoinManager.Instance.TrySpendPlayerCoins(currentCost))
         {
             Debug.Log($"[Gacha] Not enough coins to summon (Cost: {currentCost}).");
             return null;
         }
 
-        // Increase counter
         summonsSinceReset++;
-        Debug.Log($"[Gacha] Summon: {summonsSinceReset} (Cost: {currentCost})");
+        Debug.Log($"[Gacha] Summon #{summonsSinceReset} (Cost: {currentCost})");
 
-        // Determine rarity
         TroopRarity pulledRarity = DetermineRarity();
-
-        // Pick random troop
         TroopData newTroop = GetRandomTroopOfRarity(pulledRarity);
+
         if (newTroop == null)
         {
-            Debug.LogError("[Gacha] No troop found for rarity: " + pulledRarity);
+            Debug.LogError($"[Gacha] No troop found for rarity: {pulledRarity}");
             return null;
         }
 
-        // Add to inventory
-        bool added = TroopInventory.Instance.AddTroop(newTroop);
-        if (!added)
+        bool addedToInventory = TroopInventory.Instance.AddTroop(newTroop);
+        if (!addedToInventory)
         {
-            Debug.Log("[Gacha] Inventory full, troop not added.");
+            Debug.LogWarning("[Gacha] Inventory full, troop not added.");
             return null;
         }
 
-        // Refresh UI and spawn troop
         TroopInventory.Instance.RefreshUI();
-        // SpawnTroop(newTroop);
-
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
 
         return newTroop;
@@ -143,12 +140,12 @@ public class GachaManager : MonoBehaviour
     private TroopRarity DetermineRarity()
     {
         float randomValue = UnityEngine.Random.Range(0f, 100f);
-        float cumulativeProbability = 0f;
+        float cumulative = 0f;
 
         foreach (var rate in dropRates)
         {
-            cumulativeProbability += rate.dropPercentage;
-            if (randomValue < cumulativeProbability)
+            cumulative += rate.dropPercentage;
+            if (randomValue < cumulative)
                 return rate.rarity;
         }
 
@@ -157,20 +154,14 @@ public class GachaManager : MonoBehaviour
 
     public TroopData GetRandomTroopOfRarity(TroopRarity rarity)
     {
-        List<TroopData> filteredTroops = allAvailableTroops
-            .Where(troop => troop.rarity == rarity)
-            .ToList();
+        List<TroopData> filtered = allAvailableTroops.Where(t => t.rarity == rarity).ToList();
+        if (filtered.Count == 0) return null;
 
-        if (filteredTroops.Count == 0)
-            return null;
-
-        int randomIndex = UnityEngine.Random.Range(0, filteredTroops.Count);
-        return filteredTroops[randomIndex];
+        return filtered[UnityEngine.Random.Range(0, filtered.Count)];
     }
 
     private void SpawnTroop(TroopData troop)
     {
-        Debug.Log("[Gacha] SpawnTroop called for: " + troop.displayName + " | time: " + Time.time);
         if (troop.playerPrefab == null || playerSpawnPoint == null)
         {
             Debug.LogError("[Gacha] Cannot spawn! Player prefab or Spawn Point is missing.");
@@ -181,15 +172,8 @@ public class GachaManager : MonoBehaviour
         Unit unitScript = newUnit.GetComponent<Unit>();
 
         if (unitScript != null)
-        {
             InitializeUnitStats(unitScript, troop);
-        }
-        else
-        {
-            Debug.LogError($"[Gacha] Instantiated prefab '{troop.displayName}' is missing the 'Unit' component.");
-        }
     }
-
 
     private static void InitializeUnitStats(Unit unit, TroopData troopData)
     {
@@ -204,42 +188,32 @@ public class GachaManager : MonoBehaviour
     private void InitializeTroopCache()
     {
         _troopsByRarity = allAvailableTroops
-            .Where(troop => troop != null)
-            .GroupBy(troop => troop.rarity)
-            .ToDictionary(group => group.Key, group => group.ToList());
+            .Where(t => t != null)
+            .GroupBy(t => t.rarity)
+            .ToDictionary(g => g.Key, g => g.ToList());
     }
 
     // -------------------- DROP RATE VALIDATION --------------------
     private void ValidateDropRates()
     {
-        float totalPercentage = dropRates.Sum(rate => rate.dropPercentage);
-        if (Mathf.Abs(totalPercentage - 100f) > 0.01f)
-        {
-            Debug.LogWarning($"[GachaManager] Drop rates DO NOT sum to 100%! Total: {totalPercentage}. Please adjust the values in the Inspector.");
-        }
+        float total = dropRates.Sum(r => r.dropPercentage);
+        if (Mathf.Abs(total - 100f) > 0.01f)
+            Debug.LogWarning($"[GachaManager] Drop rates DO NOT sum to 100%! Total: {total}");
     }
 
     // -------------------- UPGRADE SYSTEM --------------------
     public void UpgradeGachaSystem()
     {
-        if (upgradeLevel >= 10)
-        {
-            Debug.Log("[Gacha] Already at max upgrade level.");
-            return;
-        }
+        if (upgradeLevel >= 10) return;
 
         int cost = GetUpgradeCost();
-
-        if (!CoinManager.Instance.TrySpendPlayerCoins(cost))
-        {
-            Debug.Log($"[Gacha] Not enough coins to upgrade! Need {cost} coins.");
-            return;
-        }
+        if (!CoinManager.Instance.TrySpendPlayerCoins(cost)) return;
 
         upgradeLevel++;
         ApplyUpgradeRates();
-        Debug.Log($"[Gacha] Upgraded to level {upgradeLevel} (Spent {cost} coins)");
         UpdateUpgradeUI();
+
+        Debug.Log($"[Gacha] Upgraded to level {upgradeLevel} (Spent {cost} coins)");
     }
 
     public void SetUpgradeLevel(int level)
@@ -247,43 +221,37 @@ public class GachaManager : MonoBehaviour
         upgradeLevel = Mathf.Clamp(level, 0, 10);
         ApplyUpgradeRates();
         UpdateUpgradeUI();
-        Debug.Log($"[Gacha] Upgrade level manually set to {upgradeLevel}");
     }
 
-    private int GetUpgradeCost()
-    {
-        if (upgradeLevel >= 10)
-            return int.MaxValue;
-
-        return (upgradeLevel + 1) * 100;
-    }
+    private int GetUpgradeCost() =>
+        (upgradeLevel >= 10) ? int.MaxValue : (upgradeLevel + 1) * 100;
 
     private void ApplyUpgradeRates()
     {
-        var upgradeModifiers = new Dictionary<int, (float common, float rare, float epic, float legendary, float mythic)>
+        var modifiers = new Dictionary<int, (float common, float rare, float epic, float legendary, float mythic)>
         {
-            {0, (0f, 0f, 0f, 0f, 0f)},
-            {1, (-8f, 5f, 2.5f, 0.4f, 0.1f)},
-            {2, (-15f, 9f, 4.5f, 1f, 0.5f)},
-            {3, (-22f, 13f, 6.5f, 1.2f, 1.3f)},
-            {4, (-30f, 16f, 9f, 2.5f, 2.5f)},
-            {5, (-35f, 18f, 11f, 3f, 3f)},
-            {6, (-38f, 20f, 12f, 3.5f, 3.5f)},
-            {7, (-41f, 22f, 13f, 4f, 4f)},
-            {8, (-44f, 24f, 14f, 4.5f, 4.5f)},
-            {9, (-47f, 26f, 15f, 5f, 5f)},
-            {10, (-50f, 28f, 16f, 5.5f, 5.5f)}
+            {0, (0f,0f,0f,0f,0f)},
+            {1,(-8f,5f,2.5f,0.4f,0.1f)},
+            {2,(-15f,9f,4.5f,1f,0.5f)},
+            {3,(-22f,13f,6.5f,1.2f,1.3f)},
+            {4,(-30f,16f,9f,2.5f,2.5f)},
+            {5,(-35f,18f,11f,3f,3f)},
+            {6,(-38f,20f,12f,3.5f,3.5f)},
+            {7,(-41f,22f,13f,4f,4f)},
+            {8,(-44f,24f,14f,4.5f,4.5f)},
+            {9,(-47f,26f,15f,5f,5f)},
+            {10,(-50f,28f,16f,5.5f,5.5f)}
         };
 
         ResetDropRatesToDefault();
 
-        if (upgradeModifiers.TryGetValue(upgradeLevel, out var modifiers))
+        if (modifiers.TryGetValue(upgradeLevel, out var m))
         {
-            dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage += modifiers.common;
-            dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage += modifiers.rare;
-            dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage += modifiers.epic;
-            dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage += modifiers.legendary;
-            dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage += modifiers.mythic;
+            dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage += m.common;
+            dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage += m.rare;
+            dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage += m.epic;
+            dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage += m.legendary;
+            dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage += m.mythic;
         }
 
         NormalizeDropRates();
@@ -301,103 +269,47 @@ public class GachaManager : MonoBehaviour
     private void NormalizeDropRates()
     {
         float total = dropRates.Sum(r => r.dropPercentage);
-        if (total <= 0f)
-        {
-            Debug.LogError("[Gacha] Total drop rate is 0 or negative. Cannot normalize.");
-            return;
-        }
+        if (total <= 0f) return;
 
         foreach (var rate in dropRates)
-        {
             rate.dropPercentage = (rate.dropPercentage / total) * 100f;
-        }
     }
 
     // -------------------- SUMMON COST SYSTEM --------------------
-    public int GetCurrentSummonCost()
-    {
-        return summonCost + summonsSinceReset * summonCostIncrease;
-    }
+    public int GetCurrentSummonCost() =>
+        summonCost + summonsSinceReset * summonCostIncrease;
 
-    public void ResetGachaCost()
-    {
+    public void ResetGachaCost() =>
         summonsSinceReset = 0;
-        Debug.Log("[Gacha] Summon cost escalation reset (stage/level baru).");
-    }
 
-    // -------------------- UI UPDATE METHOD --------------------
+    // -------------------- UI UPDATE --------------------
     public void UpdateUpgradeUI()
     {
-        if (upgradeButtonText == null)
-        {
-            Debug.LogError("[GACHA UI ERROR] upgradeButtonText is MISSING in the Inspector.");
+        if (upgradeButtonText == null || upgradeButtonImage == null)
             return;
-        }
-        if (upgradeButtonImage == null)
-        {
-            Debug.LogError("[GACHA UI ERROR] upgradeButtonImage is MISSING in the Inspector. This is why the sprite isn't changing.");
-            return;
-        }
 
-        // Check if already at max level
         if (upgradeLevel >= 10)
         {
             upgradeButtonText.text = "Max level reached";
+            upgradeButtonImage.sprite = unaffordableSprite;
 
-            // Disable the button
-            UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
-            if (button != null)
-            {
-                button.interactable = false;
-            }
-
-            // Set to unaffordable sprite if available
-            if (unaffordableSprite != null)
-            {
-                upgradeButtonImage.sprite = unaffordableSprite;
-            }
+            var button = upgradeButtonText.GetComponentInParent<Button>();
+            if (button != null) button.interactable = false;
 
             return;
         }
 
         int nextLevel = upgradeLevel + 1;
         int cost = GetUpgradeCost();
-        bool canAfford = false;
 
-        if (CoinManager.Instance != null)
-        {
-            canAfford = CoinManager.Instance.playerCoins >= cost;
+        bool canAfford = CoinManager.Instance != null &&
+                         CoinManager.Instance.playerCoins >= cost;
 
-            UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
-            if (button != null)
-            {
-                button.interactable = canAfford;
-            }
-        }
+        var btn = upgradeButtonText.GetComponentInParent<Button>();
+        if (btn != null)
+            btn.interactable = canAfford;
 
-        if (canAfford)
-        {
-            if (affordableSprite != null)
-            {
-                upgradeButtonImage.sprite = affordableSprite;
-            }
-            else
-            {
-                Debug.LogWarning("[GACHA UI WARNING] affordableSprite is MISSING.");
-            }
-        }
-        else
-        {
-            if (unaffordableSprite != null)
-            {
-                upgradeButtonImage.sprite = unaffordableSprite;
-            }
-            else
-            {
-                Debug.LogWarning("[GACHA UI WARNING] unaffordableSprite is MISSING.");
-            }
-        }
-
+        upgradeButtonImage.sprite = canAfford ? affordableSprite : unaffordableSprite;
         upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";
     }
 }
