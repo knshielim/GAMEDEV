@@ -288,20 +288,61 @@ private IEnumerator DestroyAfterDeath()
     Destroy(gameObject);
 }
 
+// Add this method to call from Animation Event
+public void FireProjectile()
+{
+    if (isDead || !useProjectile) return;
+    
+    if (currentTarget != null)
+    {
+        ShootProjectile(currentTarget);
+    }
+    else if (targetTower != null)
+    {
+        // For shooting at tower, create a fake direction
+        Vector2 dir = (targetTower.transform.position - projectileSpawnPoint.position).normalized;
+        ShootProjectileInDirection(dir);
+    }
+}
+
 private void ShootProjectile(Unit target)
 {
-    if (!useProjectile || projectilePrefab == null || projectileSpawnPoint == null)
+    if (projectilePrefab == null)
+    {
+        Debug.LogWarning($"[{name}] No projectile prefab assigned!");
         return;
+    }
 
-    GameObject proj = Instantiate(projectilePrefab, projectileSpawnPoint.position, Quaternion.identity);
+    Vector3 spawnPos = projectileSpawnPoint != null 
+        ? projectileSpawnPoint.position 
+        : transform.position;
 
-    Vector2 dir = (target.transform.position - projectileSpawnPoint.position).normalized;
+    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+    
+    Vector2 dir = (target.transform.position - spawnPos).normalized;
+    
+    Projectile projectile = proj.GetComponent<Projectile>();
+    if (projectile != null)
+    {
+        projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+    }
+}
 
-    Rigidbody2D rb = proj.GetComponent<Rigidbody2D>();
-    if (rb != null)
-        rb.velocity = dir * projectileSpeed;
+private void ShootProjectileInDirection(Vector2 direction)
+{
+    if (projectilePrefab == null) return;
 
-    Destroy(proj, projectileLifetime);
+    Vector3 spawnPos = projectileSpawnPoint != null 
+        ? projectileSpawnPoint.position 
+        : transform.position;
+
+    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+    
+    Projectile projectile = proj.GetComponent<Projectile>();
+    if (projectile != null)
+    {
+        projectile.Initialize(direction, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+    }
 }
 
 }

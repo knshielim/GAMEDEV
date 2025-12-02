@@ -22,7 +22,7 @@ MonoBehaviour:
   level: 1
   isRanged: 1
   attackRange: 15
-  projectilePrefab: {fileID: 5022884809292046476, guid: 7f8c45e7080f88d43a5be0acdabc5612, type: 3}
+  projectilePrefab: {fileID: 650736681486353631, guid: ee3348756ad39c147bac3cf8ea40f4e0, type: 3}
   projectileSpeed: 8
   projectileLifetime: 3
   playerPrefab: {fileID: 3311991319710730416, guid: b8c52eb10d270e845bb84238cdfa0c58, type: 3}

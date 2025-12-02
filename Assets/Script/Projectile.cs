@@ -1,72 +1,90 @@
 using UnityEngine;
 
 /// <summary>
-/// Simple projectile used by ranged troops.
-/// Moves in a given direction, damages the first enemy Unit it hits, then destroys itself.
+/// Handles projectile movement, damage, and collision detection.
+/// Attach this to your projectile prefab.
 /// </summary>
 public class Projectile : MonoBehaviour
 {
-    private Vector2 _direction;
-    private float _speed;
-    private float _damage;
-    private float _lifetime;
-    private float _spawnTime;
-    private Team _ownerTeam;
+    private Vector2 direction;
+    private float speed;
+    private float damage;
+    private Team ownerTeam;
+    private float spawnTime;
+    private float lifetime;
 
-    [Tooltip("Optional Rigidbody2D for physics-based movement. If null, uses Transform.Translate.")]
     [SerializeField] private Rigidbody2D rb;
 
-    public void Initialize(Vector2 direction, float damage, Team ownerTeam, float speed, float lifetime)
+    /// <summary>
+    /// Initialize the projectile with all necessary data
+    /// </summary>
+    public void Initialize(Vector2 dir, float dmg, Team team, float spd, float life)
     {
-        _direction = direction.normalized;
-        _damage = damage;
-        _ownerTeam = ownerTeam;
-        _speed = speed;
-        _lifetime = lifetime;
-        _spawnTime = Time.time;
+        direction = dir.normalized;
+        damage = dmg;
+        ownerTeam = team;
+        speed = spd;
+        lifetime = life;
+        spawnTime = Time.time;
 
-        // Orient the projectile visually towards its movement direction (optional)
-        if (_direction.sqrMagnitude > 0.0001f)
+        // Get Rigidbody2D if not assigned
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+
+        // Set velocity immediately
+        if (rb != null)
+            rb.velocity = direction * speed;
+
+        // Optional: Rotate projectile to face direction
+        if (direction.sqrMagnitude > 0.0001f)
         {
-            float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         }
     }
 
     private void Update()
     {
-        // Lifetime check
-        if (Time.time - _spawnTime >= _lifetime)
+        // Auto-destroy after lifetime expires
+        if (Time.time - spawnTime >= lifetime)
         {
             Destroy(gameObject);
-            return;
-        }
-
-        // Movement
-        if (rb != null)
-        {
-            rb.velocity = _direction * _speed;
-        }
-        else
-        {
-            transform.Translate(_direction * (_speed * Time.deltaTime), Space.World);
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Check if it hit a unit
         Unit unit = other.GetComponent<Unit>();
-        if (unit == null) return;
+        if (unit != null)
+        {
+            // Don't hit friendly units
+            if (unit.UnitTeam == ownerTeam || unit.isDead)
+                return;
 
-        // Ignore friendly units
-        if (unit.UnitTeam == _ownerTeam) return;
+            // Deal damage
+            unit.TakeDamage(damage);
+            Debug.Log($"[Projectile] Hit {unit.name} for {damage} damage");
 
-        // Apply damage
-        unit.TakeDamage(_damage);
-        Debug.Log($"[PROJECTILE] {name} dealt {_damage} damage to {unit.gameObject.name}");
+            // Destroy projectile on hit
+            Destroy(gameObject);
+            return;
+        }
 
-        Destroy(gameObject);
+        // Optional: Hit towers
+        Tower tower = other.GetComponent<Tower>();
+        if (tower != null)
+        {
+            // Check if it's an enemy tower
+            bool isEnemyTower = (ownerTeam == Team.Player && tower.owner == Tower.TowerOwner.Enemy) ||
+                                (ownerTeam == Team.Enemy && tower.owner == Tower.TowerOwner.Player);
+
+            if (isEnemyTower)
+            {
+                tower.TakeDamage(Mathf.RoundToInt(damage));
+                Debug.Log($"[Projectile] Hit tower {tower.name} for {damage} damage");
+                Destroy(gameObject);
+            }
+        }
     }
 }
-
-

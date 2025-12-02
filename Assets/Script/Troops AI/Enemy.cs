@@ -189,6 +189,64 @@ public class Enemy : Unit
         isAttacking = false;
     }
 
+// This method should be called from Animation Event
+public void FireProjectile()
+{
+    if (isDead || !useProjectile) return;
+    
+    if (currentTarget != null)
+    {
+        ShootProjectileAtTarget(currentTarget);
+    }
+    else if (targetTower != null)
+    {
+        // Shoot left towards tower
+        ShootProjectileInDirection(Vector2.left);
+    }
+}
+
+private void ShootProjectileAtTarget(Unit target)
+{
+    if (projectilePrefab == null)
+    {
+        Debug.LogWarning($"[{name}] No projectile prefab assigned!");
+        return;
+    }
+
+    Vector3 spawnPos = projectileSpawnPoint != null 
+        ? projectileSpawnPoint.position 
+        : transform.position;
+
+    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+    
+    Vector2 dir = (target.transform.position - spawnPos).normalized;
+    
+    Projectile projectile = proj.GetComponent<Projectile>();
+    if (projectile != null)
+    {
+        projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+    }
+}
+
+private void ShootProjectileInDirection(Vector2 direction)
+{
+    if (projectilePrefab == null) return;
+
+    Vector3 spawnPos = projectileSpawnPoint != null 
+        ? projectileSpawnPoint.position 
+        : transform.position;
+
+    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+    
+    Projectile projectile = proj.GetComponent<Projectile>();
+    if (projectile != null)
+    {
+        projectile.Initialize(direction, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+    }
+}
+
+
+
     protected override void FindAndPerformAttack()
     {
         if (isDead) return;
