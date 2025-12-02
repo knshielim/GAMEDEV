@@ -44,7 +44,7 @@ public class GachaManager : MonoBehaviour
     [SerializeField] private Transform playerSpawnPoint;
 
     [Header("Upgrade Settings")]
-    [SerializeField, Range(0, 5)] private int upgradeLevel = 0;
+    [SerializeField, Range(0, 10)] private int upgradeLevel = 0;
 
     [Header("UI References (Player Only)")]
     [Tooltip("The Text component on the Upgrade button that shows the price.")]
@@ -222,7 +222,7 @@ public class GachaManager : MonoBehaviour
     // -------------------- UPGRADE SYSTEM --------------------
     public void UpgradeGachaSystem()
     {
-        if (upgradeLevel >= 5)
+        if (upgradeLevel >= 10)
         {
             Debug.Log("[Gacha] Already at max upgrade level.");
             return;
@@ -244,7 +244,7 @@ public class GachaManager : MonoBehaviour
 
     public void SetUpgradeLevel(int level)
     {
-        upgradeLevel = Mathf.Clamp(level, 0, 5);
+        upgradeLevel = Mathf.Clamp(level, 0, 10);
         ApplyUpgradeRates();
         UpdateUpgradeUI();
         Debug.Log($"[Gacha] Upgrade level manually set to {upgradeLevel}");
@@ -252,15 +252,10 @@ public class GachaManager : MonoBehaviour
 
     private int GetUpgradeCost()
     {
-        switch (upgradeLevel)
-        {
-            case 0: return 500;
-            case 1: return 1000;
-            case 2: return 2000;
-            case 3: return 4000;
-            case 4: return 8000;
-            default: return int.MaxValue;
-        }
+        if (upgradeLevel >= 10)
+            return int.MaxValue;
+
+        return (upgradeLevel + 1) * 100;
     }
 
     private void ApplyUpgradeRates()
@@ -272,7 +267,12 @@ public class GachaManager : MonoBehaviour
             {2, (-15f, 9f, 4.5f, 1f, 0.5f)},
             {3, (-22f, 13f, 6.5f, 1.2f, 1.3f)},
             {4, (-30f, 16f, 9f, 2.5f, 2.5f)},
-            {5, (-35f, 18f, 11f, 3f, 3f)}
+            {5, (-35f, 18f, 11f, 3f, 3f)},
+            {6, (-38f, 20f, 12f, 3.5f, 3.5f)},
+            {7, (-41f, 22f, 13f, 4f, 4f)},
+            {8, (-44f, 24f, 14f, 4.5f, 4.5f)},
+            {9, (-47f, 26f, 15f, 5f, 5f)},
+            {10, (-50f, 28f, 16f, 5.5f, 5.5f)}
         };
 
         ResetDropRatesToDefault();
@@ -336,6 +336,27 @@ public class GachaManager : MonoBehaviour
         if (upgradeButtonImage == null)
         {
             Debug.LogError("[GACHA UI ERROR] upgradeButtonImage is MISSING in the Inspector. This is why the sprite isn't changing.");
+            return;
+        }
+
+        // Check if already at max level
+        if (upgradeLevel >= 10)
+        {
+            upgradeButtonText.text = "Max level reached";
+
+            // Disable the button
+            UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
+            if (button != null)
+            {
+                button.interactable = false;
+            }
+
+            // Set to unaffordable sprite if available
+            if (unaffordableSprite != null)
+            {
+                upgradeButtonImage.sprite = unaffordableSprite;
+            }
+
             return;
         }
 
