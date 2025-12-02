@@ -346,4 +346,3 @@ private void ShootProjectileInDirection(Vector2 direction)
 }
 
 }
-

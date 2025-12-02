@@ -16,13 +16,13 @@ MonoBehaviour:
   displayName: Yurei Youkai
   rarity: 3
   maxHealth: 250
-  attack: 28
+  attack: 24
   moveSpeed: 1.6
   attackInterval: 1
   level: 1
   isRanged: 1
-  attackRange: 15
-  projectilePrefab: {fileID: 650736681486353631, guid: ee3348756ad39c147bac3cf8ea40f4e0, type: 3}
+  attackRange: 7
+  projectilePrefab: {fileID: 5981117028045486026, guid: 5909ea465db0476438d820f300615569, type: 3}
   projectileSpeed: 8
   projectileLifetime: 3
   playerPrefab: {fileID: 3311991319710730416, guid: b8c52eb10d270e845bb84238cdfa0c58, type: 3}

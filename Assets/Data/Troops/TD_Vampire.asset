@@ -16,14 +16,14 @@ MonoBehaviour:
   displayName: Vampire
   rarity: 4
   maxHealth: 280
-  attack: 40
+  attack: 35
   moveSpeed: 2
   attackInterval: 0.7
   level: 1
   isRanged: 1
-  attackRange: 2
-  projectilePrefab: {fileID: 5022884809292046476, guid: 7f8c45e7080f88d43a5be0acdabc5612, type: 3}
-  projectileSpeed: 8
+  attackRange: 8
+  projectilePrefab: {fileID: 2489681435128742950, guid: 5d0984e8ea4e5be49941c141f59ea5c0, type: 3}
+  projectileSpeed: 10
   projectileLifetime: 3
   playerPrefab: {fileID: 2989748437951197671, guid: 329c030752dca3a41830754acc1d88d5, type: 3}
   enemyPrefab: {fileID: 2989748437951197671, guid: 4d1b0c444cba3214388b5a0581cd8157, type: 3}

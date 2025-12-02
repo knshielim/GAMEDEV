@@ -36,7 +36,8 @@ Transform:
   m_LocalPosition: {x: -54.664806, y: 13.730964, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1322452604027115482}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4393830281134688301
@@ -212,11 +213,11 @@ MonoBehaviour:
   targetTower: {fileID: 0}
   attackRange: 15
   useProjectile: 1
-  projectilePrefab: {fileID: 5022884809292046476, guid: 7f8c45e7080f88d43a5be0acdabc5612, type: 3}
-  projectileSpawnPoint: {fileID: 0}
-  projectileSpeed: 8
+  projectilePrefab: {fileID: 2989748437951197671}
+  projectileSpawnPoint: {fileID: 1322452604027115482}
+  projectileSpeed: 10
   projectileLifetime: 3
-  towerStopDistance: 4
+  towerStopDistance: 12
   moveRight: 1
 --- !u!114 &7696890911665261608
 MonoBehaviour:
@@ -283,3 +284,34 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 4
+--- !u!1 &3343517913622371731
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1322452604027115482}
+  m_Layer: 0
+  m_Name: projectileSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1322452604027115482
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3343517913622371731}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.5, y: -0.74, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2498607253062546769}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

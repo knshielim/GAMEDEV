@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -44,6 +46,19 @@ public class GachaManager : MonoBehaviour
     [Header("Upgrade Settings")]
     [SerializeField, Range(0, 5)] private int upgradeLevel = 0;
 
+    [Header("UI References (Player Only)")]
+    [Tooltip("The Text component on the Upgrade button that shows the price.")]
+    public TextMeshProUGUI upgradeButtonText;
+
+    [Tooltip("The Image component of the Upgrade Button to change its visual.")]
+    public Image upgradeButtonImage;
+
+    [Tooltip("The sprite to display when the upgrade CAN be afforded (original).")]
+    public Sprite affordableSprite;
+
+    [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
+    public Sprite unaffordableSprite;
+
     // Cache for troop filtering by rarity
     private Dictionary<TroopRarity, List<TroopData>> _troopsByRarity;
 
@@ -66,6 +81,11 @@ public class GachaManager : MonoBehaviour
         InitializeTroopCache();
         ApplyUpgradeRates();
         ValidateDropRates();
+    }
+
+    private void Update()
+    {
+        UpdateUpgradeUI();
     }
 
     // -------------------- SUMMON FUNCTION --------------------
@@ -219,12 +239,14 @@ public class GachaManager : MonoBehaviour
         upgradeLevel++;
         ApplyUpgradeRates();
         Debug.Log($"[Gacha] Upgraded to level {upgradeLevel} (Spent {cost} coins)");
+        UpdateUpgradeUI();
     }
 
     public void SetUpgradeLevel(int level)
     {
         upgradeLevel = Mathf.Clamp(level, 0, 5);
         ApplyUpgradeRates();
+        UpdateUpgradeUI();
         Debug.Log($"[Gacha] Upgrade level manually set to {upgradeLevel}");
     }
 
@@ -301,5 +323,60 @@ public class GachaManager : MonoBehaviour
     {
         summonsSinceReset = 0;
         Debug.Log("[Gacha] Summon cost escalation reset (stage/level baru).");
+    }
+
+    // -------------------- UI UPDATE METHOD --------------------
+    public void UpdateUpgradeUI()
+    {
+        if (upgradeButtonText == null)
+        {
+            Debug.LogError("[GACHA UI ERROR] upgradeButtonText is MISSING in the Inspector.");
+            return;
+        }
+        if (upgradeButtonImage == null)
+        {
+            Debug.LogError("[GACHA UI ERROR] upgradeButtonImage is MISSING in the Inspector. This is why the sprite isn't changing.");
+            return;
+        }
+
+        int nextLevel = upgradeLevel + 1;
+        int cost = GetUpgradeCost();
+        bool canAfford = false;
+
+        if (CoinManager.Instance != null)
+        {
+            canAfford = CoinManager.Instance.playerCoins >= cost;
+
+            UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
+            if (button != null)
+            {
+                button.interactable = canAfford;
+            }
+        }
+
+        if (canAfford)
+        {
+            if (affordableSprite != null)
+            {
+                upgradeButtonImage.sprite = affordableSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[GACHA UI WARNING] affordableSprite is MISSING.");
+            }
+        }
+        else
+        {
+            if (unaffordableSprite != null)
+            {
+                upgradeButtonImage.sprite = unaffordableSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[GACHA UI WARNING] unaffordableSprite is MISSING.");
+            }
+        }
+
+        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";
     }
 }

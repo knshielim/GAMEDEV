@@ -123,7 +123,7 @@ public class TroopDeployManager : MonoBehaviour
     private IEnumerator DeployCooldown()
     {
         canDeploy = false;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         canDeploy = true;
     }
 
@@ -144,13 +144,53 @@ public class TroopDeployManager : MonoBehaviour
                 // This 'i' is the inventory slot index (0 to 11)
                 SelectTroop(i);
                 // Stop checking after the first key press is handled
-                return; 
+                return;
             }
         }
-        
-        // **Bonus:** Add a shortcut to Deploy the selected troop (e.g., Spacebar)
-        if (Input.GetKeyDown(KeyCode.Space))
+
+        // Keyboard shortcuts for game actions
+        if (Input.GetKeyDown(KeyCode.U))
         {
+            // Upgrade summon rate
+            if (GachaManager.Instance != null)
+            {
+                GachaManager.Instance.UpgradeGachaSystem();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.I))
+        {
+            // Upgrade tower
+            Tower[] towers = FindObjectsOfType<Tower>();
+            Tower playerTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Player);
+            if (playerTower != null)
+            {
+                playerTower.UpgradeTower();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.O))
+        {
+            // Deploy selected troop
+            DeploySelectedTroop();
+        }
+        else if (Input.GetKeyDown(KeyCode.P))
+        {
+            // Summon troop
+            if (GachaManager.Instance != null)
+            {
+                GachaManager.Instance.SummonTroop();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.M))
+        {
+            // Merge units in selected slot
+            if (TroopInventory.Instance != null && selectedTroopIndex >= 0)
+            {
+                TroopInventory.Instance.MergeUnits(selectedTroopIndex);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            // Alternative deploy shortcut (existing functionality)
             DeploySelectedTroop();
         }
     }
