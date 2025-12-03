@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public enum GameLevel
@@ -41,11 +42,18 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);   // if you use a lot of scenes
+
+        // Subscribe to scene loading events
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         Debug.Log($"[GAME START] Current Level = {currentLevel}");
     }
 
     private void Start()
     {
+        // Reset game state for new scene
+        ResetGameState();
+
         // Make sure the Game Over panel is off first
         if (gameOverPanel != null)
         {
@@ -59,6 +67,26 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver()
     {
         return isGameOver;
+    }
+
+    // Reset game state for new scene/level
+    private void ResetGameState()
+    {
+        isGameOver = false;
+        Debug.Log("[GameManager] Game state reset for new scene");
+    }
+
+    // Called when a new scene is loaded
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ResetGameState();
+        Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset");
+    }
+
+    private void OnDestroy()
+    {
+        // Unsubscribe from events
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     // Called from the Tower:

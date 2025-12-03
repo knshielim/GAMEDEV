@@ -77,7 +77,7 @@ public class Troops : Unit
                     // Lock movement on the X axis only
                     dir.y = 0f;
                     dir = dir.normalized;
-                    
+
                     transform.Translate(dir * moveSpeed * Time.deltaTime);
                     SetAnimationState(true, false); // walk anim
                     isAttacking = false;

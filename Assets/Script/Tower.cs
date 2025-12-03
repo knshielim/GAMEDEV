@@ -60,6 +60,9 @@ public class Tower : MonoBehaviour
     [Tooltip("Text to display victory message")]
     public TextMeshProUGUI victoryText;
 
+    [Tooltip("Button for player to proceed to next level")]
+    public Button nextLevelButton;
+
     void Awake() 
     {
         currentHealth = maxHealth; 
@@ -82,6 +85,8 @@ public class Tower : MonoBehaviour
             gameOverPanel.SetActive(false);
         if (victoryPanel != null)
             victoryPanel.SetActive(false);
+        if (nextLevelButton != null)
+            nextLevelButton.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -256,6 +261,9 @@ public class Tower : MonoBehaviour
     {
         Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
 
+        // Freeze the screen
+        Time.timeScale = 0f;
+
         // Show victory panel
         if (victoryPanel != null)
         {
@@ -287,17 +295,32 @@ public class Tower : MonoBehaviour
             Debug.LogWarning("[TOWER] victoryPanel is not assigned in Inspector!");
         }
 
-        // Trigger level completion (LevelManager will handle scene transition)
+        // Set up next level button (player must click to proceed)
+        if (nextLevelButton != null)
+        {
+            nextLevelButton.onClick.AddListener(OnNextLevelClicked);
+            nextLevelButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("[TOWER] Next level button not assigned! Player cannot proceed.");
+        }
+    }
+
+    // Called when player clicks the Next Level button
+    private void OnNextLevelClicked()
+    {
+        Debug.Log("[TOWER] Next level button clicked!");
         if (LevelManager.Instance != null)
         {
             LevelManager.Instance.LevelCompleted();
         }
         else
         {
-            Debug.LogWarning("[TOWER] LevelManager not found! Cannot proceed to next level.");
+            Debug.LogError("[TOWER] LevelManager not found!");
         }
     }
- 
+
     public void TakeDamage(int damage)
     {
         AudioManager.Instance.PlaySFX(AudioManager.Instance.hitTowerSFX);

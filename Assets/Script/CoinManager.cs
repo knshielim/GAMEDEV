@@ -63,7 +63,7 @@ public class CoinManager : MonoBehaviour
     {
         if (playerCoinText != null)
         {
-            playerCoinText.text = "Coins: " + playerCoins;
+            playerCoinText.text = playerCoins.ToString();
         }
     }
 
