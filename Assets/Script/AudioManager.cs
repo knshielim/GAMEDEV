@@ -14,6 +14,16 @@ public class AudioManager : MonoBehaviour
     public AudioSource musicSource;  // untuk BGM
     public AudioSource sfxSource;    // untuk SFX
 
+    [Header("SFX Clips")]
+    public AudioClip gameOverSFX;
+    public AudioClip gameWinSFX;
+    public AudioClip hitTowerSFX;
+    public AudioClip meleeAttackSFX;
+    public AudioClip rangedAttackSFX;
+    public AudioClip summonSFX;
+    public AudioClip troopDeathSFX;
+    public AudioClip upgradeSFX;
+
     private void Awake()
     {
         if (Instance == null)
@@ -41,17 +51,17 @@ public class AudioManager : MonoBehaviour
     {
         if (introMusic != null)
         {
-            // Mainkan intro sekali
+            // Play the intro once
             musicSource.clip = introMusic;
             musicSource.loop = false;
             musicSource.Play();
 
-            // Setelah intro selesai, mainkan loop
+            // After the intro is finished, play the loop
             Invoke(nameof(PlayLoopMusic), introMusic.length);
         }
         else
         {
-            // Kalau tidak ada intro, langsung ke looping music
+            // If there is no intro, go straight to looping music
             PlayLoopMusic();
         }
     }

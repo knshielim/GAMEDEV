@@ -204,6 +204,7 @@ public class GachaManager : MonoBehaviour
     // -------------------- UPGRADE SYSTEM --------------------
     public void UpgradeGachaSystem()
     {
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
         if (upgradeLevel >= 10) return;
 
         int cost = GetUpgradeCost();

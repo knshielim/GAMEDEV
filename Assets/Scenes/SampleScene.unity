@@ -9733,6 +9733,14 @@ MonoBehaviour:
   loopMusic: {fileID: 8300000, guid: af0ec730dec798642a4b974e08ca80a1, type: 3}
   musicSource: {fileID: 1680181150}
   sfxSource: {fileID: 1874691837}
+  gameOverSFX: {fileID: 8300000, guid: aa696bb6ee20f9146b1b2d6643593876, type: 3}
+  gameWinSFX: {fileID: 8300000, guid: c446db36b140c424996b1fb3c15139c6, type: 3}
+  hitTowerSFX: {fileID: 8300000, guid: 119a04fd7fbc88647a3c2f6ba10cd095, type: 3}
+  meleeAttackSFX: {fileID: 8300000, guid: 3eca3137e300b484888f2c0fdd72a3f4, type: 3}
+  rangedAttackSFX: {fileID: 8300000, guid: 0fb71d5028a6a6b488ba8cd8bf50bd65, type: 3}
+  summonSFX: {fileID: 8300000, guid: c676c8680b6a4214d969af2db545257d, type: 3}
+  troopDeathSFX: {fileID: 8300000, guid: 8965fabd60bdcb54599bf612e746aa6b, type: 3}
+  upgradeSFX: {fileID: 8300000, guid: d6656302b01fb1c419f4bc7af0cc84f0, type: 3}
 --- !u!4 &1277630559
 Transform:
   m_ObjectHideFlags: 0

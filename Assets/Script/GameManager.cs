@@ -40,19 +40,19 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);   // kalau pake banyak scene
+        DontDestroyOnLoad(gameObject);   // if you use a lot of scenes
         Debug.Log($"[GAME START] Current Level = {currentLevel}");
     }
 
     private void Start()
     {
-        // Pastikan panel Game Over mati dulu di awal
+        // Make sure the Game Over panel is off first
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
         }
 
-        // Pastikan timeScale normal
+        // Make sure timeScale is normal
         Time.timeScale = 1f;
     }
 
@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
         return isGameOver;
     }
 
-    // Dipanggil dari Tower:
+    // Called from the Tower:
     // GameManager.Instance.TowerDestroyed(this);
 public void TowerDestroyed(Tower destroyedTower)
 {

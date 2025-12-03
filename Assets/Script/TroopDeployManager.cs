@@ -84,6 +84,8 @@ public class TroopDeployManager : MonoBehaviour
         // Instantiate the troop
         GameObject troopObj = Instantiate(troop.playerPrefab, playerTowerSpawnPoint.position, Quaternion.identity);
 
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+
         // Set TroopData
         Unit unit = troopObj.GetComponent<Unit>();
         if (unit != null)
@@ -159,6 +161,7 @@ public class TroopDeployManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.I))
         {
+            AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
             // Upgrade tower
             Tower[] towers = FindObjectsOfType<Tower>();
             Tower playerTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Player);

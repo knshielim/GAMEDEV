@@ -143,7 +143,7 @@ public class LevelManager : MonoBehaviour
     public void GameOver()
     {
         Debug.Log("[LevelManager] Game Over!");
-        
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.gameOverSFX);
         // Time is already frozen by Tower.cs
         
         if (gameOverPanel != null)

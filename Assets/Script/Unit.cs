@@ -164,6 +164,17 @@ public abstract class Unit : MonoBehaviour
         if (attackCooldown >= 1f / attackSpeed)
         {
             attackCooldown = 0f;
+            if (troopData != null)
+            {
+                if (troopData.isRanged)
+                {
+                    AudioManager.Instance?.PlaySFX(AudioManager.Instance.rangedAttackSFX);
+                }
+                else
+                {
+                    AudioManager.Instance?.PlaySFX(AudioManager.Instance.meleeAttackSFX);
+                }
+            }
             FindAndPerformAttack();
         }
     }
@@ -183,6 +194,7 @@ public abstract class Unit : MonoBehaviour
         if (isDead) return;
         isDead = true;
         isAttacking = false;
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.troopDeathSFX);
 
         if (UnitTeam == Team.Enemy)
         {
