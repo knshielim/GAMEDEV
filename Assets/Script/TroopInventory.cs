@@ -56,9 +56,18 @@ public class TroopInventory : MonoBehaviour
     [Header("Animation Settings")]
     [Tooltip("Duration of the summon animation")]
     public float animationDuration = 0.4f;
-    
+
     [Tooltip("Enable/disable summon animation")]
     public bool enableSummonAnimation = true;
+
+    [Tooltip("Particle/sprite effect to play on summon")]
+    public GameObject summonEffectPrefab;
+
+    [Tooltip("Offset position for the effect (relative to slot)")]
+    public Vector3 effectOffset = Vector3.zero;
+
+    [Tooltip("How long before destroying the effect")]
+    public float effectDuration = 1f;
 
     private void Awake()
     {
@@ -169,7 +178,7 @@ public class TroopInventory : MonoBehaviour
         return false;
     }
 
-    // ============ SUMMON ANIMATION ============
+    // ============ SUMMON ANIMATION - POP WITH BOUNCE ============
     private IEnumerator SlotSummonAnimation(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= slotImages.Count)
@@ -177,6 +186,35 @@ public class TroopInventory : MonoBehaviour
 
         Transform slotTransform = slotImages[slotIndex].transform;
         Vector3 originalScale = slotTransform.localScale;
+        
+        // SPAWN THE EFFECT ON TOP
+        if (summonEffectPrefab != null)
+        {
+            Debug.Log($"[Summon Effect] Spawning effect at slot {slotIndex}");
+            
+            GameObject effect = Instantiate(
+                summonEffectPrefab, 
+                slotTransform // Parent directly to the slot
+            );
+            
+            // Set up as UI element
+            RectTransform rt = effect.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                rt.anchorMin = new Vector2(0.5f, 0.5f);
+                rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.localPosition = effectOffset; // Use offset
+                rt.localScale = Vector3.one;
+                rt.SetAsLastSibling(); // Render on top
+            }
+            
+            Destroy(effect, effectDuration);
+        }
+        else
+        {
+            Debug.LogWarning("[Summon Effect] summonEffectPrefab is NULL!");
+        }
         
         // Start from zero scale
         slotTransform.localScale = Vector3.zero;

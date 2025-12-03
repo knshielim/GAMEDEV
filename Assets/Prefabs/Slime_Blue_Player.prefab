@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: -1781886655568381833}
   m_Layer: 0
   m_Name: Slime_Blue_Player
-  m_TagString: Troop
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -172,7 +172,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 0
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -208,7 +208,7 @@ MonoBehaviour:
   attackPoints: 3
   currentHealth: 0
   isDead: 0
-  animator: {fileID: 6775854471411913666}
+  animator: {fileID: 0}
   targetTower: {fileID: 0}
   attackRange: 2
   useProjectile: 0

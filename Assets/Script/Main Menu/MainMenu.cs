@@ -5,10 +5,55 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    // Start is called before the first frame update
+    [Header("UI References")]
+    [Tooltip("The main menu buttons (Play, Option, Quit)")]
+    public GameObject mainMenuButtons;
+    
+    [Tooltip("The options menu panel")]
+    public GameObject optionsMenu;
+    
+    [Tooltip("The back button")]
+    public GameObject backButton;
+
+    private void Start()
+    {
+        // Show main menu, hide options and back button at start
+        ShowMainMenu();
+    }
+
     public void PlayGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
+    public void ShowOptions()
+    {
+        // Hide main menu buttons
+        if (mainMenuButtons != null)
+            mainMenuButtons.SetActive(false);
+        
+        // Show options menu
+        if (optionsMenu != null)
+            optionsMenu.SetActive(true);
+        
+        // Show back button
+        if (backButton != null)
+            backButton.SetActive(true);
+    }
+
+    public void ShowMainMenu()
+    {
+        // Show main menu buttons
+        if (mainMenuButtons != null)
+            mainMenuButtons.SetActive(true);
+        
+        // Hide options menu
+        if (optionsMenu != null)
+            optionsMenu.SetActive(false);
+        
+        // Hide back button
+        if (backButton != null)
+            backButton.SetActive(false);
     }
 
     public void QuitGame()
