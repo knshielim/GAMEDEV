@@ -305,19 +305,40 @@ public class SettingsManager : MonoBehaviour
     // Volume change handlers
     private void OnMasterVolumeChanged(float value)
     {
-        AudioManager.Instance.SetMasterVolume(value);
-        UpdateVolumeTexts();
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMasterVolume(value);
+            UpdateVolumeTexts();
+        }
+        else
+        {
+            Debug.LogWarning("[SettingsManager] AudioManager.Instance is NULL in OnMasterVolumeChanged");
+        }
     }
 
     private void OnMusicVolumeChanged(float value)
     {
-        AudioManager.Instance.SetMusicVolume(value);
-        UpdateVolumeTexts();
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMusicVolume(value);
+            UpdateVolumeTexts();
+        }
+        else
+        {
+            Debug.LogWarning("[SettingsManager] AudioManager.Instance is NULL in OnMusicVolumeChanged");
+        }
     }
 
     private void OnSFXVolumeChanged(float value)
     {
-        AudioManager.Instance.SetSFXVolume(value);
-        UpdateVolumeTexts();
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetSFXVolume(value);
+            UpdateVolumeTexts();
+        }
+        else
+        {
+            Debug.LogWarning("[SettingsManager] AudioManager.Instance is NULL in OnSFXVolumeChanged");
+        }
     }
 }
