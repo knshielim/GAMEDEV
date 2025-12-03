@@ -21,6 +21,8 @@ public class TroopInventory : MonoBehaviour
 {
     public static TroopInventory Instance;
 
+    private Dictionary<int, Coroutine> runningAnimations = new Dictionary<int, Coroutine>();
+
     [Header("UI Inventory Slot Images")]
     [Tooltip("List of Image components representing the inventory slots.")]
     public List<Image> slotImages;
@@ -54,20 +56,30 @@ public class TroopInventory : MonoBehaviour
     public int maxUnitsPerSlot = 3;
 
     [Header("Animation Settings")]
-    [Tooltip("Duration of the summon animation")]
-    public float animationDuration = 0.4f;
+[Tooltip("Duration of the summon animation")]
+public float animationDuration = 0.4f;
 
-    [Tooltip("Enable/disable summon animation")]
-    public bool enableSummonAnimation = true;
+[Tooltip("Enable/disable summon animation")]
+public bool enableSummonAnimation = true;
 
-    [Tooltip("Particle/sprite effect to play on summon")]
-    public GameObject summonEffectPrefab;
+[Tooltip("Particle/sprite effect to play on SUMMON")]
+public GameObject summonEffectPrefab;  // ← This is for SUMMON only
 
-    [Tooltip("Offset position for the effect (relative to slot)")]
-    public Vector3 effectOffset = Vector3.zero;
+[Tooltip("Offset position for the effect (relative to slot)")]
+public Vector3 effectOffset = Vector3.zero;
 
-    [Tooltip("How long before destroying the effect")]
-    public float effectDuration = 1f;
+[Tooltip("How long before destroying the effect")]
+public float effectDuration = 1f;
+
+[Header("Merge Animation Settings")]
+[Tooltip("Merge effect prefab (sprite animation or particles)")]
+public GameObject mergeEffectPrefab;  // ← ADD THIS - separate field for MERGE
+
+[Tooltip("Duration of merge animation")]
+public float mergeAnimationDuration = 0.6f;
+
+[Tooltip("How long before destroying merge effect")]
+public float mergeEffectDuration = 1.5f;
 
     private void Awake()
     {
@@ -119,7 +131,7 @@ public class TroopInventory : MonoBehaviour
         Debug.Log($"[Inventory] Initialized with {slotImages.Count} slots, {slotCountTexts.Count} count texts, {slotBorders.Count} borders");
     }
 
-    public bool AddTroop(TroopData troop)
+    public bool AddTroop(TroopData troop, bool isMerge = false)
     {
         if (troop == null)
         {
@@ -129,7 +141,7 @@ public class TroopInventory : MonoBehaviour
 
         int affectedSlot = -1;
 
-        // 1. Try to stack first (max per slot)
+        // 1. Try to stack first
         for (int i = 0; i < storedTroops.Count; i++)
         {
             if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
@@ -138,22 +150,19 @@ public class TroopInventory : MonoBehaviour
                 affectedSlot = i;
                 Debug.Log($"[TroopInventory] Stacked {troop.displayName} in slot {i}, count: {storedTroops[i].count}");
                 
-                // ADDED: Always try to combine immediately after adding a unit
                 TryAutoCombine(); 
-                
                 RefreshUI();
                 
-                // Play animation on the slot that was updated
                 if (enableSummonAnimation && affectedSlot >= 0)
                 {
-                    StartCoroutine(SlotSummonAnimation(affectedSlot));
+                    StartSlotAnimation(affectedSlot, isMerge);
                 }
                 
                 return true;
             }
         }
 
-        // 2. Find the first empty slot
+        // 2. Find empty slot
         for (int i = 0; i < storedTroops.Count; i++)
         {
             if (storedTroops[i].troop == null)
@@ -164,10 +173,9 @@ public class TroopInventory : MonoBehaviour
                 Debug.Log($"[TroopInventory] Added {troop.displayName} to new slot {i}");
                 RefreshUI();
                 
-                // Play animation on the new slot
                 if (enableSummonAnimation && affectedSlot >= 0)
                 {
-                    StartCoroutine(SlotSummonAnimation(affectedSlot));
+                    StartSlotAnimation(affectedSlot, isMerge);
                 }
                 
                 return true;
@@ -176,6 +184,107 @@ public class TroopInventory : MonoBehaviour
 
         Debug.Log("[Inventory] FULL! Cannot add more troops.");
         return false;
+    }
+
+    private void StartSlotAnimation(int slotIndex, bool isMerge)
+    {
+        // Stop any existing animation on this slot
+        if (runningAnimations.ContainsKey(slotIndex) && runningAnimations[slotIndex] != null)
+        {
+            StopCoroutine(runningAnimations[slotIndex]);
+        }
+        
+        // Reset scale/rotation
+        slotImages[slotIndex].transform.localScale = Vector3.one;
+        slotImages[slotIndex].transform.localRotation = Quaternion.identity;
+        
+        // Start new animation and track it
+        if (isMerge)
+            runningAnimations[slotIndex] = StartCoroutine(SlotMergeAnimation(slotIndex));
+        else
+            runningAnimations[slotIndex] = StartCoroutine(SlotSummonAnimation(slotIndex));
+    }
+
+    // ============ MERGE ANIMATION - NO ROTATION ============
+    // ============ MERGE ANIMATION - FIXED SCALE RESET ============
+    private IEnumerator SlotMergeAnimation(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= slotImages.Count)
+            yield break;
+
+        Transform slotTransform = slotImages[slotIndex].transform;
+        Vector3 originalScale = slotTransform.localScale;
+        
+        // Force ensure we start with correct scale
+        slotTransform.localScale = originalScale;
+        
+        // SPAWN THE MERGE EFFECT
+        if (mergeEffectPrefab != null)
+        {
+            Debug.Log($"[Merge Effect] Spawning merge effect at slot {slotIndex}");
+            
+            GameObject effect = Instantiate(
+                mergeEffectPrefab,
+                slotTransform
+            );
+            
+            RectTransform rt = effect.GetComponent<RectTransform>();
+            if (rt != null)
+            {
+                rt.anchorMin = new Vector2(0.5f, 0.5f);
+                rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.localPosition = effectOffset;
+                rt.localScale = Vector3.one * 1.5f;
+                rt.SetAsLastSibling();
+            }
+            
+            Destroy(effect, mergeEffectDuration);
+        }
+        
+        // ANIMATION: Pulse without rotation
+        float elapsed = 0f;
+        
+        while (elapsed < mergeAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / mergeAnimationDuration;
+            
+            // Pulse: shrink then grow
+            float scale;
+            if (t < 0.5f)
+            {
+                scale = Mathf.Lerp(1f, 0.7f, t * 2f);
+            }
+            else
+            {
+                scale = Mathf.Lerp(0.7f, 1.2f, (t - 0.5f) * 2f);
+            }
+            
+            slotTransform.localScale = originalScale * scale;
+            
+            yield return null;
+        }
+        
+        // Settle back
+        elapsed = 0f;
+        float settleDuration = 0.1f;
+        while (elapsed < settleDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / settleDuration;
+            
+            float scale = Mathf.Lerp(1.2f, 1f, t);
+            slotTransform.localScale = originalScale * scale;
+            
+            yield return null;
+        }
+        
+        // CRITICAL: Force reset to exactly original scale
+        slotTransform.localScale = originalScale;
+        slotTransform.localRotation = Quaternion.identity;
+        
+        Debug.Log($"[Merge Animation] Completed for slot {slotIndex}, scale reset to {slotTransform.localScale}");
     }
 
     // ============ SUMMON ANIMATION - POP WITH BOUNCE ============
@@ -238,6 +347,8 @@ public class TroopInventory : MonoBehaviour
         // Ensure final scale is correct
         slotTransform.localScale = originalScale;
     }
+
+    
 
     public TroopData GetTroop(int index)
     {
@@ -306,7 +417,8 @@ public class TroopInventory : MonoBehaviour
         
         if (upgradedTroop != null)
         {
-            bool added = AddTroop(upgradedTroop);
+            // FIXED: Add isMerge: true flag
+            bool added = AddTroop(upgradedTroop, isMerge: true);
             
             if (added)
             {
