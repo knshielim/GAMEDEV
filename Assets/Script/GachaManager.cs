@@ -154,7 +154,13 @@ public class GachaManager : MonoBehaviour
 
     public TroopData GetRandomTroopOfRarity(TroopRarity rarity)
     {
-        List<TroopData> filtered = allAvailableTroops.Where(t => t.rarity == rarity).ToList();
+        // Exclude Samurai and Vampire from regular summoning (only obtainable via mythic combination)
+        List<TroopData> filtered = allAvailableTroops
+            .Where(t => t.rarity == rarity &&
+                       t.id != "Samurai" &&
+                       t.id != "Vampire")
+            .ToList();
+
         if (filtered.Count == 0) return null;
 
         return filtered[UnityEngine.Random.Range(0, filtered.Count)];

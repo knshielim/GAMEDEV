@@ -277,16 +277,16 @@ public class Tower : MonoBehaviour
                     
                     if (currentLevel >= 3)
                     {
-                        victoryText.text = "🎉 VICTORY! 🎉\nYou've Completed All Levels!\nCongratulations!";
+                        victoryText.text = "VICTORY!\nYou've Completed All Levels!\nCongratulations!";
                     }
                     else
                     {
-                        victoryText.text = $"🎉 LEVEL {currentLevel} COMPLETE! 🎉\nProceeding to Level {currentLevel + 1}...";
+                        victoryText.text = $"LEVEL {currentLevel} COMPLETE!\nProceeding to Level {currentLevel + 1}...";
                     }
                 }
                 else
                 {
-                    victoryText.text = "🎉 VICTORY! 🎉\nEnemy Tower Destroyed!";
+                    victoryText.text = "VICTORY!\nEnemy Tower Destroyed!";
                 }
             }
         }

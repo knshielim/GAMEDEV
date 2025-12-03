@@ -1466,7 +1466,7 @@ MonoBehaviour:
   currentLevel: 1
   playerTower: {fileID: 1462288396}
   aiTower: {fileID: 887701352}
-  gameOverPanel: {fileID: 0}
+  gameOverPanel: {fileID: 415222792}
   gameOverText: {fileID: 0}
 --- !u!4 &158897418
 Transform:
@@ -8953,7 +8953,7 @@ MonoBehaviour:
   victoryPanel: {fileID: 204946241}
   gameOverText: {fileID: 1788457167}
   victoryText: {fileID: 2101731582}
-  nextLevelButton: {fileID: 0}
+  nextLevelButton: {fileID: 261371068}
 --- !u!50 &887701353
 Rigidbody2D:
   serializedVersion: 4
@@ -12739,7 +12739,7 @@ MonoBehaviour:
   victoryPanel: {fileID: 204946241}
   gameOverText: {fileID: 1788457167}
   victoryText: {fileID: 2101731582}
-  nextLevelButton: {fileID: 0}
+  nextLevelButton: {fileID: 261371068}
 --- !u!50 &1462288397
 Rigidbody2D:
   serializedVersion: 4
