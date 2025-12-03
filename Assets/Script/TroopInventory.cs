@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -51,6 +52,13 @@ public class TroopInventory : MonoBehaviour
     
     [Tooltip("Maximum units per slot before merge is available")]
     public int maxUnitsPerSlot = 3;
+
+    [Header("Animation Settings")]
+    [Tooltip("Duration of the summon animation")]
+    public float animationDuration = 0.4f;
+    
+    [Tooltip("Enable/disable summon animation")]
+    public bool enableSummonAnimation = true;
 
     private void Awake()
     {
@@ -110,18 +118,28 @@ public class TroopInventory : MonoBehaviour
             return false;
         }
 
+        int affectedSlot = -1;
+
         // 1. Try to stack first (max per slot)
         for (int i = 0; i < storedTroops.Count; i++)
         {
             if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
             {
                 storedTroops[i].count++;
+                affectedSlot = i;
                 Debug.Log($"[TroopInventory] Stacked {troop.displayName} in slot {i}, count: {storedTroops[i].count}");
                 
                 // ADDED: Always try to combine immediately after adding a unit
                 TryAutoCombine(); 
                 
                 RefreshUI();
+                
+                // Play animation on the slot that was updated
+                if (enableSummonAnimation && affectedSlot >= 0)
+                {
+                    StartCoroutine(SlotSummonAnimation(affectedSlot));
+                }
+                
                 return true;
             }
         }
@@ -133,14 +151,54 @@ public class TroopInventory : MonoBehaviour
             {
                 storedTroops[i].troop = troop;
                 storedTroops[i].count = 1;
+                affectedSlot = i;
                 Debug.Log($"[TroopInventory] Added {troop.displayName} to new slot {i}");
                 RefreshUI();
+                
+                // Play animation on the new slot
+                if (enableSummonAnimation && affectedSlot >= 0)
+                {
+                    StartCoroutine(SlotSummonAnimation(affectedSlot));
+                }
+                
                 return true;
             }
         }
 
         Debug.Log("[Inventory] FULL! Cannot add more troops.");
         return false;
+    }
+
+    // ============ SUMMON ANIMATION ============
+    private IEnumerator SlotSummonAnimation(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= slotImages.Count)
+            yield break;
+
+        Transform slotTransform = slotImages[slotIndex].transform;
+        Vector3 originalScale = slotTransform.localScale;
+        
+        // Start from zero scale
+        slotTransform.localScale = Vector3.zero;
+        
+        float elapsed = 0f;
+        
+        while (elapsed < animationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / animationDuration;
+            
+            // Bounce effect using sine wave
+            float bounce = Mathf.Sin(t * Mathf.PI);
+            float scale = t + (bounce * 0.3f);
+            
+            slotTransform.localScale = originalScale * scale;
+            
+            yield return null;
+        }
+        
+        // Ensure final scale is correct
+        slotTransform.localScale = originalScale;
     }
 
     public TroopData GetTroop(int index)
