@@ -245,8 +245,6 @@ private void ShootProjectileInDirection(Vector2 direction)
     }
 }
 
-
-
     protected override void FindAndPerformAttack()
     {
         if (isDead) return;
@@ -269,8 +267,8 @@ private void ShootProjectileInDirection(Vector2 direction)
 
             // Minimum distance to be allowed to hit the tower
             float neededDist = useProjectile
-                ? towerRangedDistance + 0.2f
-                : towerStopDistance + 0.2f;
+                ? towerRangedDistance + 0.2f // for ranged troops
+                : towerStopDistance + 0.2f;  // for melee troops
 
             if (distX <= neededDist)
             {
@@ -279,6 +277,7 @@ private void ShootProjectileInDirection(Vector2 direction)
             }
         }
 
+        // No valid target: go back to moving / idle
         isAttacking = false;
         SetAnimationState(true, false);
     }
@@ -291,7 +290,7 @@ private void ShootProjectileInDirection(Vector2 direction)
         if (targetUnit != null && !targetUnit.isDead)
         {
             targetUnit.TakeDamage(attackPoints);
-            Debug.Log($"[ATTACK] {name} dealt {attackPoints} damage to {targetUnit.name} " +
+            Debug.Log($"From enemy.cs: [ATTACK] {name} dealt {attackPoints} damage to {targetUnit.name} " +
                       $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})");
 
             if (targetUnit.CurrentHealth <= 0)

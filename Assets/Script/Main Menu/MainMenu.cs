@@ -23,11 +23,14 @@ public class MainMenu : MonoBehaviour
 
     public void PlayGame()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void ShowOptions()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+
         // Hide main menu buttons
         if (mainMenuButtons != null)
             mainMenuButtons.SetActive(false);
@@ -43,6 +46,8 @@ public class MainMenu : MonoBehaviour
 
     public void ShowMainMenu()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+
         // Show main menu buttons
         if (mainMenuButtons != null)
             mainMenuButtons.SetActive(true);

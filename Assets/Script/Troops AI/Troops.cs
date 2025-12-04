@@ -18,6 +18,7 @@ public class Troops : Unit
     [SerializeField] private Transform projectileSpawnPoint;
     [SerializeField] private float projectileSpeed = 8f;
     [SerializeField] private float projectileLifetime = 3f;
+    [SerializeField] private float towerRangedDistance = 3f;
     //[SerializeField] private float towerRangedDistance = 3f; // stopping distance from tower for ranged
 
     [SerializeField] private float towerStopDistance = 4f;
@@ -45,6 +46,12 @@ public class Troops : Unit
             cc.radius = attackRange;
             cc.isTrigger = true;
         }
+    }
+    
+    public void SetTargetTower(Tower tower)
+    {
+        targetTower = tower;
+        Debug.Log($"[Troop] {name} got target tower: {(tower != null ? tower.name : "NULL")}");
     }
 
     protected override void Move()
@@ -89,32 +96,70 @@ public class Troops : Unit
         // PRIORITY 2: Attack tower if no enemies
         if (targetTower != null)
         {
-            // Hit stop-position instead of center of tower
-            float dir = moveRight ? -1f : 1f; 
-            float targetX = targetTower.transform.position.x + dir * towerStopDistance;
-
-            Vector2 stopPos = new Vector2(targetX, transform.position.y);
-            float distX = Mathf.Abs(transform.position.x - stopPos.x);
-
-            if (distX <= 0.05f) 
+            // RANGED TROOPS (useProjectile == true)
+            if (useProjectile)
             {
-                // Stop & attack tower
+                // Horizontal distance between troop and tower
+                float distX = Mathf.Abs(transform.position.x - targetTower.transform.position.x);
+
+                // If too far away to shoot → move forward
+                if (distX > towerRangedDistance + 0.1f)
+                {
+                    // Player moves to the right, Enemy moves to the left
+                    float dirSign = moveRight ? 1f : -1f;
+                    Vector2 moveDir = new Vector2(dirSign, 0f);
+
+                    // Move towards the tower
+                    transform.Translate(moveDir * moveSpeed * Time.deltaTime);
+
+                    // Play walk animation
+                    SetAnimationState(true, false);
+                    isAttacking = false;
+                    return;
+                }
+
+                // Already within shooting range → stop and attack
                 isAttacking = true;
                 if (rb != null) rb.velocity = Vector2.zero;
+
+                // Play attack animation
+                SetAnimationState(false, true);
+                return;
+            }
+
+            // MELEE TROOPS (default behavior)
+            // Determine the stop position (not the center of the tower)
+            float dirStop = moveRight ? -1f : 1f;
+            float targetX = targetTower.transform.position.x + dirStop * towerStopDistance;
+
+            Vector2 stopPos = new Vector2(targetX, transform.position.y);
+
+            // Distance to the correct stopping point
+            float stopDistX = Mathf.Abs(transform.position.x - stopPos.x);
+
+            // If close enough → attack
+            if (stopDistX <= 0.05f)
+            {
+                isAttacking = true;
+                if (rb != null) rb.velocity = Vector2.zero;
+
+                // Play attack animation
                 SetAnimationState(false, true);
                 return;
             }
             else
             {
-                // Move to the stop position
+                // Walk towards the melee stop position
                 Vector2 moveDir = (stopPos - (Vector2)transform.position).normalized;
                 transform.Translate(moveDir * moveSpeed * Time.deltaTime);
 
+                // Play walk animation
                 SetAnimationState(true, false);
                 isAttacking = false;
                 return;
             }
         }
+
 
 
         /*
@@ -152,44 +197,56 @@ public class Troops : Unit
     {
         if (isDead) return; // Do nothing if dead
 
+        // Remove invalid targets from the list
         targetsInRange.RemoveAll(t => t == null || t.isDead);
 
-        if (targetsInRange.Count > 0)
-        {
-            currentTarget = targetsInRange
-                .OrderBy(t => Vector2.Distance(transform.position, t.transform.position))
-                .FirstOrDefault();
-        }
-        else
-        {
-            currentTarget = null;
-        }
+        // Pick the closest enemy unit (if any)
+        currentTarget = targetsInRange
+            .OrderBy(t => Vector2.Distance(transform.position, t.transform.position))
+            .FirstOrDefault();
 
+        // PRIORITY 1: Attack enemy unit
         if (currentTarget != null)
         {
             PerformAttack(currentTarget.GetComponent<Collider2D>());
             return;
         }
 
+        // PRIORITY 2: Attack enemy tower
         if (targetTower != null)
         {
-            PerformAttackOnTower();
-            return;
+            // Horizontal distance to the tower
+            float distX = Mathf.Abs(transform.position.x - targetTower.transform.position.x);
+
+            // Minimum distance to be allowed to hit the tower
+            float neededDist = useProjectile
+                ? towerRangedDistance + 0.2f   // for ranged troops
+                : towerStopDistance + 0.2f;    // for melee troops
+
+            if (distX <= neededDist)
+            {
+                PerformAttackOnTower();
+                return;
+            }
         }
 
+        // No valid target: go back to moving / idle
         isAttacking = false;
         SetAnimationState(true, false);
     }
 
+
     protected override void PerformAttack(Collider2D targetCollider)
     {
-        if (isDead) return; // stop attacking if dead
-        if (targetCollider == null) return;
+        if (isDead || targetCollider == null) return;
 
         Unit targetUnit = targetCollider.GetComponent<Unit>();
         if (targetUnit != null && !targetUnit.isDead)
         {
             targetUnit.TakeDamage(attackPoints);
+            Debug.Log($"From troops.cs: [ATTACK] {name} dealt {attackPoints} damage to {targetUnit.name} " +
+                      $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})");
+
 
             if (targetUnit.CurrentHealth <= 0)
             {
@@ -199,6 +256,7 @@ public class Troops : Unit
             }
         }
     }
+    
 
     private void PerformAttackOnTower()
     {
@@ -212,21 +270,39 @@ public class Troops : Unit
     {
         if (isDead) return;
 
-        Unit target = other.GetComponent<Unit>();
-        if (target != null && target.UnitTeam != UnitTeam && !target.isDead)
+        // 1. Detect tower via TowerHitbox 
+        TowerHitbox towerHB = other.GetComponent<TowerHitbox>();
+        if (towerHB != null && towerHB.tower != null)
         {
-            if (!targetsInRange.Contains(target))
+            Tower tower = towerHB.tower;
+
+            // Determine if the detected tower belongs to the opposing side
+            bool isEnemyTower =
+                (UnitTeam == Team.Player && tower.owner == Tower.TowerOwner.Enemy) ||
+                (UnitTeam == Team.Enemy && tower.owner == Tower.TowerOwner.Player);
+
+            if (isEnemyTower)
             {
-                targetsInRange.Add(target);
+                targetTower = tower;
+                Debug.Log($"[Troops] {name} detected ENEMY tower: {tower.name}");
             }
+
+            // Stop further checks (do not treat tower as unit)
+            return;
         }
 
-        Tower tower = other.GetComponent<Tower>();
-        if (tower != null && tower.owner == Tower.TowerOwner.Enemy)
+        // 2. Detect enemy units (same logic as Enemy)
+        Unit target = other.GetComponent<Unit>();
+        if (target != null &&
+            target.UnitTeam != UnitTeam &&
+            !target.isDead &&
+            !targetsInRange.Contains(target))
         {
-            targetTower = tower;
+            targetsInRange.Add(target);
+            Debug.Log($"[Troops] {name} detected enemy unit {target.name}. Total enemies: {targetsInRange.Count}");
         }
     }
+
 
     private void OnTriggerExit2D(Collider2D other)
     {

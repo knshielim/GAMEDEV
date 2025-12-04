@@ -32,6 +32,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip summonSFX;
     public AudioClip troopDeathSFX;
     public AudioClip upgradeSFX;
+    public AudioClip mythicSFX;
+    
 
     private void Awake()
     {
@@ -49,6 +51,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
+        
         LoadAudioSettings();
         ApplyVolumeSettings();
         PlayIntroThenLoop();
@@ -95,6 +98,92 @@ public class AudioManager : MonoBehaviour
         if (clip == null) return;
         sfxSource.PlayOneShot(clip);
     }
+
+    public void PlayGameOverDramatic()
+    {
+        if (gameOverSFX == null)
+        {
+            Debug.LogWarning("[AudioManager] gameOverSFX is not assigned!");
+            return;
+        }
+
+        StartCoroutine(GameOverDuckRoutine());
+    }
+
+private IEnumerator GameOverDuckRoutine()
+{
+    // If sources are missing, just play the SFX and exit
+    if (musicSource == null || sfxSource == null)
+    {
+        PlaySFX(gameOverSFX);
+        yield break;
+    }
+
+    // Store original volumes
+    float originalMusicVol = musicSource.volume;
+    float originalSfxVol   = sfxSource.volume;
+
+    // Target volumes for a softer background and slightly boosted SFX
+    float targetMusicVol = originalMusicVol * 0.35f;
+    float targetSfxVol   = Mathf.Min(1f, originalSfxVol * 1.15f);
+
+    float duration = 0.5f; // Fade duration
+    float t = 0f;
+
+    // 🔊 Play Game Over SFX immediately (no delay)
+    PlaySFX(gameOverSFX);
+
+    // Smoothly fade BGM down and SFX up at the same time
+    while (t < duration)
+    {
+        t += Time.unscaledDeltaTime;
+        float lerp = t / duration;
+
+        musicSource.volume = Mathf.Lerp(originalMusicVol, targetMusicVol, lerp);
+        sfxSource.volume   = Mathf.Lerp(originalSfxVol,   targetSfxVol,   lerp);
+
+        yield return null;
+    }
+
+    // Wait for the SFX to finish (ignores timeScale)
+    yield return new WaitForSecondsRealtime(gameOverSFX.length);
+
+    // Smoothly restore volumes back to original values
+    t = 0f;
+    while (t < duration)
+    {
+        t += Time.unscaledDeltaTime;
+        float lerp = t / duration;
+
+        musicSource.volume = Mathf.Lerp(targetMusicVol, originalMusicVol, lerp);
+        sfxSource.volume   = Mathf.Lerp(targetSfxVol,   originalSfxVol,   lerp);
+
+        yield return null;
+    }
+
+    // Ensure exact restore
+    musicSource.volume = originalMusicVol;
+    sfxSource.volume   = originalSfxVol;
+
+    /*
+    // Duck music and boost SFX a bit
+    float duckedMusicVol = originalMusicVol * 0.3f;   // 30% of current music
+    float boostedSfxVol  = Mathf.Min(1f, originalSfxVol * 1.2f); // up to max 1.0
+
+    musicSource.volume = duckedMusicVol;
+    sfxSource.volume   = boostedSfxVol;
+
+    // Play Game Over SFX
+    PlaySFX(gameOverSFX);
+
+    // Wait for the SFX to finish (realtime so it ignores Time.timeScale)
+    yield return new WaitForSecondsRealtime(gameOverSFX.length);
+
+    // Restore volumes
+    musicSource.volume = originalMusicVol;
+    sfxSource.volume   = originalSfxVol;
+    */
+}
 
     // ==========================
     // VOLUME CONTROLS

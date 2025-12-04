@@ -19,6 +19,7 @@ public class Tower : MonoBehaviour
     [Header("Upgrade & Economy")]
     [Tooltip("The current level of the tower. Starts at 1.")]
     public int level = 1; 
+    private const int MAX_LEVEL = 10;
 
     [Tooltip("Base coins generated per tick at Level 1")]
     private const int TOWER_BASE_RATE = 1; 
@@ -135,6 +136,22 @@ public class Tower : MonoBehaviour
         int cost = CalculateUpgradeCost();
         
         UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
+        
+        // If tower is max level, disable the upgrade button entirely
+        if (level >= MAX_LEVEL)
+        {
+            upgradeButtonText.text = $"MAX LEVEL ({MAX_LEVEL})";
+            
+            if (button != null)
+                button.interactable = false;
+
+            // Use unaffordable sprite for grey-out
+            if (upgradeButtonImage != null && unaffordableSprite != null)
+                upgradeButtonImage.sprite = unaffordableSprite;
+
+            return;
+        }
+        
         bool canAfford = false;
 
         if (CoinManager.Instance != null)
@@ -176,6 +193,13 @@ public class Tower : MonoBehaviour
     public void UpgradeTower()
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver()) return;
+
+        // Prevent upgrading beyond maximum level
+        if (level >= MAX_LEVEL)
+        {
+            Debug.Log("[PLAYER TOWER] Already at MAX LEVEL!");
+            return;
+        }
 
         int upgradeCost = CalculateUpgradeCost();
 
@@ -238,6 +262,11 @@ public class Tower : MonoBehaviour
     {
         Debug.Log("[TOWER] Player Tower Destroyed - GAME OVER");
 
+        // Play dramatic Game Over SFX (duck music + boost SFX)
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayGameOverDramatic();
+        }
         // Stop game time
         Time.timeScale = 0f;
 
@@ -260,6 +289,10 @@ public class Tower : MonoBehaviour
     private void ShowVictory()
     {
         Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
+
+        // Play victory SFX
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.gameWinSFX);
 
         // Freeze the screen
         Time.timeScale = 0f;

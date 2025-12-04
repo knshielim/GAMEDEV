@@ -84,7 +84,18 @@ public class TroopDeployManager : MonoBehaviour
         // Instantiate the troop
         GameObject troopObj = Instantiate(troop.playerPrefab, playerTowerSpawnPoint.position, Quaternion.identity);
 
-        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+        // Play different SFX depending on rarity
+        if (troop.rarity == TroopRarity.Mythic)
+        {
+            // Special SFX for Mythic deploy
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.mythicSFX);
+        }
+        else
+        {
+            // Default summon SFX for non-Mythic troops
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+        }
+
 
         // Set TroopData
         Unit unit = troopObj.GetComponent<Unit>();

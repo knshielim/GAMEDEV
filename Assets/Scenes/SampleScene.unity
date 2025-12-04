@@ -12155,6 +12155,7 @@ MonoBehaviour:
   summonSFX: {fileID: 8300000, guid: c676c8680b6a4214d969af2db545257d, type: 3}
   troopDeathSFX: {fileID: 8300000, guid: 8965fabd60bdcb54599bf612e746aa6b, type: 3}
   upgradeSFX: {fileID: 8300000, guid: d6656302b01fb1c419f4bc7af0cc84f0, type: 3}
+  mythicSFX: {fileID: 8300000, guid: eabf7a683bf2a4d48ac4d74c43821c21, type: 3}
 --- !u!4 &1277630559
 Transform:
   m_ObjectHideFlags: 0

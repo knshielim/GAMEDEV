@@ -131,6 +131,8 @@ public class LevelManager : MonoBehaviour
     // Go to main menu (scene 0)
     public void LoadMainMenu()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+
         Debug.Log("[LevelManager] Loading main menu (scene 0)");
         
         // Reset time scale
