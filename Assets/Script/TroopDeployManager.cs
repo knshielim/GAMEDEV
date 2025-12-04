@@ -88,12 +88,14 @@ public class TroopDeployManager : MonoBehaviour
         if (troop.rarity == TroopRarity.Mythic)
         {
             // Special SFX for Mythic deploy
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.mythicSFX);
+            if (AudioManager.Instance != null && AudioManager.Instance.mythicSFX != null)
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.mythicSFX);
         }
         else
         {
             // Default summon SFX for non-Mythic troops
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+            if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
         }
 
 

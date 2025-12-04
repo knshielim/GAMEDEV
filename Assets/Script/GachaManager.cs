@@ -59,27 +59,71 @@ public class GachaManager : MonoBehaviour
     public int SummonCost => summonCost;
     public int UpgradeLevel => upgradeLevel;
 
-   private void Awake()
+    private void Awake()
     {
-    if (Instance == null) Instance = this;
-    else
-    {
-        Destroy(gameObject);
-        return;
+        // ✅ CHANGED: Allow one GachaManager per scene (not persistent)
+        if (Instance == null)
+        {
+            Instance = this;
+            // REMOVED DontDestroyOnLoad - this was causing stale references
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // ✅ ADDED: Reset tutorial flags when GachaManager is created
+        tutorialLocked = false;
+        tutorialFirstSummonDone = false;
+
+        InitializeTroopCache();
+        ApplyUpgradeRates();
+        ValidateDropRates();
     }
 
-    // If TutorialManager is disabled, allow summoning normally
-    tutorialLocked = false;
-
-    InitializeTroopCache();
-    ApplyUpgradeRates();
-    ValidateDropRates();
+    // ✅ ADDED: Clean up instance reference on destroy
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
+    // ✅ ADDED: Start method to ensure tutorial check happens after scene loads
+    private void Start()
+    {
+        // Check if TutorialManager exists in current scene
+        TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
+        
+        if (tutorialManager != null && tutorialManager.enabled)
+        {
+            // Tutorial scene - lock summoning until tutorial allows it
+            tutorialLocked = true;
+            Debug.Log("[GachaManager] Tutorial detected - summoning locked");
+        }
+        else
+        {
+            // Normal gameplay - allow summoning
+            tutorialLocked = false;
+            tutorialFirstSummonDone = false; // Reset tutorial flag
+            Debug.Log("[GachaManager] No tutorial - summoning enabled");
+        }
+    }
 
     // -------------------- SUMMON FUNCTION --------------------
     public TroopData SummonTroop(TroopData tutorialTroop = null)
     {
+        Debug.Log($"[Gacha] SummonTroop called - tutorialLocked: {tutorialLocked}, Instance exists: {Instance != null}, TroopInventory exists: {TroopInventory.Instance != null}, CoinManager exists: {CoinManager.Instance != null}");
+        
+        // ✅ ADDED: Check if summoning is locked by tutorial
+        if (tutorialLocked)
+        {
+            Debug.LogWarning("[Gacha] Summoning is locked by tutorial");
+            return null;
+        }
+
         // -------------------- TUTORIAL OVERRIDE --------------------
         if (!tutorialFirstSummonDone && tutorialTroop != null)
         {
@@ -121,16 +165,29 @@ public class GachaManager : MonoBehaviour
         if (newTroop == null)
         {
             Debug.LogError($"[Gacha] No troop found for rarity: {pulledRarity}");
+            // ✅ ADDED: Refund coins if no troop found
+            CoinManager.Instance.AddPlayerCoins(currentCost);
+            return null;
+        }
+
+        // ✅ ADDED: Check if TroopInventory exists before adding
+        if (TroopInventory.Instance == null)
+        {
+            Debug.LogError("[Gacha] TroopInventory.Instance is NULL!");
+            CoinManager.Instance.AddPlayerCoins(currentCost);
             return null;
         }
 
         bool addedToInventory = TroopInventory.Instance.AddTroop(newTroop);
         if (!addedToInventory)
         {
-            Debug.LogWarning("[Gacha] Inventory full, troop not added.");
+            Debug.LogWarning("[Gacha] Inventory full, troop not added - refunding coins.");
+            // ✅ ADDED: Refund coins if inventory is full
+            CoinManager.Instance.AddPlayerCoins(currentCost);
             return null;
         }
 
+        Debug.Log($"[Gacha] Successfully added {newTroop.displayName} to inventory, refreshing UI...");
         TroopInventory.Instance.RefreshUI();
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
 

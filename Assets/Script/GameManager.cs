@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 public enum GameLevel
@@ -33,20 +34,38 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // Setup Singleton
+        Debug.Log($"[GameManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
+
+        // Setup Singleton with scene-aware logic
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            // If we're in a game scene and there's already a persistent instance, destroy this one
+            // The persistent instance will get updated via OnSceneLoaded
+            if (gameObject.scene.buildIndex > 0) // Game scenes (not main menu)
+            {
+                Debug.Log("[GameManager] Destroying duplicate GameManager in game scene");
+                Destroy(gameObject);
+                return;
+            }
+            else // Main menu scene - destroy the old persistent instance
+            {
+                Debug.Log("[GameManager] Destroying old GameManager for main menu");
+                Destroy(Instance.gameObject);
+            }
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);   // if you use a lot of scenes
+        // Only use DontDestroyOnLoad for game scenes, not main menu
+        if (gameObject.scene.buildIndex > 0)
+        {
+            DontDestroyOnLoad(gameObject);
+            Debug.Log("[GameManager] Set DontDestroyOnLoad for game scene");
+        }
 
         // Subscribe to scene loading events
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        Debug.Log($"[GAME START] Current Level = {currentLevel}");
+        Debug.Log($"[GameManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
     }
 
     private void Start()
@@ -62,6 +81,12 @@ public class GameManager : MonoBehaviour
 
         // Make sure timeScale is normal
         Time.timeScale = 1f;
+
+        // Fix button references in Start() in case OnSceneLoaded ran too early
+        if (gameObject.scene.buildIndex > 0)
+        {
+            FixButtonReferences(gameObject.scene);
+        }
     }
 
     public bool IsGameOver()
@@ -79,8 +104,58 @@ public class GameManager : MonoBehaviour
     // Called when a new scene is loaded
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        Debug.Log($"[GameManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
+
+        // If this is a game scene and we're the persistent instance, update our references
+        if (scene.buildIndex > 0 && Instance == this)
+        {
+            // Find the scene's GameManager object and copy its references
+            GameManager[] sceneManagers = FindObjectsOfType<GameManager>();
+            Debug.Log($"[GameManager] Found {sceneManagers.Length} GameManager instances");
+            foreach (GameManager gm in sceneManagers)
+            {
+                Debug.Log($"[GameManager] Checking GM: {gm}, scene: {gm.gameObject.scene.name}, isThis: {gm == this}");
+                if (gm != this && gm.gameObject.scene == scene)
+                {
+                    // Transfer references from the scene GameManager to this persistent one
+                    playerTower = gm.playerTower;
+                    aiTower = gm.aiTower;
+                    gameOverPanel = gm.gameOverPanel;
+                    gameOverText = gm.gameOverText;
+                    currentLevel = gm.currentLevel;
+
+                    // Destroy the scene GameManager since we now have its references
+                    Destroy(gm.gameObject);
+                    Debug.Log("[GameManager] Transferred references from scene GameManager");
+                    break;
+                }
+            }
+
+            // Always fix button references when loading a game scene, regardless of whether we transferred references
+            FixButtonReferences(scene);
+        }
+
         ResetGameState();
-        Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset");
+        Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset. Final Instance: {Instance}");
+    }
+
+    private void FixButtonReferences(Scene scene)
+    {
+        // Find the summon button and ensure it calls the correct GameManager method
+        Button[] buttons = FindObjectsOfType<Button>();
+        foreach (Button button in buttons)
+        {
+            if (button.gameObject.scene == scene && button.name.Contains("Summon"))
+            {
+                // Clear ALL listeners (both programmatic and persistent) to start fresh
+                button.onClick.RemoveAllListeners();
+
+                // Add our programmatic listener that calls the persistent GameManager
+                button.onClick.AddListener(() => OnSummonButtonClick());
+
+                Debug.Log($"[GameManager] Fixed OnClick listener for summon button: {button.name}");
+            }
+        }
     }
 
     private void OnDestroy()
@@ -136,9 +211,20 @@ public void TowerDestroyed(Tower destroyedTower)
 }
 
 
+    private float lastSummonTime = -1f;
+    private const float SUMMON_COOLDOWN = 0.1f; // Prevent summons more frequent than 0.1 seconds
+
     public void OnSummonButtonClick()
     {
-        Debug.Log("[GameManager] OnSummonButtonClick called at " + Time.time);
+        // Prevent duplicate summons within cooldown period
+        if (Time.time - lastSummonTime < SUMMON_COOLDOWN)
+        {
+            Debug.Log("[GameManager] Summon blocked - too frequent calls");
+            return;
+        }
+        lastSummonTime = Time.time;
+
+        Debug.Log($"[GameManager] OnSummonButtonClick called. Instance: {Instance}, this: {this}, isGameOver: {isGameOver}, gameObject: {gameObject}, scene: {gameObject.scene.name}");
         if (isGameOver)
         {
             Debug.Log("[GameManager] Cannot summon: Game Over.");
@@ -147,6 +233,7 @@ public void TowerDestroyed(Tower destroyedTower)
 
         if (GachaManager.Instance != null)
         {
+            Debug.Log("[GameManager] Calling GachaManager.SummonTroop()");
             // Manggil Gacha Function
             GachaManager.Instance.SummonTroop();
         }

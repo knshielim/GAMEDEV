@@ -64,6 +64,9 @@ public class Tower : MonoBehaviour
     [Tooltip("Button for player to proceed to next level")]
     public Button nextLevelButton;
 
+    [Tooltip("Button for player to return to main menu")]
+    public Button mainMenuButton;
+
     void Awake() 
     {
         currentHealth = maxHealth; 
@@ -88,6 +91,8 @@ public class Tower : MonoBehaviour
             victoryPanel.SetActive(false);
         if (nextLevelButton != null)
             nextLevelButton.gameObject.SetActive(false);
+        if (mainMenuButton != null)
+            mainMenuButton.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -291,7 +296,7 @@ public class Tower : MonoBehaviour
         Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
 
         // Play victory SFX
-        if (AudioManager.Instance != null)
+        if (AudioManager.Instance != null && AudioManager.Instance.gameWinSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.gameWinSFX);
 
         // Freeze the screen
@@ -338,6 +343,17 @@ public class Tower : MonoBehaviour
         {
             Debug.LogWarning("[TOWER] Next level button not assigned! Player cannot proceed.");
         }
+
+        // Set up main menu button (player can click to return to menu)
+        if (mainMenuButton != null)
+        {
+            mainMenuButton.onClick.AddListener(OnMainMenuClicked);
+            mainMenuButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("[TOWER] Main menu button not assigned! Player cannot return to menu.");
+        }
     }
 
     // Called when player clicks the Next Level button
@@ -354,9 +370,24 @@ public class Tower : MonoBehaviour
         }
     }
 
+    // Called when player clicks the Main Menu button
+    private void OnMainMenuClicked()
+    {
+        Debug.Log("[TOWER] Main menu button clicked!");
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.LoadMainMenu();
+        }
+        else
+        {
+            Debug.LogError("[TOWER] LevelManager not found!");
+        }
+    }
+
     public void TakeDamage(int damage)
     {
-        AudioManager.Instance.PlaySFX(AudioManager.Instance.hitTowerSFX);
+        if (AudioManager.Instance != null && AudioManager.Instance.hitTowerSFX != null)
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.hitTowerSFX);
 
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);

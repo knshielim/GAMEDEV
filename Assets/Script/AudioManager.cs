@@ -96,6 +96,11 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip)
     {
         if (clip == null) return;
+        if (sfxSource == null)
+        {
+            Debug.LogWarning("[AudioManager] SFX AudioSource is null, cannot play sound");
+            return;
+        }
         sfxSource.PlayOneShot(clip);
     }
 

@@ -163,17 +163,17 @@ public class SettingsManager : MonoBehaviour
     {
         if (AudioManager.Instance == null) return;
 
-        if (masterVolumeSlider != null)
+        if (masterVolumeSlider != null && AudioManager.Instance != null)
         {
             masterVolumeSlider.value = AudioManager.Instance.GetMasterVolume();
         }
 
-        if (musicVolumeSlider != null)
+        if (musicVolumeSlider != null && AudioManager.Instance != null)
         {
             musicVolumeSlider.value = AudioManager.Instance.GetMusicVolume();
         }
 
-        if (sfxVolumeSlider != null)
+        if (sfxVolumeSlider != null && AudioManager.Instance != null)
         {
             sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
         }
