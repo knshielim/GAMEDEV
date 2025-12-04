@@ -170,7 +170,7 @@ public class Tower : MonoBehaviour
             }
         }
 
-        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";        
+        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}       Cost: {cost}";        
     }
 
     public void UpgradeTower()

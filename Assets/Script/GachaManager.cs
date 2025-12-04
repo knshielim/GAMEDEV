@@ -317,6 +317,6 @@ public class GachaManager : MonoBehaviour
             btn.interactable = canAfford;
 
         upgradeButtonImage.sprite = canAfford ? affordableSprite : unaffordableSprite;
-        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}\nCost: {cost}";
+        upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}       Cost: {cost}";
     }
 }
