@@ -489,7 +489,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 259036689}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: CloseSettings
         m_Mode: 1
@@ -2449,7 +2449,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 259036690}
-  - component: {fileID: 259036689}
+  - component: {fileID: 259036691}
   m_Layer: 0
   m_Name: SettingsManager
   m_TagString: Untagged
@@ -2457,7 +2457,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &259036689
+--- !u!4 &259036690
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259036688}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1740.2455, y: 737.65326, z: -3.592371}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &259036691
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2478,21 +2493,6 @@ MonoBehaviour:
   masterVolumeText: {fileID: 55041956}
   musicVolumeText: {fileID: 182815543}
   sfxVolumeText: {fileID: 1100190542}
---- !u!4 &259036690
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 259036688}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1740.2455, y: 737.65326, z: -3.592371}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &261371066
 GameObject:
   m_ObjectHideFlags: 0
@@ -3149,7 +3149,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 259036689}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
         m_MethodName: ToggleSettings
         m_Mode: 1
@@ -4020,7 +4020,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.9998169, y: -104}
+  m_AnchoredPosition: {x: 1.9997559, y: -104}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &407175764
@@ -4698,6 +4698,18 @@ MonoBehaviour:
       - m_Target: {fileID: 68903615}
         m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
         m_MethodName: OnTutorialSummonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: SettingsManager, Assembly-CSharp
+        m_MethodName: ToggleSettings
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -11700,7 +11712,6 @@ GameObject:
   - component: {fileID: 1233369687}
   - component: {fileID: 1233369689}
   - component: {fileID: 1233369688}
-  - component: {fileID: 1233369690}
   m_Layer: 5
   m_Name: SettingsPanel
   m_TagString: Untagged
@@ -11770,27 +11781,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1233369686}
   m_CullTransparentMesh: 1
---- !u!114 &1233369690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1233369686}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0feb22b35b9b014ba9706d986f8a090, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settingsPanel: {fileID: 1233369686}
-  settingsButton: {fileID: 326050233}
-  closeSettingsButton: {fileID: 30019564}
-  masterVolumeSlider: {fileID: 250032862}
-  musicVolumeSlider: {fileID: 2023233670}
-  sfxVolumeSlider: {fileID: 1156725419}
-  masterVolumeText: {fileID: 55041956}
-  musicVolumeText: {fileID: 182815543}
-  sfxVolumeText: {fileID: 1100190542}
 --- !u!1 &1255735520
 GameObject:
   m_ObjectHideFlags: 0
@@ -15431,6 +15421,9 @@ MonoBehaviour:
   summonEffectPrefab: {fileID: 6420712714783966820, guid: d7e788225a0328b4a8afdf1e17a77ad5, type: 3}
   effectOffset: {x: 0, y: 0, z: 0}
   effectDuration: 1
+  mergeEffectPrefab: {fileID: 107505511873413547, guid: 3f07ba3247b1cda43aa401c05034133a, type: 3}
+  mergeAnimationDuration: 0.6
+  mergeEffectDuration: 1.5
 --- !u!4 &1756679716
 Transform:
   m_ObjectHideFlags: 0
@@ -16706,7 +16699,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.9998169, y: -281}
+  m_AnchoredPosition: {x: 1.9997559, y: -281}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1873875218
