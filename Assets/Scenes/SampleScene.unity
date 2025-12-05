@@ -713,23 +713,29 @@ MonoBehaviour:
   - text: 'This is your battelefield, our task is to topple the enemy tower and defend
       ours '
     image: {fileID: 0}
-  - text: 'Each second we will get coin, killing enemies grant mroe coins '
+  - text: 'Each second we will get coin, killing enemies grant more coins '
     image: {fileID: 0}
   - text: Now let us try summoning a troop
     image: {fileID: 0}
   - text: 'Now select the summoned troop, and click on deploy '
     image: {fileID: 0}
-  - text: Oh No! The enemy has spawned in warrior. Here is some coins to summon some
-      troops
+  - text: 'Oh No! The enemy has spawned in warrior. '
+    image: {fileID: 0}
+  - text: Here's some coin, let's merge a better troop. First summon some troops
     image: {fileID: 0}
   continueKey: 32
   enemyToSpawn: {fileID: 11400000, guid: 20b62f3b4efbebf45ac8417679b38099, type: 2}
-  enemyToSpawn2: {fileID: 11400000, guid: 50fb599e29164484882145b5e647d418, type: 2}
+  enemyToSpawn2: {fileID: 11400000, guid: ae176172d88025b4c87c743dabeaa8d9, type: 2}
   enemyDeployManager: {fileID: 1976493371}
+  gachaManager: {fileID: 0}
   playerButtons:
   - {fileID: 460093041}
+  - {fileID: 1617622525}
+  - {fileID: 1607317671}
+  - {fileID: 466302372}
   tutorialFirstTroop: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
-  tutorialSecondTroop: {fileID: 11400000, guid: 0afdc92e608f1f3438d7945c1648deeb, type: 2}
+  tutorialSecondTroop: {fileID: 11400000, guid: 45608b3ce33eef9418120f2e446bece9, type: 2}
+  tutorialActive: 1
 --- !u!4 &68903616
 Transform:
   m_ObjectHideFlags: 0
@@ -8958,6 +8964,7 @@ MonoBehaviour:
   level: 1
   coinsPerTick: 5
   coinInterval: 2
+  tutorialManager: {fileID: 68903615}
   upgradeButtonText: {fileID: 1701505968}
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: dc2484c2e00eeaa4fa6ac802e69086b5, type: 3}
@@ -12722,6 +12729,7 @@ MonoBehaviour:
   level: 1
   coinsPerTick: 1
   coinInterval: 1
+  tutorialManager: {fileID: 0}
   upgradeButtonText: {fileID: 1701505968}
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: dc2484c2e00eeaa4fa6ac802e69086b5, type: 3}
@@ -14949,7 +14957,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1691920104}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 68903615}
+        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
+        m_MethodName: OnTutorialMergeClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1691920104
 MonoBehaviour:
   m_ObjectHideFlags: 0

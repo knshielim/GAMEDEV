@@ -373,9 +373,9 @@ public class EnemyDeployManager : MonoBehaviour
     }
 
     
-    public void SpawnSpecificEnemy(TroopData troop)
-    {
-    if (tutorialActive) return; // prevent random AI from spawning
+   public void SpawnSpecificEnemy(TroopData troop, bool ignoreTutorial = false)
+{
+    if (!ignoreTutorial && tutorialActive) return; // normal AI block
 
     if (troop == null || enemySpawnPoint == null) return;
 
@@ -392,13 +392,13 @@ public class EnemyDeployManager : MonoBehaviour
     {
         enemyUnit.SetTroopData(troop);
 
-        // 🔥 FIX: Always use the correct PLAYER tower (assigned in Inspector)
         if (playerTower != null)
             enemyUnit.SetTargetTower(playerTower);
         else
             Debug.LogError("[EnemyDeployManager] Player tower reference is missing!");
     }
-    }
+}
+
 
 
 

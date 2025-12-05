@@ -35,6 +35,9 @@ public class Tower : MonoBehaviour
     public float coinInterval = 1f;
     private float coinTimer = 0f;
 
+    [Header("Tutorial Reference")]
+    public TutorialManager tutorialManager; 
+    
     [Header("UI References (Player Only)")]
     [Tooltip("The Text component on the Upgrade button that shows the price.")]
     public TextMeshProUGUI upgradeButtonText; 
@@ -244,24 +247,27 @@ public class Tower : MonoBehaviour
         }
     }
     
-    void OnTowerDestroyed()
+   void OnTowerDestroyed()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.TowerDestroyed(this);
-        }
-
-        if (owner == TowerOwner.Player)
-        {
-            // PLAYER LOST - Show Game Over screen
-            ShowGameOver();
-        }
-        else if (owner == TowerOwner.Enemy)
-        {
-            // PLAYER WON - Show Victory screen and proceed to next level
-            ShowVictory();
-        }
+    if (tutorialManager != null && tutorialManager.tutorialActive)
+    {
+        // Tutorial active → call tutorial-specific method
+        tutorialManager.OnTutorialTowerDestroyed(this);
+        return; // skip normal victory/game over
     }
+
+    // Otherwise, normal behavior
+    if (owner == TowerOwner.Player)
+    {
+        ShowGameOver();
+    }
+    else if (owner == TowerOwner.Enemy)
+    {
+        ShowVictory();
+    }
+    }
+
+
 
     private void ShowGameOver()
     {

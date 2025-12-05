@@ -91,7 +91,7 @@ public class GachaManager : MonoBehaviour
         }
     }
 
-    // ✅ ADDED: Start method to ensure tutorial check happens after scene loads
+    
     private void Start()
     {
         // Check if TutorialManager exists in current scene
