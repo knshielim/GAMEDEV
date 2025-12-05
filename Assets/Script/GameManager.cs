@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log($"[GameManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
+        //Debug.Log($"[GameManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
 
         // Setup Singleton with scene-aware logic
         if (Instance != null && Instance != this)
@@ -43,13 +43,13 @@ public class GameManager : MonoBehaviour
             // The persistent instance will get updated via OnSceneLoaded
             if (gameObject.scene.buildIndex > 0) // Game scenes (not main menu)
             {
-                Debug.Log("[GameManager] Destroying duplicate GameManager in game scene");
+                //Debug.Log("[GameManager] Destroying duplicate GameManager in game scene");
                 Destroy(gameObject);
                 return;
             }
             else // Main menu scene - destroy the old persistent instance
             {
-                Debug.Log("[GameManager] Destroying old GameManager for main menu");
+                //Debug.Log("[GameManager] Destroying old GameManager for main menu");
                 Destroy(Instance.gameObject);
             }
         }
@@ -59,13 +59,13 @@ public class GameManager : MonoBehaviour
         if (gameObject.scene.buildIndex > 0)
         {
             DontDestroyOnLoad(gameObject);
-            Debug.Log("[GameManager] Set DontDestroyOnLoad for game scene");
+            //Debug.Log("[GameManager] Set DontDestroyOnLoad for game scene");
         }
 
         // Subscribe to scene loading events
         SceneManager.sceneLoaded += OnSceneLoaded;
 
-        Debug.Log($"[GameManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
+        //Debug.Log($"[GameManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
     }
 
     private void Start()
@@ -98,23 +98,23 @@ public class GameManager : MonoBehaviour
     private void ResetGameState()
     {
         isGameOver = false;
-        Debug.Log("[GameManager] Game state reset for new scene");
+        //Debug.Log("[GameManager] Game state reset for new scene");
     }
 
     // Called when a new scene is loaded
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"[GameManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
+        //($"[GameManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
 
         // If this is a game scene and we're the persistent instance, update our references
         if (scene.buildIndex > 0 && Instance == this)
         {
             // Find the scene's GameManager object and copy its references
             GameManager[] sceneManagers = FindObjectsOfType<GameManager>();
-            Debug.Log($"[GameManager] Found {sceneManagers.Length} GameManager instances");
+            //Debug.Log($"[GameManager] Found {sceneManagers.Length} GameManager instances");
             foreach (GameManager gm in sceneManagers)
             {
-                Debug.Log($"[GameManager] Checking GM: {gm}, scene: {gm.gameObject.scene.name}, isThis: {gm == this}");
+                //Debug.Log($"[GameManager] Checking GM: {gm}, scene: {gm.gameObject.scene.name}, isThis: {gm == this}");
                 if (gm != this && gm.gameObject.scene == scene)
                 {
                     // Transfer references from the scene GameManager to this persistent one
@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour
 
                     // Destroy the scene GameManager since we now have its references
                     Destroy(gm.gameObject);
-                    Debug.Log("[GameManager] Transferred references from scene GameManager");
+                    //Debug.Log("[GameManager] Transferred references from scene GameManager");
                     break;
                 }
             }
@@ -136,7 +136,7 @@ public class GameManager : MonoBehaviour
         }
 
         ResetGameState();
-        Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset. Final Instance: {Instance}");
+        //Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset. Final Instance: {Instance}");
     }
 
     private void FixButtonReferences(Scene scene)
@@ -153,7 +153,7 @@ public class GameManager : MonoBehaviour
                 // Add our programmatic listener that calls the persistent GameManager
                 button.onClick.AddListener(() => OnSummonButtonClick());
 
-                Debug.Log($"[GameManager] Fixed OnClick listener for summon button: {button.name}");
+                //Debug.Log($"[GameManager] Fixed OnClick listener for summon button: {button.name}");
             }
         }
     }
@@ -193,7 +193,7 @@ public void TowerDestroyed(Tower destroyedTower)
         
         // Don't show game over panel for wins - let LevelManager handle it
         // LevelManager will automatically load next level after 2 seconds
-        Debug.Log($"Level {currentLevel} completed! Loading next level...");
+        //Debug.Log($"Level {currentLevel} completed! Loading next level...");
         
         // The level transition is handled by Tower.cs calling LevelManager.Instance.LevelCompleted()
     }
@@ -219,27 +219,27 @@ public void TowerDestroyed(Tower destroyedTower)
         // Prevent duplicate summons within cooldown period
         if (Time.time - lastSummonTime < SUMMON_COOLDOWN)
         {
-            Debug.Log("[GameManager] Summon blocked - too frequent calls");
+            //Debug.Log("[GameManager] Summon blocked - too frequent calls");
             return;
         }
         lastSummonTime = Time.time;
 
-        Debug.Log($"[GameManager] OnSummonButtonClick called. Instance: {Instance}, this: {this}, isGameOver: {isGameOver}, gameObject: {gameObject}, scene: {gameObject.scene.name}");
+        //Debug.Log($"[GameManager] OnSummonButtonClick called. Instance: {Instance}, this: {this}, isGameOver: {isGameOver}, gameObject: {gameObject}, scene: {gameObject.scene.name}");
         if (isGameOver)
         {
-            Debug.Log("[GameManager] Cannot summon: Game Over.");
+            //Debug.Log("[GameManager] Cannot summon: Game Over.");
             return;
         }
 
         if (GachaManager.Instance != null)
         {
-            Debug.Log("[GameManager] Calling GachaManager.SummonTroop()");
+            //Debug.Log("[GameManager] Calling GachaManager.SummonTroop()");
             // Manggil Gacha Function
             GachaManager.Instance.SummonTroop();
         }
         else
         {
-            Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
+            //Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
         }
     }
 }

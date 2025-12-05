@@ -23,38 +23,42 @@ public class LevelManager : MonoBehaviour
     
     private void Awake()
     {
-        Debug.Log($"[LevelManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
+        //Debug.Log($"[LevelManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
 
         // Setup Singleton with scene-aware logic
         if (Instance != null && Instance != this)
         {
             // If we're in a game scene and there's already a persistent instance, destroy this one
             // The persistent instance will get updated via OnSceneLoaded
+            
             if (gameObject.scene.buildIndex > 0) // Game scenes (not main menu)
             {
-                Debug.Log("[LevelManager] Destroying duplicate LevelManager in game scene");
+                //Debug.Log("[LevelManager] Destroying duplicate LevelManager in game scene");
                 Destroy(gameObject);
                 return;
             }
             else // Main menu scene - destroy the old persistent instance
             {
-                Debug.Log("[LevelManager] Destroying old LevelManager for main menu");
+                //Debug.Log("[LevelManager] Destroying old LevelManager for main menu");
                 Destroy(Instance.gameObject);
             }
+            
         }
 
         Instance = this;
         // Only use DontDestroyOnLoad for game scenes, not main menu
+        /*
         if (gameObject.scene.buildIndex > 0)
         {
             DontDestroyOnLoad(gameObject);
-            Debug.Log("[LevelManager] Set DontDestroyOnLoad for game scene");
+            //Debug.Log("[LevelManager] Set DontDestroyOnLoad for game scene");
         }
-
-        Debug.Log($"[LevelManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
+        */
+        
+        //Debug.Log($"[LevelManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
 
         // Subscribe to scene loading events
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        //SceneManager.sceneLoaded += OnSceneLoaded;
     }
     
     private void Start()
@@ -75,17 +79,17 @@ public class LevelManager : MonoBehaviour
     // Called when a new scene is loaded
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"[LevelManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
+        //Debug.Log($"[LevelManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
 
         // If this is a game scene and we're the persistent instance, update our references and fix buttons
         if (scene.buildIndex > 0 && Instance == this)
         {
             // Find the scene's LevelManager object and copy its references
             LevelManager[] sceneManagers = FindObjectsOfType<LevelManager>();
-            Debug.Log($"[LevelManager] Found {sceneManagers.Length} LevelManager instances");
+            //Debug.Log($"[LevelManager] Found {sceneManagers.Length} LevelManager instances");
             foreach (LevelManager lm in sceneManagers)
             {
-                Debug.Log($"[LevelManager] Checking LM: {lm}, scene: {lm.gameObject.scene.name}, isThis: {lm == this}");
+                //Debug.Log($"[LevelManager] Checking LM: {lm}, scene: {lm.gameObject.scene.name}, isThis: {lm == this}");
                 if (lm != this && lm.gameObject.scene == scene)
                 {
                     // Transfer references from the scene LevelManager to this persistent one
@@ -107,7 +111,7 @@ public class LevelManager : MonoBehaviour
             FixButtonReferences(scene);
         }
 
-        Debug.Log($"[LevelManager] Scene '{scene.name}' loaded. Final Instance: {Instance}");
+        //Debug.Log($"[LevelManager] Scene '{scene.name}' loaded. Final Instance: {Instance}");
     }
 
     private void FixButtonReferences(Scene scene)
