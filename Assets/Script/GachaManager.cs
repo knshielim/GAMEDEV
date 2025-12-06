@@ -57,6 +57,11 @@ public class GachaManager : MonoBehaviour
     private bool tutorialFirstSummonDone = false;
 
     public int SummonCost => summonCost;
+
+    public List<TroopData> GetAllTroopData()
+    {
+        return allAvailableTroops;
+    }
     public int UpgradeLevel => upgradeLevel;
 
     private void Awake()

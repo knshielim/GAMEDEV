@@ -321,7 +321,7 @@ public class Tower : MonoBehaviour
 
                     if (currentLevel >= totalLevels)
                     {
-                        victoryText.text = "VICTORY!\nYou've Completed All Levels!\nCongratulations!";
+                        victoryText.text = "You've Completed All Levels!\nCongratulations!";
                     }
                     else
                     {
