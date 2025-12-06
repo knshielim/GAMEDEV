@@ -16,7 +16,7 @@ public class GachaManager : MonoBehaviour
 {
     public static GachaManager Instance { get; private set; }
 
-    public bool tutorialLocked = false;
+    public bool tutorialLocked = true;
 
 
     [Header("Gacha Configuration")]

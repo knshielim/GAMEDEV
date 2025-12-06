@@ -249,22 +249,21 @@ public class Tower : MonoBehaviour
     
    void OnTowerDestroyed()
     {
-    if (tutorialManager != null && tutorialManager.tutorialActive)
-    {
-        // Tutorial active → call tutorial-specific method
-        tutorialManager.OnTutorialTowerDestroyed(this);
-        return; // skip normal victory/game over
-    }
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.TowerDestroyed(this);
+        }
 
-    // Otherwise, normal behavior
-    if (owner == TowerOwner.Player)
-    {
-        ShowGameOver();
-    }
-    else if (owner == TowerOwner.Enemy)
-    {
-        ShowVictory();
-    }
+        if (owner == TowerOwner.Player)
+        {
+            // PLAYER LOST - Show Game Over screen
+            ShowGameOver();
+        }
+        else if (owner == TowerOwner.Enemy)
+        {
+            // PLAYER WON - Show Victory screen and proceed to next level
+            ShowVictory();
+        }
     }
 
 
@@ -315,11 +314,12 @@ public class Tower : MonoBehaviour
             
             if (victoryText != null)
             {
-                if (GameManager.Instance != null)
+                if (LevelManager.Instance != null)
                 {
-                    int currentLevel = (int)GameManager.Instance.currentLevel;
-                    
-                    if (currentLevel >= 3)
+                    int currentLevel = LevelManager.Instance.GetCurrentLevel();
+                    int totalLevels = LevelManager.Instance.GetTotalLevels();
+
+                    if (currentLevel >= totalLevels)
                     {
                         victoryText.text = "VICTORY!\nYou've Completed All Levels!\nCongratulations!";
                     }
