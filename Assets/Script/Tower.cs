@@ -249,18 +249,11 @@ public class Tower : MonoBehaviour
     
    void OnTowerDestroyed()
     {
-<<<<<<< Updated upstream
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.TowerDestroyed(this);
-        }
-=======
     if (tutorialManager != null && tutorialManager.isActiveAndEnabled && tutorialManager.tutorialActive)
     {
     tutorialManager.OnTutorialTowerDestroyed(this);
     return;
     }
->>>>>>> Stashed changes
 
         if (owner == TowerOwner.Player)
         {
