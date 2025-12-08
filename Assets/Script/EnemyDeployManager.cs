@@ -17,7 +17,7 @@ public class EnemyDeployManager : MonoBehaviour
 
     [Header("Base Difficulty Settings")]
     [Tooltip("Base seconds between spawn attempts (will be reduced for harder levels).")]
-    public float baseSpawnInterval = 3f;
+    public float baseSpawnInterval = 7f;
 
     [Tooltip("Base coin cost per spawned troop.")]
     public int baseTroopCost = 50;
@@ -95,9 +95,9 @@ public class EnemyDeployManager : MonoBehaviour
             spawnIntervalMultiplier = 1.0f,
             rarityWeights = new Dictionary<TroopRarity, float>
             {
-                { TroopRarity.Common, 85f },    // 85% Common
-                { TroopRarity.Rare, 15f },      // 15% Rare
-                { TroopRarity.Epic, 0f },       // 0% Epic
+                { TroopRarity.Common, 75f },    // 75% Common
+                { TroopRarity.Rare, 20f },      // 20% Rare
+                { TroopRarity.Epic, 5f },       // 5% Epic
                 { TroopRarity.Legendary, 0f },  // 0% Legendary
                 { TroopRarity.Mythic, 0f }      // 0% Mythic
             },
@@ -114,9 +114,9 @@ public class EnemyDeployManager : MonoBehaviour
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 50f },    // 50% Common
-                { TroopRarity.Rare, 35f },      // 35% Rare
+                { TroopRarity.Rare, 30f },      // 30% Rare
                 { TroopRarity.Epic, 15f },      // 15% Epic
-                { TroopRarity.Legendary, 0f },  // 0% Legendary
+                { TroopRarity.Legendary, 5f },  // 5% Legendary
                 { TroopRarity.Mythic, 0f }      // 0% Mythic
             },
             canDeployMythic = false,
@@ -398,9 +398,6 @@ public class EnemyDeployManager : MonoBehaviour
             Debug.LogError("[EnemyDeployManager] Player tower reference is missing!");
     }
 }
-
-
-
 
     // Public method to get current difficulty info (useful for UI)
     public string GetDifficultyInfo()

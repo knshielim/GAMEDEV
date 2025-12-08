@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Warrior_2
   displayName: Second Warrior
   rarity: 1
-  maxHealth: 95
-  attack: 13
+  maxHealth: 110
+  attack: 10
   moveSpeed: 1.7
   attackInterval: 1
   level: 1

@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Youkai_Yurei
   displayName: Yurei Youkai
   rarity: 3
-  maxHealth: 250
-  attack: 24
+  maxHealth: 200
+  attack: 15
   moveSpeed: 1.6
   attackInterval: 1
   level: 1

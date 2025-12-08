@@ -21,11 +21,11 @@ public class GachaManager : MonoBehaviour
 
     [Header("Gacha Configuration")]
     [Tooltip("The coin cost to perform one summon.")]
-    [SerializeField] private int summonCost = 100;
+    [SerializeField] private int summonCost = 2;
 
     [Header("Gacha Cost Escalation")]
     [Tooltip("Increase cost per 1x summon.")]
-    [SerializeField] private int summonCostIncrease = 25;
+    [SerializeField] private int summonCostIncrease = 2;
     private int summonsSinceReset = 0;
 
     [Tooltip("All TroopData ScriptableObjects available.")]
@@ -34,11 +34,11 @@ public class GachaManager : MonoBehaviour
     [Tooltip("Drop rates for each rarity.")]
     [SerializeField] private List<RarityDropRate> dropRates = new List<RarityDropRate>
     {
-        new RarityDropRate { rarity = TroopRarity.Common, dropPercentage = 50f },
-        new RarityDropRate { rarity = TroopRarity.Rare, dropPercentage = 30f },
-        new RarityDropRate { rarity = TroopRarity.Epic, dropPercentage = 15f },
-        new RarityDropRate { rarity = TroopRarity.Legendary, dropPercentage = 4.5f },
-        new RarityDropRate { rarity = TroopRarity.Mythic, dropPercentage = 0.5f }
+        new RarityDropRate { rarity = TroopRarity.Common, dropPercentage = 80f },
+        new RarityDropRate { rarity = TroopRarity.Rare, dropPercentage = 15f },
+        new RarityDropRate { rarity = TroopRarity.Epic, dropPercentage = 4f },
+        new RarityDropRate { rarity = TroopRarity.Legendary, dropPercentage = 1f },
+        new RarityDropRate { rarity = TroopRarity.Mythic, dropPercentage = 0f }
     };
 
     [Header("Spawn Position")]
@@ -52,6 +52,9 @@ public class GachaManager : MonoBehaviour
     public Image upgradeButtonImage;
     public Sprite affordableSprite;
     public Sprite unaffordableSprite;
+
+    [Tooltip("Text to display current summon cost")]
+    public TextMeshProUGUI summonCostText;
 
     private Dictionary<TroopRarity, List<TroopData>> _troopsByRarity;
     private bool tutorialFirstSummonDone = false;
@@ -96,6 +99,18 @@ public class GachaManager : MonoBehaviour
         }
     }
 
+    public void DebugSummonButton()
+    {
+        Debug.Log($"=== SUMMON BUTTON DEBUG ===");
+        Debug.Log($"Tutorial Locked: {tutorialLocked}");
+        Debug.Log($"Current Cost: {GetCurrentSummonCost()}");
+        Debug.Log($"Player Coins: {(CoinManager.Instance != null ? CoinManager.Instance.playerCoins : -1)}");
+        Debug.Log($"CoinManager exists: {CoinManager.Instance != null}");
+        Debug.Log($"TroopInventory exists: {TroopInventory.Instance != null}");
+        Debug.Log($"GameManager exists: {GameManager.Instance != null}");
+        if (GameManager.Instance != null)
+            Debug.Log($"Game Over: {GameManager.Instance.IsGameOver()}");
+    }
     
     private void Start()
     {
@@ -115,6 +130,10 @@ public class GachaManager : MonoBehaviour
             tutorialFirstSummonDone = false; // Reset tutorial flag
             Debug.Log("[GachaManager] No tutorial - summoning enabled");
         }
+
+        // ✅ ADDED: Update UI to show correct initial upgrade level and cost
+        UpdateUpgradeUI();
+        UpdateSummonCostUI();
     }
 
     // -------------------- SUMMON FUNCTION --------------------
@@ -195,6 +214,9 @@ public class GachaManager : MonoBehaviour
         Debug.Log($"[Gacha] Successfully added {newTroop.displayName} to inventory, refreshing UI...");
         TroopInventory.Instance.RefreshUI();
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
+
+        // Update summon cost display after successful summon
+        UpdateSummonCostUI();
 
         return newTroop;
     }
@@ -293,7 +315,7 @@ public class GachaManager : MonoBehaviour
     }
 
     private int GetUpgradeCost() =>
-        (upgradeLevel >= 10) ? int.MaxValue : (upgradeLevel + 1) * 100;
+        (upgradeLevel >= 10) ? int.MaxValue : 20 + (upgradeLevel * 15);
 
     private void ApplyUpgradeRates()
     {
@@ -328,11 +350,11 @@ public class GachaManager : MonoBehaviour
 
     private void ResetDropRatesToDefault()
     {
-        dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage = 50f;
-        dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage = 30f;
-        dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage = 15f;
-        dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage = 4.5f;
-        dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage = 0.5f;
+        dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage = 80f;
+        dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage = 15f;
+        dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage = 4f;
+        dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage = 1f;
+        dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage = 0f;
     }
 
     private void NormalizeDropRates()
@@ -348,10 +370,22 @@ public class GachaManager : MonoBehaviour
     public int GetCurrentSummonCost() =>
         summonCost + summonsSinceReset * summonCostIncrease;
 
-    public void ResetGachaCost() =>
+    public void ResetGachaCost()
+    {
         summonsSinceReset = 0;
+        UpdateSummonCostUI();
+    }
 
     // -------------------- UI UPDATE --------------------
+    public void UpdateSummonCostUI()
+    {
+        if (summonCostText != null)
+        {
+            int currentCost = GetCurrentSummonCost();
+            summonCostText.text = $"Cost: {currentCost}";
+        }
+    }
+
     public void UpdateUpgradeUI()
     {
         if (upgradeButtonText == null || upgradeButtonImage == null)
@@ -380,5 +414,28 @@ public class GachaManager : MonoBehaviour
 
         upgradeButtonImage.sprite = canAfford ? affordableSprite : unaffordableSprite;
         upgradeButtonText.text = $"Upgrade to Lv. {nextLevel}       Cost: {cost}";
+
+        // Keep button gray when unaffordable
+        if (!canAfford && btn != null)
+        {
+            SetButtonGrayColor(btn);
+        }
+    }
+
+    private void SetButtonGrayColor(Button button)
+    {
+        if (button == null) return;
+
+        ColorBlock colors = button.colors;
+        Color grayColor = new Color(0.5f, 0.5f, 0.5f, 1f); // Consistent gray color
+
+        // Set all color states to gray to prevent hover/press color changes
+        colors.normalColor = grayColor;
+        colors.highlightedColor = grayColor;
+        colors.pressedColor = grayColor;
+        colors.selectedColor = grayColor;
+        colors.disabledColor = new Color(0.3f, 0.3f, 0.3f, 1f); // Darker gray for disabled
+
+        button.colors = colors;
     }
 }

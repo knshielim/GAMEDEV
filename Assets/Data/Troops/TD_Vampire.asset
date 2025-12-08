@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Vampire
   displayName: Vampire
   rarity: 4
-  maxHealth: 280
-  attack: 35
+  maxHealth: 230
+  attack: 21
   moveSpeed: 2
   attackInterval: 0.7
   level: 1

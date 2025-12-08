@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Warrior_3
   displayName: Third Warrior
   rarity: 1
-  maxHealth: 80
-  attack: 15
+  maxHealth: 100
+  attack: 11
   moveSpeed: 1.8
   attackInterval: 0.9
   level: 1

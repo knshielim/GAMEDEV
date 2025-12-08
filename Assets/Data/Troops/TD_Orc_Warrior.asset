@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Orc_Warrior
   displayName: Warrior Orc
   rarity: 2
-  maxHealth: 170
-  attack: 20
+  maxHealth: 150
+  attack: 13
   moveSpeed: 1.5
   attackInterval: 1
   level: 1

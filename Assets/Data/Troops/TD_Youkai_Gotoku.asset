@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Youkai_Gotoku
   displayName: Gotoku Youkai
   rarity: 3
-  maxHealth: 220
-  attack: 30
+  maxHealth: 190
+  attack: 18
   moveSpeed: 1.7
   attackInterval: 0.9
   level: 1

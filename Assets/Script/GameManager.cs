@@ -145,7 +145,7 @@ public class GameManager : MonoBehaviour
         Button[] buttons = FindObjectsOfType<Button>();
         foreach (Button button in buttons)
         {
-            if (button.gameObject.scene == scene && button.name.Contains("Summon"))
+            if (button.gameObject.scene == scene && button.name.Contains("Summon") && !button.name.Contains("Upgrade"))
             {
                 // Clear ALL listeners (both programmatic and persistent) to start fresh
                 button.onClick.RemoveAllListeners();
@@ -154,6 +154,14 @@ public class GameManager : MonoBehaviour
                 button.onClick.AddListener(() => OnSummonButtonClick());
 
                 //Debug.Log($"[GameManager] Fixed OnClick listener for summon button: {button.name}");
+            }
+            else if (button.gameObject.scene == scene && button.name.Contains("Upgrade Summon Rate"))
+            {
+                // Handle the upgrade summon rate button separately
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => GachaManager.Instance?.UpgradeGachaSystem());
+
+                //Debug.Log($"[GameManager] Fixed OnClick listener for upgrade summon rate button: {button.name}");
             }
         }
     }

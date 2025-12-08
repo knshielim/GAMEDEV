@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Youkai_Onre
   displayName: Onre Youkai
   rarity: 3
-  maxHealth: 190
-  attack: 35
+  maxHealth: 170
+  attack: 22
   moveSpeed: 1.9
   attackInterval: 0.8
   level: 1

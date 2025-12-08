@@ -11,7 +11,7 @@ public class Tower : MonoBehaviour
     public TowerOwner owner;
 
     [Header("Health")]
-    public int maxHealth = 100;
+    public int maxHealth = 200;
     public int currentHealth = 0;
     
     public event Action<int> OnHealthChanged;
@@ -25,10 +25,10 @@ public class Tower : MonoBehaviour
     private const int TOWER_BASE_RATE = 1; 
     
     [Tooltip("The cost of the first upgrade (Lv 1->2).")]
-    private const int TOWER_FIRST_UPGRADE_COST = 100;
-    
+    private const int TOWER_FIRST_UPGRADE_COST = 10;
+
     [Tooltip("The amount the cost increases by each level (300, 400, etc.)")]
-    private const int TOWER_COST_INCREMENT = 100;
+    private const int TOWER_COST_INCREMENT = 15;
 
     [Header("Coin Generation")]
     public int coinsPerTick = 1;
@@ -112,7 +112,7 @@ public class Tower : MonoBehaviour
     {
         int nextLevel = level + 1;
         
-        // Cost for Lv 2 (Next Level = 2) should be 100.
+        // Cost for Lv 2 (Next Level = 2) is the first upgrade cost.
         if (nextLevel == 2)
         {
             return TOWER_FIRST_UPGRADE_COST;

@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Slime_Green
   displayName: Green Slime
   rarity: 0
-  maxHealth: 60
+  maxHealth: 75
   attack: 7
   moveSpeed: 1.6
   attackInterval: 1.1

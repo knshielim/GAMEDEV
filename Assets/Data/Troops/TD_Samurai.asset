@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Samurai
   displayName: Samurai
   rarity: 4
-  maxHealth: 320
-  attack: 45
+  maxHealth: 250
+  attack: 26
   moveSpeed: 1.9
   attackInterval: 0.8
   level: 1

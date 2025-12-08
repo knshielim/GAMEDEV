@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Orc_Shaman
   displayName: Shaman Orc
   rarity: 2
-  maxHealth: 130
-  attack: 16
+  maxHealth: 120
+  attack: 11
   moveSpeed: 1.6
   attackInterval: 0.8
   level: 1

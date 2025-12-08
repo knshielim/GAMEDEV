@@ -29,7 +29,7 @@ public class CoinManager : MonoBehaviour
     private void Start()
     {
         UpdatePlayerUI();
-        AddPlayerCoins(99999);
+        // AddPlayerCoins(99999); // Removed initial coin boost - player starts with 0 coins
     }
 
     // player coin

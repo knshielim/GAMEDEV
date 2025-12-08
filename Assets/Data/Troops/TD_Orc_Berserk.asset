@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Orc_Berserk
   displayName: Berserk Orc
   rarity: 2
-  maxHealth: 150
-  attack: 22
+  maxHealth: 135
+  attack: 15
   moveSpeed: 1.7
   attackInterval: 0.9
   level: 1

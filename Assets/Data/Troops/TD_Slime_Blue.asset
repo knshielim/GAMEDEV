@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Slime_Blue
   displayName: Blue Slime
   rarity: 0
-  maxHealth: 70
+  maxHealth: 90
   attack: 6
   moveSpeed: 1.4
   attackInterval: 1.2

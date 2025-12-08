@@ -15,8 +15,8 @@ MonoBehaviour:
   id: Warrior_1
   displayName: First Warrior
   rarity: 1
-  maxHealth: 110
-  attack: 11
+  maxHealth: 125
+  attack: 9
   moveSpeed: 1.5
   attackInterval: 1.1
   level: 1
