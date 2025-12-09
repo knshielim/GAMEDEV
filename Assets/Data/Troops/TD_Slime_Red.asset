@@ -25,5 +25,5 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
-  playerPrefab: {fileID: 5385030817546445256, guid: dce76c2b052733c418a704fb5b4596a5, type: 3}
+  playerPrefab: {fileID: 1985306042837692627, guid: 55bc7ccd0fbd57d4286abeb3b116c0af, type: 3}
   enemyPrefab: {fileID: 5385030817546445256, guid: e671e9fda9b274a4a9351e2492e0604f, type: 3}
