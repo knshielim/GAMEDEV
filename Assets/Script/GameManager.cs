@@ -145,7 +145,29 @@ public class GameManager : MonoBehaviour
         Button[] buttons = FindObjectsOfType<Button>();
         foreach (Button button in buttons)
         {
-            if (button.gameObject.scene == scene && button.name.Contains("Summon") && !button.name.Contains("Upgrade"))
+            if (button.gameObject.scene != scene)
+                continue;
+
+            string lowerName = button.name.ToLower();
+
+            // 1) UPGRADE SUMMON RATE button
+            if (lowerName.Contains("upgrade") && lowerName.Contains("summon"))
+            {
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() =>
+                {
+                    if (GachaManager.Instance != null)
+                        GachaManager.Instance.UpgradeGachaSystem();
+                });
+            }
+            // 2) Regular SUMMON button
+            else if (lowerName.Contains("summon"))
+            {
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(OnSummonButtonClick);
+            }
+            /*
+            if (button.gameObject.scene == scene && button.name.Contains("Summon"))
             {
                 // Clear ALL listeners (both programmatic and persistent) to start fresh
                 button.onClick.RemoveAllListeners();
@@ -155,14 +177,7 @@ public class GameManager : MonoBehaviour
 
                 //Debug.Log($"[GameManager] Fixed OnClick listener for summon button: {button.name}");
             }
-            else if (button.gameObject.scene == scene && button.name.Contains("Upgrade Summon Rate"))
-            {
-                // Handle the upgrade summon rate button separately
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => GachaManager.Instance?.UpgradeGachaSystem());
-
-                //Debug.Log($"[GameManager] Fixed OnClick listener for upgrade summon rate button: {button.name}");
-            }
+            */
         }
     }
 
@@ -247,7 +262,7 @@ public void TowerDestroyed(Tower destroyedTower)
         }
         else
         {
-            //Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
+            Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
         }
     }
 }

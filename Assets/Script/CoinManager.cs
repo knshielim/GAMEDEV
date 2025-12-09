@@ -43,6 +43,9 @@ public class CoinManager : MonoBehaviour
         // Debug.Log($"[PLAYER COIN] +{amount} → total: {playerCoins}");
 
         UpdatePlayerUI();
+
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.UpdateUpgradeUI();
     }
 
     public bool TrySpendPlayerCoins(int cost)
@@ -56,6 +59,10 @@ public class CoinManager : MonoBehaviour
         playerCoins -= cost;
         // Debug.Log($"[PLAYER COIN] SPEND {cost} → remaining: {playerCoins}");
         UpdatePlayerUI();
+
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.UpdateUpgradeUI();
+
         return true;
     }
 
