@@ -52,6 +52,13 @@ public abstract class Unit : MonoBehaviour
     private Collider2D unitCollider;
     protected Rigidbody2D rb;
 
+    public TroopData GetTroopData()
+    {
+        return troopData;
+    }
+
+
+
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();

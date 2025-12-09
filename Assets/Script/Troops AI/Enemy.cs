@@ -32,6 +32,7 @@ public class Enemy : Unit
 
     [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = false; // Enemy walk to the left
+    public static List<Enemy> aliveEnemies = new List<Enemy>();
 
     protected override void Start()
     {
@@ -59,6 +60,7 @@ public class Enemy : Unit
             cc.isTrigger = true;
         }
         Debug.Log($"[Enemy START] {name} isRanged from TroopData = {troopData.isRanged}, useProjectile = {useProjectile}");
+        aliveEnemies.Add(this);
     }
 
     public void SetTargetTower(Tower tower)
@@ -378,6 +380,8 @@ private void ShootProjectileInDirection(Vector2 direction)
             rb.gravityScale = 0;
         }
 
+        aliveEnemies.Remove(this);
+        
         // Disable all colliders
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;

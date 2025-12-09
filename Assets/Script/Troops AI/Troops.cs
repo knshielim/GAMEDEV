@@ -24,6 +24,9 @@ public class Troops : Unit
     [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = true; // Player = true, Enemy = false
 
+    public static List<Troops> aliveTroops = new List<Troops>();
+
+
     protected override void Start()
     {
         base.Start();
@@ -46,6 +49,8 @@ public class Troops : Unit
             cc.radius = attackRange;
             cc.isTrigger = true;
         }
+        aliveTroops.Add(this);
+
     }
     
     public void SetTargetTower(Tower tower)
@@ -345,6 +350,8 @@ public override void Die()
         rb.isKinematic = true;
         rb.gravityScale = 0;
     }
+    
+    aliveTroops.Remove(this);
 
     // Disable all colliders
     foreach (Collider2D col in GetComponents<Collider2D>())

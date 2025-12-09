@@ -83,6 +83,81 @@ public class EnemyDeployManager : MonoBehaviour
 
     }
 
+
+
+    // --------------------------------------
+    // NEW BALANCED AI SUMMON SYSTEM
+    // --------------------------------------
+    private TroopRarity GetBalancedRarity()
+    {
+        int aiRare = CountAIUnits(TroopRarity.Rare);
+        int aiEpic = CountAIUnits(TroopRarity.Epic);
+
+        bool playerHasEpic = CountPlayerUnits(TroopRarity.Epic) > 0;
+        bool playerHasLegendary = CountPlayerUnits(TroopRarity.Legendary) > 0;
+
+        // 1. If AI already has 3 Rare and player does not have Epic → force Common
+        if (aiRare >= 3 && !playerHasEpic && !playerHasLegendary)
+        {
+            return TroopRarity.Common;
+        }
+
+        // 2. If the player has Epic → AI can summon normal Rare/Epic
+        if (playerHasEpic)
+        {
+            return GetRandomRarityByWeights();
+        }
+
+        // 3. If the player has Legendary → AI can continue to summon Epic
+        if (playerHasLegendary)
+        {
+            return TroopRarity.Epic;
+        }
+
+        // 4. Default: normal behavior
+        return GetRandomRarityByWeights();
+    }
+
+    private TroopRarity GetRandomRarityByWeights()
+    {
+        var config = levelConfigs[currentLevel];
+        float total = config.rarityWeights.Values.Sum();
+        float roll = Random.Range(0, total);
+
+        float cumulative = 0f;
+        foreach (var kv in config.rarityWeights)
+        {
+            cumulative += kv.Value;
+            if (roll < cumulative)
+                return kv.Key;
+        }
+
+        return TroopRarity.Common;
+    }
+
+    private TroopData GetTroopByRarity(TroopRarity rarity)
+    {
+        var list = availableEnemyTroops.Where(t => t.rarity == rarity).ToList();
+        if (list.Count == 0)
+            return availableEnemyTroops[Random.Range(0, availableEnemyTroops.Count)];
+        return list[Random.Range(0, list.Count)];
+    }
+    private int CountAIUnits(TroopRarity rarity)
+    {
+        return Enemy.aliveEnemies.Count(e => e.GetTroopData() != null && e.GetTroopData().rarity == rarity);
+    }
+
+    private int CountPlayerUnits(TroopRarity rarity)
+    {
+        return Troops.aliveTroops.Count(t => t.GetTroopData() != null && t.GetTroopData().rarity == rarity);
+    }
+
+
+
+
+
+
+
     private void InitializeLevelConfigs()
     {
         levelConfigs = new Dictionary<int, LevelConfig>();
@@ -108,16 +183,25 @@ public class EnemyDeployManager : MonoBehaviour
         // LEVEL 2 - MEDIUM (Balanced Challenge)
         levelConfigs[2] = new LevelConfig
         {
-            startingCoins = 400,
-            coinGenerationMultiplier = 1.5f,
-            spawnIntervalMultiplier = 0.85f, // Spawns 15% faster
+            startingCoins = 300,   // awalnya 400
+            coinGenerationMultiplier = 1.3f, // awalnya 1.3f
+            spawnIntervalMultiplier = 0.9f, // awalnya 0.85f
             rarityWeights = new Dictionary<TroopRarity, float>
             {
+
+                // yg baru
+                { TroopRarity.Common, 60f },   
+                { TroopRarity.Rare, 28f },      
+                { TroopRarity.Epic, 12f },      
+                { TroopRarity.Legendary, 5f },  // coba jadi 2 kalo masih belum balance
+                { TroopRarity.Mythic, 0f }      
+                /*
                 { TroopRarity.Common, 50f },    // 50% Common
                 { TroopRarity.Rare, 30f },      // 30% Rare
                 { TroopRarity.Epic, 15f },      // 15% Epic
                 { TroopRarity.Legendary, 5f },  // 5% Legendary
                 { TroopRarity.Mythic, 0f }      // 0% Mythic
+                */
             },
             canDeployMythic = false,
             mythicChance = 0f
@@ -271,7 +355,10 @@ public class EnemyDeployManager : MonoBehaviour
         else
         {
             // Select troop based on rarity weights for current level
-            selectedTroop = SelectTroopByRarity();
+            TroopRarity balanced = GetBalancedRarity();
+            selectedTroop = GetTroopByRarity(balanced);
+            
+            //selectedTroop = SelectTroopByRarity();
         }
 
         // Select troop based on rarity weights for current level
