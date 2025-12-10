@@ -619,7 +619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &46070500
 RectTransform:
   m_ObjectHideFlags: 0
@@ -843,7 +843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialoguePanel: {fileID: 1079061365}
   dialogueText: {fileID: 835805551}
-  dialogueImageHolder: {fileID: 204946243}
+  dialogueImageHolder: {fileID: 167071218}
   steps:
   - text: 'Hi there, you must be the new chief '
     image: {fileID: 0}
@@ -851,11 +851,11 @@ MonoBehaviour:
     image: {fileID: 0}
   - text: 'This is your battelefield, our task is to topple the enemy tower and defend
       ours '
-    image: {fileID: 0}
+    image: {fileID: 21300000, guid: 875148414f2944367b830d33a0693659, type: 3}
   - text: 'Each second we will get coin, killing enemies grant more coins '
-    image: {fileID: 0}
-  - text: Now let us try summoning a troop
-    image: {fileID: 0}
+    image: {fileID: 21300000, guid: bb9345d062904412e91094c80f8e3c76, type: 3}
+  - text: 'Now let us try summoning a troop, click on the summon button '
+    image: {fileID: 21300000, guid: 875148414f2944367b830d33a0693659, type: 3}
   - text: 'Now select the summoned troop, and click on deploy '
     image: {fileID: 0}
   - text: 'Oh No! The enemy has spawned in warrior. '
@@ -1974,6 +1974,81 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &167071216
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 167071217}
+  - component: {fileID: 167071219}
+  - component: {fileID: 167071218}
+  m_Layer: 5
+  m_Name: Image
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &167071217
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167071216}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1079061366}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 8.9153, y: -98.3359}
+  m_SizeDelta: {x: 872.7482, y: 263.6943}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &167071218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167071216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &167071219
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 167071216}
+  m_CullTransparentMesh: 1
 --- !u!1 &174329916
 GameObject:
   m_ObjectHideFlags: 0
@@ -7287,8 +7362,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -154}
-  m_SizeDelta: {x: -397.8891, y: -362.0994}
+  m_AnchoredPosition: {x: 8.915314, y: -281.34998}
+  m_SizeDelta: {x: -335.48, y: -562.6998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &627894621
 MonoBehaviour:
@@ -9635,7 +9710,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -2.6006775, y: 0.9206619, z: 1.5322571, w: 0}
+  m_margin: {x: -2.6006775, y: 0.9206619, z: 1.5322571, w: -22.28891}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -9665,8 +9740,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000011563, y: 37.191135}
-  m_SizeDelta: {x: 781.6837, y: 279.2844}
+  m_AnchoredPosition: {x: 13.3734, y: 169.8103}
+  m_SizeDelta: {x: 808.4305, y: 174.5264}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &853892906
 GameObject:
@@ -11870,7 +11945,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1052739697}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 68903615}
+        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
+        m_MethodName: OnSlotClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1055448606
 GameObject:
   m_ObjectHideFlags: 0
@@ -12181,7 +12268,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1079061366
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12196,12 +12283,13 @@ RectTransform:
   m_Children:
   - {fileID: 835805553}
   - {fileID: 627894620}
+  - {fileID: 167071217}
   m_Father: {fileID: 1047197622}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 42, y: 97.77}
-  m_SizeDelta: {x: -1085.036, y: -663.0403}
+  m_AnchoredPosition: {x: 42, y: 171}
+  m_SizeDelta: {x: -952.98, y: -477.41}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1079061367
 MonoBehaviour:
@@ -19417,7 +19505,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -1.2759}
   m_SizeDelta: {x: 641.3105, y: 54.8603}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1840856089

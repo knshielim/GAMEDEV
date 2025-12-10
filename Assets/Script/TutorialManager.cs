@@ -50,8 +50,12 @@ public class TutorialManager : MonoBehaviour
     private bool waitingForMerge = false;
     private bool mergeCompleted = false;
     public bool tutorialActive = true;
+    private bool waitingForSlotClick = false;
+
     private static bool tutorialShownThisSession = false;
-    private bool tutorialStepsFinished = false;
+
+    // --- NEW: track the pause coroutine so we can cancel it if needed
+    private Coroutine pauseCoroutine;
 
     private void Awake()
     {
@@ -102,7 +106,7 @@ public class TutorialManager : MonoBehaviour
             this.enabled = false;
             return;
         }
-
+        CoinManager.Instance.AddPlayerCoins(5);
         ShowStep();
     }
 
@@ -117,24 +121,37 @@ public class TutorialManager : MonoBehaviour
         if (Input.GetKeyDown(continueKey)) Advance();
     }
 
-    private void ShowStep()
+    // changed to optional pause flag (default true) so caller can show text without pausing
+        private void ShowStep(bool pause = true)
     {
         if (currentStep >= steps.Length)
         {
-        tutorialStepsFinished = true;
-        return;
+            return;
         }
-    var step = steps[currentStep];
-    dialoguePanel.SetActive(true);
-    dialogueText.text = step.text;
-    dialogueImageHolder.gameObject.SetActive(step.image != null);
-    dialogueImageHolder.sprite = step.image;
 
-    // Show Skip button only on the first step
-    if (SkipButton != null)
-        SkipButton.SetActive(currentStep == 0);
+        var step = steps[currentStep];
 
-    PauseGame();
+        dialoguePanel.SetActive(true);
+        dialogueText.text = step.text;
+
+        // Clean image handling
+        if (step.image != null)
+        {
+            dialogueImageHolder.gameObject.SetActive(true);
+            dialogueImageHolder.sprite = step.image;
+        }
+        else
+        {
+            dialogueImageHolder.gameObject.SetActive(false);
+            dialogueImageHolder.sprite = null;
+        }
+
+        // Show Skip button only on the first step
+        if (SkipButton != null)
+            SkipButton.SetActive(currentStep == 0);
+
+        if (pause)
+            PauseGame();
     }
 
 
@@ -183,10 +200,26 @@ public class TutorialManager : MonoBehaviour
     {
         if (!gaveFirstTroop && tutorialFirstTroop != null)
         {
+            // -Deduct summon cost
+            int cost = GachaManager.Instance.GetCurrentSummonCost();
+
+            bool success = CoinManager.Instance.TrySpendPlayerCoins(cost);
+            if (!success)
+            {
+                Debug.LogWarning("[Tutorial] Player does not have enough coins for the tutorial summon.");
+                return;
+            }
+            GachaManager.Instance.DebugSummonButton(); 
             TroopInventory.Instance.AddTroop(tutorialFirstTroop);
             gaveFirstTroop = true;
+
+            GachaManager.Instance.IncreaseSummonCost();
+            GachaManager.Instance.UpdateSummonCostUI();
+
+            Debug.Log("[Tutorial] First tutorial troop granted and cost deducted.");
         }
     }
+
 
     private void SetPlayerButtons(bool state)
     {
@@ -234,21 +267,11 @@ public class TutorialManager : MonoBehaviour
         ShowStep();
         yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
         ResumeGame();
-        CoinManager.Instance.AddPlayerCoins(500);
+        CoinManager.Instance.AddPlayerCoins(50);
         EnableOnly("Summon Button");
         waitingForSecondSummon = true;
         secondSummonCount = 0;
         canAdvance = false;
-    }
-
-    private IEnumerator ResetSceneAfterDelay()
-    {
-        yield return new WaitForSecondsRealtime(2f);
-        Time.timeScale = 1f;
-        DisableTutorial();
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-        );
     }
 
     private IEnumerator ClosePanelOnContinue()
@@ -265,47 +288,71 @@ public class TutorialManager : MonoBehaviour
 
     public void OnTutorialTowerDestroyed(Tower destroyedTower)
     {
-        if (!tutorialActive) return;
+    if (!tutorialActive) return;
 
-        Debug.Log("[Tutorial] Completed!");
-        // Disable tutorial
-        tutorialActive = false;
-        EnemyDeployManager.tutorialActive = false;
+    Debug.Log("[Tutorial] Completed!");
 
-        // Free gacha operations
-        if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
+    // Pause game and show the final tutorial message
+    PauseGame();
+    dialoguePanel.SetActive(true);
+    dialogueText.text = "Great job! Tutorial Complete!";
+    dialogueImageHolder.gameObject.SetActive(false);
 
-        // First tutorial
-        if (!TutorialDebug)
-        {
-            PlayerPrefs.SetInt("TutorialCompleted", 1);
-            PlayerPrefs.Save();
-        }
-
-        // Show completion message
-        dialoguePanel.SetActive(true);
-        dialogueText.text = "Great job! Tutorial Complete!";
-        dialogueImageHolder.gameObject.SetActive(false);
-
-        // Reload scene normally
-        StartCoroutine(ReloadSceneWithoutTutorial());
+    // Wait for player input
+    StartCoroutine(WaitForTutorialFinish());
     }
 
-    private IEnumerator ReloadSceneWithoutTutorial()
+    private IEnumerator WaitForTutorialFinish()
     {
-        yield return new WaitForSecondsRealtime(2f);
-        Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-        );
+    // Wait for the user to manually confirm completion
+    yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
+
+    // Now officially complete the tutorial
+    tutorialActive = false;
+    EnemyDeployManager.tutorialActive = false;
+
+    if (GachaManager.Instance != null)
+        GachaManager.Instance.tutorialLocked = false;
+
+    if (!TutorialDebug)
+    {
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
+    }
+
+    // UI cleaning and resume game 
+    dialoguePanel.SetActive(false);
+    ResumeGame();
+
+    // Reload scene without tutorial
+    UnityEngine.SceneManagement.SceneManager.LoadScene(
+        UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+    );
     }
 
     public void OnTutorialSummonClicked()
     {
         if (waitingForSecondSummon)
         {
+            // --- Deduct cost ---
+            int cost = GachaManager.Instance.GetCurrentSummonCost();
+            bool success = CoinManager.Instance.TrySpendPlayerCoins(cost);
+
+            if (!success)
+            {
+                Debug.LogWarning("[Tutorial] Not enough coins for second tutorial summons!");
+                return;
+            }
+
+            // --- Perform actual summon ---
             TroopInventory.Instance.AddTroop(tutorialSecondTroop);
+
+            // Update cost 
+            GachaManager.Instance.IncreaseSummonCost();
+            GachaManager.Instance.UpdateSummonCostUI();
+
             secondSummonCount++;
+
             if (secondSummonCount == 1)
             {
                 dialogueText.text = "Good! Summon two more!";
@@ -319,26 +366,36 @@ public class TutorialManager : MonoBehaviour
             if (secondSummonCount >= 3)
             {
                 waitingForSecondSummon = false;
-                SetPlayerButtons(false);
-                EnableOnly("Merge Button");
-                dialoguePanel.SetActive(true);
-                dialogueText.text = "Great job! Now merge your troops!";
-                PauseGame();
-                waitingForMerge = true;
+                StartCoroutine(ShowMergeAfterDelay());
                 return;
             }
         }
 
         if (!waitingForSummon) return;
+
         waitingForSummon = false;
         ResumeGame();
         GiveFirstTutorialTroop();
-        EnableOnly("Deploy Button");
-        currentStep++;
-        ShowStep();
-        waitingForDeploy = true;
+        waitingForSlotClick = true;
+
+        EnableOnly("Slot Button");
         canAdvance = false;
     }
+
+    private IEnumerator ShowMergeAfterDelay()
+    {
+    yield return new WaitForSeconds(0.5f); // delay for animation
+
+    SetPlayerButtons(false);
+    EnableOnly("Merge Button");
+
+    dialoguePanel.SetActive(true);
+    dialogueText.text = "Great job! Now merge your troops!";
+
+    PauseGame();
+    waitingForMerge = true;
+    }   
+
 
     public void OnTutorialDeployClicked()
     {
@@ -349,19 +406,21 @@ public class TutorialManager : MonoBehaviour
             waitingForDeploy = false;
             mergeCompleted = false;
 
-            // Show final deploy message
             dialoguePanel.SetActive(true);
-            dialogueText.text = "Great work! You've deployed your merged troop!";
+            dialogueText.text = "Great work! Now destroy the towers!";
             dialogueImageHolder.gameObject.SetActive(false);
             ResumeGame();
             StartCoroutine(ClosePanelOnContinue());
             return;
         }
+        currentStep++;
+        ShowStep(false);
 
         waitingForDeploy = false;
         SetPlayerButtons(true);
         dialoguePanel.SetActive(false);
         ResumeGame();
+
         StartCoroutine(SpawnFirstEnemyAfterDelay());
         StartCoroutine(SpawnNextEnemySequence());
     }
@@ -372,25 +431,51 @@ public class TutorialManager : MonoBehaviour
         waitingForMerge = false;
         mergeCompleted = true;
         dialoguePanel.SetActive(true);
-        dialogueText.text = "Excellent! Now deploy your merged troop!";
+        dialogueText.text = "Excellent! You just merged your troops!";
         PauseGame();
         EnableOnly("Deploy Button");
         waitingForDeploy = true;
     }
 
+    public void OnSlotClicked()
+    {
+        if (!waitingForSlotClick) return;
+
+        waitingForSlotClick = false;
+
+        EnableOnly("Deploy Button");
+        dialoguePanel.SetActive(true);
+        dialogueText.text = "Great! Now press Deploy!";
+
+        waitingForDeploy = true;
+        PauseGame();
+    }
+
     private void PauseGame()
     {
-        StartCoroutine(PauseNextFrame());
+        if (pauseCoroutine != null)
+        {
+            StopCoroutine(pauseCoroutine);
+            pauseCoroutine = null;
+        }
+        pauseCoroutine = StartCoroutine(PauseNextFrame());
     }
 
     private IEnumerator PauseNextFrame()
     {
         yield return null;
         Time.timeScale = 0f;
+        pauseCoroutine = null;
     }
 
     private void ResumeGame()
     {
+        // Resume the game normally 
+        if (pauseCoroutine != null)
+        {
+            StopCoroutine(pauseCoroutine);
+            pauseCoroutine = null;
+        }
         Time.timeScale = 1f;
     }
 
