@@ -381,7 +381,10 @@ private void ShootProjectileInDirection(Vector2 direction)
         }
 
         aliveEnemies.Remove(this);
-        
+
+        // Award coins to player based on enemy rarity
+        AwardCoinsForKill();
+
         // Disable all colliders
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
@@ -398,5 +401,49 @@ private void ShootProjectileInDirection(Vector2 direction)
             yield return new WaitForSeconds(deathAnimLength);
         }
         Destroy(gameObject);
+    }
+
+    private void AwardCoinsForKill()
+    {
+        if (troopData == null)
+        {
+            Debug.LogWarning("[Enemy] Cannot award coins - no troop data found!");
+            return;
+        }
+
+        int coinsEarned = 0;
+
+        switch (troopData.rarity)
+        {
+            case TroopRarity.Common:
+                coinsEarned = 2;
+                break;
+            case TroopRarity.Rare:
+                coinsEarned = 5;
+                break;
+            case TroopRarity.Epic:
+                coinsEarned = 10;
+                break;
+            case TroopRarity.Legendary:
+                coinsEarned = 15;
+                break;
+            case TroopRarity.Mythic:
+                coinsEarned = 20; // Bonus for mythic enemies
+                break;
+            default:
+                coinsEarned = 1; // Fallback
+                break;
+        }
+
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.AddPlayerCoins(coinsEarned);
+            Debug.Log($"[Enemy] 💰 ENEMY DEFEATED! {troopData.displayName} ({troopData.rarity}) → +{coinsEarned} coins awarded!");
+            Debug.Log($"[Enemy] 🏆 Kill Reward: {coinsEarned} coins added to player total");
+        }
+        else
+        {
+            Debug.LogError("[Enemy] CoinManager not found - cannot award coins for enemy kill!");
+        }
     }
 }

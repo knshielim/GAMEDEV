@@ -17,7 +17,7 @@ public class EnemyDeployManager : MonoBehaviour
 
     [Header("Base Difficulty Settings")]
     [Tooltip("Base seconds between spawn attempts (will be reduced for harder levels).")]
-    public float baseSpawnInterval = 7f;
+    public float baseSpawnInterval = 30f;
 
     [Tooltip("Base coin cost per spawned troop.")]
     public int baseTroopCost = 50;
@@ -63,6 +63,16 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void Awake()
     {
+        // Ensure singleton pattern
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning($"[EnemyDeploy] Destroying duplicate EnemyDeployManager instance");
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        Debug.Log($"[EnemyDeploy] EnemyDeployManager instance created");
+
         InitializeLevelConfigs();
     }
 
@@ -120,12 +130,13 @@ public class EnemyDeployManager : MonoBehaviour
 
     private TroopRarity GetRandomRarityByWeights()
     {
-        var config = levelConfigs[currentLevel];
-        float total = config.rarityWeights.Values.Sum();
-        float roll = Random.Range(0, total);
+        // Use balanced rates from SpawnRateBalancer
+        var balancedRates = SpawnRateBalancer.Instance.GetCurrentRates();
+        float total = balancedRates.Values.Sum();
+        float roll = Random.Range(0f, total);
 
         float cumulative = 0f;
-        foreach (var kv in config.rarityWeights)
+        foreach (var kv in balancedRates)
         {
             cumulative += kv.Value;
             if (roll < cumulative)
@@ -185,7 +196,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 300,   // awalnya 400
             coinGenerationMultiplier = 1.3f, // awalnya 1.3f
-            spawnIntervalMultiplier = 0.9f, // awalnya 0.85f
+            spawnIntervalMultiplier = 0.8f, // 24 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
 
@@ -212,7 +223,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 600,
             coinGenerationMultiplier = 2.0f,
-            spawnIntervalMultiplier = 0.7f, // Spawns 30% faster
+            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns - challenging
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 25f },    // 25% Common
@@ -261,6 +272,8 @@ public class EnemyDeployManager : MonoBehaviour
         Debug.Log($"[EnemyDeploy] Level {currentLevel} configured: " +
                   $"Spawn Interval={currentSpawnInterval:F2}s, " +
                   $"Mythic Enabled={config.canDeployMythic}");
+        Debug.Log($"[EnemyDeploy] ⏱️  Enemy spawn timing: Every {currentSpawnInterval:F1} seconds (base: {baseSpawnInterval:F1}s × {levelConfigs[currentLevel].spawnIntervalMultiplier:F1})");
+        Debug.Log($"[EnemyDeploy] 💰 Enemy coin cost per spawn: {currentTroopCost} coins");
     }
 
     private void Update()
@@ -292,6 +305,9 @@ public class EnemyDeployManager : MonoBehaviour
         if (_spawnTimer >= currentSpawnInterval)
         {
             _spawnTimer = 0f;
+            Debug.Log($"[EnemyDeploy] 🕒 SPAWN TIMER TRIGGERED (Level {currentLevel})");
+            Debug.Log($"[EnemyDeploy] ⏱️  Spawn interval: {currentSpawnInterval:F1} seconds");
+            Debug.Log($"[EnemyDeploy] 🎯 Attempting to spawn enemy unit...");
             TrySpawnEnemy();
         }
 
@@ -452,6 +468,17 @@ public class EnemyDeployManager : MonoBehaviour
 
             string mythicTag = isMythic ? " 🌟 MYTHIC 🌟" : "";
             Debug.Log($"[EnemyDeploy] Level {currentLevel} spawned {data.displayName} ({data.rarity}){mythicTag}");
+
+            // Record spawn for balancing system
+            SpawnRateBalancer.Instance.RecordSpawn(data.rarity);
+
+            // Activate reactive boost if enemy spawns high-rarity unit
+            if (data.rarity == TroopRarity.Epic || data.rarity == TroopRarity.Legendary)
+            {
+                Debug.Log($"[EnemyDeploy] 🔔 HIGH-RARITY ENEMY SPAWN DETECTED: {data.displayName} ({data.rarity})");
+                Debug.Log($"[EnemyDeploy] 🎯 This will activate reactive balancing for the player!");
+                SpawnRateBalancer.Instance.ActivateReactiveBoost(data.rarity);
+            }
         }
         else
         {

@@ -44,9 +44,6 @@ public class GachaManager : MonoBehaviour
     [Header("Spawn Position")]
     [SerializeField] private Transform playerSpawnPoint;
 
-    [Header("Upgrade Settings")]
-    [SerializeField, Range(0, 10)] private int upgradeLevel = 0;
-
     [Header("UI References")]
     public TextMeshProUGUI upgradeButtonText;
     public Image upgradeButtonImage;
@@ -55,6 +52,13 @@ public class GachaManager : MonoBehaviour
 
     [Tooltip("Text to display current summon cost")]
     public TextMeshProUGUI summonCostText;
+
+    [Header("Summon Rate Tooltip")]
+    [Tooltip("Panel to show summon rates on hover")]
+    public GameObject summonRateTooltip;
+
+    [Tooltip("Text component to display the summon rate information")]
+    public TextMeshProUGUI summonRateText;
 
     private Dictionary<TroopRarity, List<TroopData>> _troopsByRarity;
     private bool tutorialFirstSummonDone = false;
@@ -65,7 +69,7 @@ public class GachaManager : MonoBehaviour
     {
         return allAvailableTroops;
     }
-    public int UpgradeLevel => upgradeLevel;
+    public int UpgradeLevel => SpawnRateBalancer.Instance?.GetUpgradeLevel() ?? 0;
 
     private void Awake()
     {
@@ -86,8 +90,13 @@ public class GachaManager : MonoBehaviour
         tutorialFirstSummonDone = false;
 
         InitializeTroopCache();
-        ApplyUpgradeRates();
         ValidateDropRates();
+
+        // Hide tooltip initially
+        if (summonRateTooltip != null)
+        {
+            summonRateTooltip.SetActive(false);
+        }
     }
 
     // ✅ ADDED: Clean up instance reference on destroy
@@ -110,6 +119,42 @@ public class GachaManager : MonoBehaviour
         Debug.Log($"GameManager exists: {GameManager.Instance != null}");
         if (GameManager.Instance != null)
             Debug.Log($"Game Over: {GameManager.Instance.IsGameOver()}");
+
+        // Add spawn rate balancer debug info
+        Debug.Log($"=== SPAWN RATE BALANCER DEBUG ===");
+        Debug.Log(SpawnRateBalancer.Instance.GetBalancingInfo());
+    }
+
+    // Summon button hover functionality
+    public void OnSummonButtonHoverEnter()
+    {
+        if (summonRateTooltip != null)
+        {
+            summonRateTooltip.SetActive(true);
+            UpdateSummonRateTooltip();
+        }
+    }
+
+    public void OnSummonButtonHoverExit()
+    {
+        if (summonRateTooltip != null)
+        {
+            summonRateTooltip.SetActive(false);
+        }
+    }
+
+    private void UpdateSummonRateTooltip()
+    {
+        if (summonRateText == null || SpawnRateBalancer.Instance == null) return;
+
+        var currentRates = SpawnRateBalancer.Instance.GetCurrentRates();
+
+        string tooltipText = $"Common: {currentRates[TroopRarity.Common]:F1}%\n";
+        tooltipText += $"Rare: {currentRates[TroopRarity.Rare]:F1}%\n";
+        tooltipText += $"Epic: {currentRates[TroopRarity.Epic]:F1}%\n";
+        tooltipText += $"Legendary: {currentRates[TroopRarity.Legendary]:F1}%";
+
+        summonRateText.text = tooltipText;
     }
     
     private void Start()
@@ -226,6 +271,17 @@ public class GachaManager : MonoBehaviour
         TroopInventory.Instance.RefreshUI();
         Debug.Log($"🎉 [Gacha] Pulled {newTroop.displayName} ({newTroop.rarity})");
 
+        // Record spawn for balancing system
+        SpawnRateBalancer.Instance.RecordSpawn(newTroop.rarity);
+
+        // Activate reactive boost if player spawns high-rarity unit (vice versa)
+        if (newTroop.rarity == TroopRarity.Epic || newTroop.rarity == TroopRarity.Legendary)
+        {
+            Debug.Log($"[Gacha] 🔔 HIGH-RARITY PLAYER SUMMON DETECTED: {newTroop.displayName} ({newTroop.rarity})");
+            Debug.Log($"[Gacha] 🎯 This activates reactive balancing (vice versa effect)!");
+            SpawnRateBalancer.Instance.ActivateReactiveBoost(newTroop.rarity);
+        }
+
         // Update summon cost display after successful summon
         UpdateSummonCostUI();
 
@@ -234,14 +290,16 @@ public class GachaManager : MonoBehaviour
 
     private TroopRarity DetermineRarity()
     {
+        // Use balanced rates from SpawnRateBalancer
+        var balancedRates = SpawnRateBalancer.Instance.GetCurrentRates();
         float randomValue = UnityEngine.Random.Range(0f, 100f);
         float cumulative = 0f;
 
-        foreach (var rate in dropRates)
+        foreach (var rate in balancedRates)
         {
-            cumulative += rate.dropPercentage;
+            cumulative += rate.Value;
             if (randomValue < cumulative)
-                return rate.rarity;
+                return rate.Key;
         }
 
         return TroopRarity.Common;
@@ -305,76 +363,31 @@ public class GachaManager : MonoBehaviour
     // -------------------- UPGRADE SYSTEM --------------------
     public void UpgradeGachaSystem()
     {
-        AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
-        if (upgradeLevel >= 10) return;
+        if (SpawnRateBalancer.Instance == null) return;
 
-        int cost = GetUpgradeCost();
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
+        if (SpawnRateBalancer.Instance.GetUpgradeLevel() >= 10) return;
+
+        int cost = SpawnRateBalancer.Instance.GetUpgradeCost();
         if (!CoinManager.Instance.TrySpendPlayerCoins(cost)) return;
 
-        upgradeLevel++;
-        ApplyUpgradeRates();
+        SpawnRateBalancer.Instance.UpgradeSummonSystem();
         UpdateUpgradeUI();
 
-        Debug.Log($"[Gacha] Upgraded to level {upgradeLevel} (Spent {cost} coins)");
+        Debug.Log($"[Gacha] Upgraded to level {SpawnRateBalancer.Instance.GetUpgradeLevel()} (Spent {cost} coins)");
     }
 
     public void SetUpgradeLevel(int level)
     {
-        upgradeLevel = Mathf.Clamp(level, 0, 10);
-        ApplyUpgradeRates();
+        if (SpawnRateBalancer.Instance == null) return;
+
+        SpawnRateBalancer.Instance.SetUpgradeLevel(level);
         UpdateUpgradeUI();
     }
 
-    private int GetUpgradeCost() =>
-        (upgradeLevel >= 10) ? int.MaxValue : 20 + (upgradeLevel * 15);
-
-    private void ApplyUpgradeRates()
+    private int GetUpgradeCost()
     {
-        var modifiers = new Dictionary<int, (float common, float rare, float epic, float legendary, float mythic)>
-        {
-            {0, (0f,0f,0f,0f,0f)},
-            {1,(-8f,5f,2.5f,0.4f,0.1f)},
-            {2,(-15f,9f,4.5f,1f,0.5f)},
-            {3,(-22f,13f,6.5f,1.2f,1.3f)},
-            {4,(-30f,16f,9f,2.5f,2.5f)},
-            {5,(-35f,18f,11f,3f,3f)},
-            {6,(-38f,20f,12f,3.5f,3.5f)},
-            {7,(-41f,22f,13f,4f,4f)},
-            {8,(-44f,24f,14f,4.5f,4.5f)},
-            {9,(-47f,26f,15f,5f,5f)},
-            {10,(-50f,28f,16f,5.5f,5.5f)}
-        };
-
-        ResetDropRatesToDefault();
-
-        if (modifiers.TryGetValue(upgradeLevel, out var m))
-        {
-            dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage += m.common;
-            dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage += m.rare;
-            dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage += m.epic;
-            dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage += m.legendary;
-            dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage += m.mythic;
-        }
-
-        NormalizeDropRates();
-    }
-
-    private void ResetDropRatesToDefault()
-    {
-        dropRates.Find(r => r.rarity == TroopRarity.Common).dropPercentage = 80f;
-        dropRates.Find(r => r.rarity == TroopRarity.Rare).dropPercentage = 15f;
-        dropRates.Find(r => r.rarity == TroopRarity.Epic).dropPercentage = 4f;
-        dropRates.Find(r => r.rarity == TroopRarity.Legendary).dropPercentage = 1f;
-        dropRates.Find(r => r.rarity == TroopRarity.Mythic).dropPercentage = 0f;
-    }
-
-    private void NormalizeDropRates()
-    {
-        float total = dropRates.Sum(r => r.dropPercentage);
-        if (total <= 0f) return;
-
-        foreach (var rate in dropRates)
-            rate.dropPercentage = (rate.dropPercentage / total) * 100f;
+        return SpawnRateBalancer.Instance?.GetUpgradeCost() ?? int.MaxValue;
     }
 
     // -------------------- SUMMON COST SYSTEM --------------------
@@ -406,10 +419,12 @@ public class GachaManager : MonoBehaviour
 
     public void UpdateUpgradeUI()
     {
-        if (upgradeButtonText == null || upgradeButtonImage == null)
+        if (SpawnRateBalancer.Instance == null || upgradeButtonText == null || upgradeButtonImage == null)
             return;
 
-        if (upgradeLevel >= 10)
+        int currentLevel = SpawnRateBalancer.Instance.GetUpgradeLevel();
+
+        if (currentLevel >= 10)
         {
             upgradeButtonText.text = "Max level reached";
             upgradeButtonImage.sprite = unaffordableSprite;
@@ -420,7 +435,7 @@ public class GachaManager : MonoBehaviour
             return;
         }
 
-        int nextLevel = upgradeLevel + 1;
+        int nextLevel = currentLevel + 1;
         int cost = GetUpgradeCost();
 
         bool canAfford = CoinManager.Instance != null &&
