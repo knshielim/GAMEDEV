@@ -777,7 +777,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 702.22, y: 478.33072}
+  m_AnchoredPosition: {x: 673.5, y: 442}
   m_SizeDelta: {x: 213.45, y: 76.0394}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &46070501
@@ -4168,7 +4168,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 893.6, y: 471.1}
+  m_AnchoredPosition: {x: 893.6, y: 439}
   m_SizeDelta: {x: 150.5035, y: 157.819}
   m_Pivot: {x: 0.49999997, y: 0.5}
 --- !u!114 &326050231
@@ -21652,9 +21652,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e24a9a8ea9de0674fa0a1d6bdd0d52c1, type: 2}
   - {fileID: 11400000, guid: 93e75359d4a0ddd4b81ec1a80435849f, type: 2}
   mythicSpawnInterval: 60
-  debugUseSingleTroop: 0
-  debugSingleTroop: {fileID: 11400000, guid: 78090e3c1da1a81438bb0babad3df43f, type: 2}
-  debugSpawnOnlyOnce: 0
+  debugUseSingleTroop: 1
+  debugSingleTroop: {fileID: 11400000, guid: 1fd25683046b70d4393a12e0b04e1255, type: 2}
+  debugSpawnOnlyOnce: 1
 --- !u!4 &1976493372
 Transform:
   m_ObjectHideFlags: 0
@@ -22782,7 +22782,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -694.03, y: 456}
+  m_AnchoredPosition: {x: -694.03, y: 423.90002}
   m_SizeDelta: {x: 394.81, y: 84.1799}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2067961227
