@@ -21652,8 +21652,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e24a9a8ea9de0674fa0a1d6bdd0d52c1, type: 2}
   - {fileID: 11400000, guid: 93e75359d4a0ddd4b81ec1a80435849f, type: 2}
   mythicSpawnInterval: 60
-  debugUseSingleTroop: 1
-  debugSingleTroop: {fileID: 11400000, guid: aa82c631e37b388499e4188408579b75, type: 2}
+  debugUseSingleTroop: 0
+  debugSingleTroop: {fileID: 11400000, guid: c790f131b0555cd459791918c75b0ce0, type: 2}
   debugSpawnOnlyOnce: 1
 --- !u!4 &1976493372
 Transform:
