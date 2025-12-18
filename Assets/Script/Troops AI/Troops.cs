@@ -46,8 +46,14 @@ public class Troops : Unit
         CircleCollider2D cc = GetComponent<CircleCollider2D>();
         if (cc != null)
         {
+            float oldRadius = cc.radius;
             cc.radius = attackRange;
             cc.isTrigger = true;
+            Debug.Log($"[{name}] CircleCollider2D: old radius {oldRadius:F2} -> new radius {cc.radius:F2} (attackRange: {attackRange:F2})");
+        }
+        else
+        {
+            Debug.Log($"[{name}] CircleCollider2D not found!");
         }
         aliveTroops.Add(this);
 
@@ -85,11 +91,8 @@ public class Troops : Unit
                 else
                 {
                     Vector2 dir = (currentTarget.transform.position - transform.position).normalized;
-                    
-                    // Lock movement on the X axis only
-                    dir.y = 0f;
-                    dir = dir.normalized;
 
+                    // Allow movement in both X and Y directions to reach targets
                     transform.Translate(dir * moveSpeed * Time.deltaTime);
                     SetAnimationState(true, false); // walk anim
                     isAttacking = false;

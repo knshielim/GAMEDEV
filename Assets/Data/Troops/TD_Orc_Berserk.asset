@@ -18,7 +18,7 @@ MonoBehaviour:
   maxHealth: 135
   attack: 15
   moveSpeed: 1.7
-  attackInterval: 0.9
+  attackInterval: 0.7
   level: 1
   isRanged: 0
   attackRange: 3

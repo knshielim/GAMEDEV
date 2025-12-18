@@ -18,10 +18,10 @@ MonoBehaviour:
   maxHealth: 190
   attack: 18
   moveSpeed: 1.7
-  attackInterval: 0.9
+  attackInterval: 0.7
   level: 1
   isRanged: 0
-  attackRange: 0.5
+  attackRange: 2
   projectilePrefab: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3
