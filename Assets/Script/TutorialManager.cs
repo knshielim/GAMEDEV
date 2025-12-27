@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class TutorialManager : MonoBehaviour
@@ -84,7 +85,20 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // Tutorial should run normally
+        // For Level 1, don't start tutorial yet - wait for dialogue to complete
+        // For other levels, tutorial should run normally
+        int currentLevel = GetCurrentLevel();
+        if (currentLevel == 1)
+        {
+            Debug.Log("[TutorialManager] Level 1 detected - waiting for dialogue completion before starting tutorial");
+            tutorialActive = false; // Don't start yet
+            EnemyDeployManager.tutorialActive = false;
+            if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
+            // Stay enabled so we can start later
+            return;
+        }
+
+        // For other levels, tutorial should run normally
         tutorialActive = true;
         EnemyDeployManager.tutorialActive = true;
         if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = true;
@@ -325,19 +339,22 @@ public class TutorialManager : MonoBehaviour
         // Wait for player to acknowledge completion
         yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
 
-        Debug.Log("[Tutorial] Player acknowledged tutorial completion - starting real gameplay");
+        Debug.Log("[Tutorial] Player acknowledged tutorial completion - resetting Level 1");
 
         // Hide tutorial panel
         dialoguePanel.SetActive(false);
 
-        // Resume game and start actual gameplay
+        // Resume game briefly for scene reload
         ResumeGame();
 
-        // Small delay for smooth transition
-        yield return new WaitForSeconds(0.5f);
+        // Small delay before reload
+        yield return new WaitForSeconds(0.2f);
 
-        // Start the actual level gameplay
-        StartCoroutine(StartActualLevelplay());
+        // Reset/reload Level 1 scene
+        // Now that tutorial is completed, Level 1 will go directly to gameplay
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+        );
     }
 
     public void SkipTutorial()
@@ -570,6 +587,41 @@ public class TutorialManager : MonoBehaviour
         StartCoroutine(StartActualLevelplay());
     }
 
+    private int GetCurrentLevel()
+    {
+        // Try to get from GameManager first
+        if (GameManager.Instance != null)
+        {
+            return (int)GameManager.Instance.currentLevel;
+        }
+
+        // Try to get from LevelManager
+        if (LevelManager.Instance != null)
+        {
+            return LevelManager.Instance.GetCurrentLevel();
+        }
+
+        // Fallback: parse from scene name
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName.StartsWith("Level "))
+        {
+            string levelStr = sceneName.Substring(6);
+            if (int.TryParse(levelStr, out int level))
+            {
+                return level;
+            }
+        }
+
+        // Last fallback
+        int buildIndex = SceneManager.GetActiveScene().buildIndex;
+        if (buildIndex >= 2)
+        {
+            return buildIndex - 1; // Level 1 scene (build index 2) = level 1
+        }
+
+        return 1; // Default fallback
+    }
+
     public void DisableTutorial()
     {
         tutorialActive = false;
@@ -581,18 +633,15 @@ public class TutorialManager : MonoBehaviour
     {
         Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
 
-        if (tutorialActive || PlayerPrefs.GetInt("TutorialCompleted", 0) == 1)
-        {
-            Debug.Log("[TutorialManager] Tutorial already active or completed, not starting");
-            return; // Already active or completed
-        }
+        // Don't check tutorialActive here - this method is specifically called to start tutorial after dialogue
+        // The Awake method might have set tutorialActive, but we override it here
 
         Debug.Log("[TutorialManager] Starting tutorial after dialogue completion");
 
         // Ensure we're enabled
         this.enabled = true;
 
-        // Initialize tutorial state
+        // Initialize tutorial state (force it active)
         tutorialActive = true;
         EnemyDeployManager.tutorialActive = true;
         if (GachaManager.Instance != null)
