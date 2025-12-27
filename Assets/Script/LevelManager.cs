@@ -8,7 +8,7 @@ public class LevelManager : MonoBehaviour
     public static LevelManager Instance { get; private set; }
     
     [Header("Level Settings")]
-    [SerializeField] private int totalLevels = 5;
+    [SerializeField] private int totalLevels = 5; // ✅ FIXED: Total levels = 5
     private int currentLevel = 1;
     
     [Header("UI References (Optional - Tower handles these)")]
@@ -23,142 +23,80 @@ public class LevelManager : MonoBehaviour
     
     private void Awake()
     {
-        //Debug.Log($"[LevelManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} (buildIndex: {gameObject.scene.buildIndex}). Current Instance: {Instance}");
+        Debug.Log($"[LevelManager] Awake called for {gameObject.name} in scene {gameObject.scene.name} - totalLevels: {totalLevels}");
 
-        // Setup Singleton with scene-aware logic
         if (Instance != null && Instance != this)
         {
-            // If we're in a game scene and there's already a persistent instance, destroy this one
-            // The persistent instance will get updated via OnSceneLoaded
-            
-            if (gameObject.scene.buildIndex > 0) // Game scenes (not main menu)
+            Debug.Log($"[LevelManager] Destroying duplicate LevelManager - existing instance has totalLevels: {Instance.totalLevels}");
+            if (gameObject.scene.buildIndex > 0)
             {
-                //Debug.Log("[LevelManager] Destroying duplicate LevelManager in game scene");
                 Destroy(gameObject);
                 return;
             }
-            else // Main menu scene - destroy the old persistent instance
+            else
             {
-                //Debug.Log("[LevelManager] Destroying old LevelManager for main menu");
+                Debug.Log($"[LevelManager] Destroying old LevelManager instance");
                 Destroy(Instance.gameObject);
             }
-            
         }
 
         Instance = this;
-        // Only use DontDestroyOnLoad for game scenes, not main menu
-        /*
-        if (gameObject.scene.buildIndex > 0)
-        {
-            DontDestroyOnLoad(gameObject);
-            //Debug.Log("[LevelManager] Set DontDestroyOnLoad for game scene");
-        }
-        */
-        
-        //Debug.Log($"[LevelManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
-
-        // Subscribe to scene loading events
-        //SceneManager.sceneLoaded += OnSceneLoaded;
+        Debug.Log($"[LevelManager] Set as Instance with totalLevels: {totalLevels}");
     }
     
     private void Start()
     {
-        // Get current level by parsing scene name (more reliable than build index)
-        string sceneName = SceneManager.GetActiveScene().name;
-        currentLevel = ParseLevelFromSceneName(sceneName);
+        // ✅ CRITICAL FIX: Force totalLevels to 5 (override any Inspector settings)
+        totalLevels = 5;
 
-        // Fallback to build index logic if scene name parsing fails
-        if (currentLevel == 0)
-        {
-            currentLevel = SceneManager.GetActiveScene().buildIndex;
-            // Adjust for scene ordering: MainMenu=0, LevelSelect=1, Level 1=2, etc.
-            if (currentLevel >= 2)
-            {
-                currentLevel = currentLevel - 1; // Level 1 scene (build index 2) = level 1
-            }
-        }
+        // ✅ FIX: More robust level detection
+        currentLevel = DetermineCurrentLevel();
 
-        Debug.Log($"[LevelManager] Started Level {currentLevel}/{totalLevels} (Scene: {sceneName}, BuildIndex: {SceneManager.GetActiveScene().buildIndex})");
+        Debug.Log($"[LevelManager] ✅ Started Level {currentLevel}/{totalLevels} (Scene: {SceneManager.GetActiveScene().name}, BuildIndex: {SceneManager.GetActiveScene().buildIndex})");
 
         // Ensure time scale is normal
         Time.timeScale = 1f;
     }
 
-    private int ParseLevelFromSceneName(string sceneName)
+    // ✅ NEW: Better level detection method
+    private int DetermineCurrentLevel()
     {
+        string sceneName = SceneManager.GetActiveScene().name;
+        int buildIndex = SceneManager.GetActiveScene().buildIndex;
+
+        Debug.Log($"[LevelManager] 🔍 Determining level from scene: '{sceneName}' (buildIndex: {buildIndex}), totalLevels: {totalLevels}");
+        
+        // Method 1: Parse from scene name (most reliable)
         if (sceneName.StartsWith("Level "))
         {
-            string levelStr = sceneName.Substring(6); // Remove "Level "
+            string levelStr = sceneName.Substring(6).Trim();
+            Debug.Log($"[LevelManager] 🔍 Extracted level string: '{levelStr}'");
             if (int.TryParse(levelStr, out int level))
             {
-                return level;
+                Debug.Log($"[LevelManager] ✅ Parsed level {level} from scene name (clamped to 1-{totalLevels})");
+                return Mathf.Clamp(level, 1, totalLevels);
             }
-        }
-        return 0; // Not a level scene
-    }
-
-    // Called when a new scene is loaded
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        //Debug.Log($"[LevelManager] OnSceneLoaded called for scene '{scene.name}' (buildIndex: {scene.buildIndex}), Instance: {Instance}, this: {this}");
-
-        // If this is a game scene and we're the persistent instance, update our references and fix buttons
-        if (scene.buildIndex > 0 && Instance == this)
-        {
-            // Find the scene's LevelManager object and copy its references
-            LevelManager[] sceneManagers = FindObjectsOfType<LevelManager>();
-            //Debug.Log($"[LevelManager] Found {sceneManagers.Length} LevelManager instances");
-            foreach (LevelManager lm in sceneManagers)
+            else
             {
-                //Debug.Log($"[LevelManager] Checking LM: {lm}, scene: {lm.gameObject.scene.name}, isThis: {lm == this}");
-                if (lm != this && lm.gameObject.scene == scene)
-                {
-                    // Transfer references from the scene LevelManager to this persistent one
-                    totalLevels = lm.totalLevels;
-                    winPanel = lm.winPanel;
-                    gameOverPanel = lm.gameOverPanel;
-
-                    // Fix button OnClick events to point to the correct LevelManager instance
-                    FixButtonReferences(scene);
-
-                    // Destroy the scene LevelManager since we now have its references
-                    Destroy(lm.gameObject);
-                    Debug.Log("[LevelManager] Transferred references from scene LevelManager");
-                    break;
-                }
+                Debug.LogWarning($"[LevelManager] ❌ Failed to parse level from '{levelStr}'");
             }
-
-            // Always fix button references when loading a game scene
-            FixButtonReferences(scene);
         }
-
-        //Debug.Log($"[LevelManager] Scene '{scene.name}' loaded. Final Instance: {Instance}");
-    }
-
-    private void FixButtonReferences(Scene scene)
-    {
-        // Find buttons that call LevelManager methods and ensure they call the correct instance
-        Button[] buttons = FindObjectsOfType<Button>();
-        foreach (Button button in buttons)
+        else
         {
-            if (button.gameObject.scene == scene)
-            {
-                // Only fix buttons that LevelManager is responsible for
-                if (button.name.Contains("Restrart") || button.name.Contains("Restart"))
-                {
-                    button.onClick.RemoveAllListeners();
-                    button.onClick.AddListener(() => RestartLevel());
-                    Debug.Log($"[LevelManager] Fixed Restart button OnClick listener: {button.name}");
-                }
-                else if (button.name.Contains("MainMenu"))
-                {
-                    button.onClick.RemoveAllListeners();
-                    button.onClick.AddListener(() => LoadMainMenu());
-                    Debug.Log($"[LevelManager] Fixed MainMenu button OnClick listener: {button.name}");
-                }
-                // Don't touch other buttons (like summon buttons) - let other managers handle them
-            }
+            Debug.LogWarning($"[LevelManager] ❌ Scene name '{sceneName}' doesn't start with 'Level '");
         }
+        
+        // Method 2: Use build index
+        // Assuming: MainMenu=0, LevelSelect=1, Level1=2, Level2=3, Level3=4, Level4=5, Level5=6
+        if (buildIndex >= 2 && buildIndex <= (totalLevels + 1))
+        {
+            int level = buildIndex - 1; // Level 1 = buildIndex 2, so level = 2-1 = 1
+            Debug.Log($"[LevelManager] ✅ Calculated level {level} from build index {buildIndex}");
+            return level;
+        }
+        
+        Debug.LogWarning($"[LevelManager] ⚠️ Could not determine level, defaulting to 1");
+        return 1;
     }
     
     // Call this when player wins the level (called by Tower when enemy tower dies)
@@ -166,24 +104,22 @@ public class LevelManager : MonoBehaviour
     {
         if (isTransitioning)
             return;
-            
-        Debug.Log($"[LevelManager] Level {currentLevel} completed!");
-        
-        // Show end-of-level dialogue before proceeding
-        ShowLevelEndDialogue();
 
-        // Unlock the next level for level select
+        Debug.Log($"[LevelManager] 🏆 LevelCompleted called - Current: {currentLevel}, Total: {totalLevels}, IsLastLevel: {IsLastLevel()}");
+        Debug.Log($"[LevelManager] 🏆 Condition check: currentLevel({currentLevel}) < totalLevels({totalLevels}) = {currentLevel < totalLevels}");
+
+        ShowLevelEndDialogue();
         UnlockNextLevel();
 
         // Check if there are more levels
         if (currentLevel < totalLevels)
         {
+            Debug.Log($"[LevelManager] ➡️ Next level available: Level {currentLevel + 1}");
             StartCoroutine(LoadNextLevelDelayed());
         }
         else
         {
-            // All levels completed
-            Debug.Log("[LevelManager] 🎉 All levels completed! Game finished!");
+            Debug.Log($"[LevelManager] 🎉 ALL {totalLevels} LEVELS COMPLETED! Game finished!");
             StartCoroutine(GameCompletedDelayed());
         }
     }
@@ -223,11 +159,15 @@ public class LevelManager : MonoBehaviour
     // Load the next level
     public void LoadNextLevel()
     {
-        int nextSceneIndex = currentLevel + 1;
+        // ✅ FIX: Calculate next scene index properly
+        // If currentLevel = 4, next should be 5
+        // Scene build indices: MainMenu=0, LevelSelect=1, Level1=2, Level2=3, Level3=4, Level4=5, Level5=6
+        int nextLevel = currentLevel + 1;
+        int nextSceneIndex = nextLevel + 1; // Level 5 = build index 6
         
-        Debug.Log($"[LevelManager] Loading scene index {nextSceneIndex}");
+        Debug.Log($"[LevelManager] 🔄 Loading Level {nextLevel} (scene index {nextSceneIndex})");
         
-        if (nextSceneIndex <= totalLevels)
+        if (nextLevel <= totalLevels)
         {
             // Reset time scale before loading
             Time.timeScale = 1f;
@@ -244,7 +184,7 @@ public class LevelManager : MonoBehaviour
     // Restart current level (called by Restart button)
     public void RestartLevel()
     {
-        Debug.Log($"[LevelManager] Restarting level {currentLevel}");
+        Debug.Log($"[LevelManager] 🔄 Restarting level {currentLevel}");
         
         // Reset time scale
         Time.timeScale = 1f;
@@ -259,7 +199,7 @@ public class LevelManager : MonoBehaviour
         if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
 
-        Debug.Log("[LevelManager] Loading main menu (scene 0)");
+        Debug.Log("[LevelManager] 🏠 Loading main menu (scene 0)");
 
         // Reset time scale
         Time.timeScale = 1f;
@@ -270,10 +210,9 @@ public class LevelManager : MonoBehaviour
     // Call this when player fails/dies (called by Tower when player tower dies)
     public void GameOver()
     {
-        Debug.Log("[LevelManager] Game Over!");
+        Debug.Log("[LevelManager] 💀 Game Over!");
         if (AudioManager.Instance != null && AudioManager.Instance.gameOverSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.gameOverSFX);
-        // Time is already frozen by Tower.cs
 
         if (gameOverPanel != null)
         {
@@ -283,10 +222,8 @@ public class LevelManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Unsubscribe from events
         if (Instance == this)
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
             Instance = null;
         }
     }
@@ -294,7 +231,6 @@ public class LevelManager : MonoBehaviour
     // Show end-of-level dialogue
     private void ShowLevelEndDialogue()
     {
-        // Find DialogueManager and show end dialogue
         DialogueManager dialogueManager = FindObjectOfType<DialogueManager>();
         if (dialogueManager != null)
         {
@@ -308,22 +244,20 @@ public class LevelManager : MonoBehaviour
         int nextLevel = currentLevel + 1;
         if (nextLevel <= totalLevels)
         {
-            // Find LevelSelectManager in any loaded scenes
             LevelSelectManager levelSelect = FindObjectOfType<LevelSelectManager>();
             if (levelSelect != null)
             {
                 levelSelect.UnlockLevel(nextLevel);
-                Debug.Log($"[LevelManager] Unlocked Level {nextLevel} in level select!");
+                Debug.Log($"[LevelManager] 🔓 Unlocked Level {nextLevel} in level select!");
             }
             else
             {
-                // Save to PlayerPrefs directly if LevelSelectManager not found
                 int currentMax = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
                 if (nextLevel > currentMax)
                 {
                     PlayerPrefs.SetInt("MaxUnlockedLevel", nextLevel);
                     PlayerPrefs.Save();
-                    Debug.Log($"[LevelManager] Saved Level {nextLevel} unlock to PlayerPrefs!");
+                    Debug.Log($"[LevelManager] 💾 Saved Level {nextLevel} unlock to PlayerPrefs!");
                 }
             }
         }

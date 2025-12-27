@@ -146,6 +146,7 @@ public class DialogueManager : MonoBehaviour
     private bool isShowingEndDialogue = false;
     private bool isForcedEndDialogue = false;
     private bool hasCheckedIntroForCurrentScene = false;
+    private bool sceneChangedDuringDialogue = false;
 
     private void Awake()
     {
@@ -165,9 +166,29 @@ public class DialogueManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[Dialogue] 📦 OnSceneLoaded called for scene '{scene.name}' at {Time.time}s");
+
+        // ✅ FIX: Set flag to indicate scene changed - dialogue coroutines should check this
+        sceneChangedDuringDialogue = true;
+
+        // ✅ CRITICAL FIX: Don't update UI references if dialogue is currently active
+        // This prevents interrupting active dialogue during scene transitions
+        if (IsDialogueActive())
+        {
+            Debug.Log($"[Dialogue] ⏸️ Skipping UI component update - dialogue is currently active");
+            return;
+        }
+
         FindUIComponents();
+
         // Reset the intro check flag for the new scene
         hasCheckedIntroForCurrentScene = false;
+
+        // ✅ FIX: Don't try to show dialogue in scenes without UI components (like MainMenu)
+        if (scene.name == "MainMenu" || scene.name == "LevelSelect")
+        {
+            Debug.Log($"[Dialogue] Skipping dialogue check for menu scene: {scene.name}");
+            return;
+        }
     }
 
     private void FindUIComponents()
@@ -212,20 +233,31 @@ public class DialogueManager : MonoBehaviour
             }
         }
 
-        // ✅ CRITICAL FIX: Force DialoguePanel to render on top
+        // ✅ IMPROVED: DialoguePanel should now be a child of the main Canvas in each scene
         if (dialoguePanel != null)
         {
-            Canvas dialogueCanvas = dialoguePanel.GetComponent<Canvas>();
-            if (dialogueCanvas == null)
+            // Ensure the panel is active and properly parented under the main Canvas
+            dialoguePanel.SetActive(false); // Start hidden
+
+            // Check if it's properly parented
+            Canvas parentCanvas = dialoguePanel.GetComponentInParent<Canvas>();
+            if (parentCanvas != null)
             {
-                dialogueCanvas = dialoguePanel.AddComponent<Canvas>();
+                Debug.Log($"[Dialogue] ✅ DialoguePanel is child of Canvas: {parentCanvas.name}");
+
+                // ✅ FIX: Add Canvas Group to block raycasts on UI elements behind
+                CanvasGroup canvasGroup = dialoguePanel.GetComponent<CanvasGroup>();
+                if (canvasGroup == null)
+                {
+                    canvasGroup = dialoguePanel.AddComponent<CanvasGroup>();
+                }
+                canvasGroup.blocksRaycasts = true; // This should block clicks to buttons behind
+                Debug.Log($"[Dialogue] ✅ Set DialoguePanel blocksRaycasts: {canvasGroup.blocksRaycasts}");
             }
-            
-            // Force it to be an overlay canvas (renders on top of everything)
-            dialogueCanvas.overrideSorting = true;
-            dialogueCanvas.sortingOrder = 9999; // Very high value to ensure it's on top
-            
-            Debug.Log($"[Dialogue] ✅ Set DialoguePanel Canvas sortingOrder to {dialogueCanvas.sortingOrder}");
+            else
+            {
+                Debug.LogWarning("[Dialogue] ⚠️ DialoguePanel is not a child of any Canvas!");
+            }
         }
     }
 
@@ -480,7 +512,12 @@ public class DialogueManager : MonoBehaviour
         if (skipButton != null)
         {
             skipButton.gameObject.SetActive(true);
-            Debug.Log("[Dialogue] Skip button activated for dialogue");
+            skipButton.interactable = true;
+            Debug.Log($"[Dialogue] Skip button activated for dialogue - Active: {skipButton.gameObject.activeSelf}, Interactable: {skipButton.interactable}");
+        }
+        else
+        {
+            Debug.LogError("[Dialogue] Skip button is NULL - cannot show skip functionality!");
         }
 
         if (dialoguePanel != null)
@@ -802,8 +839,11 @@ public class DialogueManager : MonoBehaviour
     {
         Debug.Log($"[Dialogue] ShowLevelEndDialogueForcedCoroutine starting with {lines?.Length ?? 0} lines for level {levelNumber}");
 
-        yield return new WaitForSeconds(1f);
+        // Reset the scene change flag at the start
+        sceneChangedDuringDialogue = false;
 
+        // ✅ FIX: For victory dialogue, start immediately without delay
+        // The 1-second delay was causing the Tower to think dialogue completed before it started
         Debug.Log($"[Dialogue] Showing forced end dialogue with {lines.Length} lines");
 
         isForcedEndDialogue = true;
@@ -812,7 +852,14 @@ public class DialogueManager : MonoBehaviour
         Debug.Log("[Dialogue] StartDialogue called for forced end dialogue");
 
         // Wait for dialogue to complete
-        yield return new WaitUntil(() => !isShowingDialogue);
+        yield return new WaitUntil(() => !isShowingDialogue || sceneChangedDuringDialogue);
+
+        // If scene changed, don't mark as seen or do anything else
+        if (sceneChangedDuringDialogue)
+        {
+            Debug.Log($"[Dialogue] ⏹️ Scene changed during dialogue - aborting completion for Level {levelNumber}");
+            yield break;
+        }
 
         // Mark end dialogue as seen
         string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";

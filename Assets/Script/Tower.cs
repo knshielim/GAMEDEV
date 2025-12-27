@@ -17,17 +17,10 @@ public class Tower : MonoBehaviour
     public event Action<int> OnHealthChanged;
 
     [Header("Upgrade & Economy")]
-    [Tooltip("The current level of the tower. Starts at 1.")]
     public int level = 1; 
     private const int MAX_LEVEL = 10;
-
-    [Tooltip("Base coins generated per tick at Level 1")]
     private const int TOWER_BASE_RATE = 1; 
-    
-    [Tooltip("The cost of the first upgrade (Lv 1->2).")]
     private const int TOWER_FIRST_UPGRADE_COST = 10;
-
-    [Tooltip("The amount the cost increases by each level (300, 400, etc.)")]
     private const int TOWER_COST_INCREMENT = 15;
 
     [Header("Coin Generation")]
@@ -39,35 +32,17 @@ public class Tower : MonoBehaviour
     public TutorialManager tutorialManager; 
     
     [Header("UI References (Player Only)")]
-    [Tooltip("The Text component on the Upgrade button that shows the price.")]
     public TextMeshProUGUI upgradeButtonText; 
-
-    [Tooltip("The Image component of the Upgrade Button to change its visual.")]
     public Image upgradeButtonImage;
-    
-    [Tooltip("The sprite to display when the upgrade CAN be afforded (original).")]
     public Sprite affordableSprite;
-    
-    [Tooltip("The sprite to display when the upgrade CANNOT be afforded (different sprite).")]
     public Sprite unaffordableSprite;
 
     [Header("Win/Loss UI")]
-    [Tooltip("Panel to show when player loses (player tower destroyed)")]
     public GameObject gameOverPanel;
-    
-    [Tooltip("Panel to show when player wins (enemy tower destroyed)")]
     public GameObject victoryPanel;
-    
-    [Tooltip("Text to display game over message")]
     public TextMeshProUGUI gameOverText;
-    
-    [Tooltip("Text to display victory message")]
     public TextMeshProUGUI victoryText;
-
-    [Tooltip("Button for player to proceed to next level")]
     public Button nextLevelButton;
-
-    [Tooltip("Button for player to return to main menu")]
     public Button mainMenuButton;
 
     void Awake()
@@ -75,7 +50,6 @@ public class Tower : MonoBehaviour
         currentHealth = maxHealth;
     }
 
-    // Method to repair/restore tower to full health (used after tutorial)
     public void RepairTower()
     {
         currentHealth = maxHealth;
@@ -95,7 +69,6 @@ public class Tower : MonoBehaviour
             UpdateUpgradeUI();
         }
 
-        // Ensure UI panels are hidden at start
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
         if (victoryPanel != null)
@@ -120,7 +93,6 @@ public class Tower : MonoBehaviour
     {
         int nextLevel = level + 1;
         
-        // Cost for Lv 2 (Next Level = 2) is the first upgrade cost.
         if (nextLevel == 2)
         {
             return TOWER_FIRST_UPGRADE_COST;
@@ -153,7 +125,6 @@ public class Tower : MonoBehaviour
         
         UnityEngine.UI.Button button = upgradeButtonText.GetComponentInParent<UnityEngine.UI.Button>();
         
-        // If tower is max level, disable the upgrade button entirely
         if (level >= MAX_LEVEL)
         {
             upgradeButtonText.text = $"MAX LEVEL ({MAX_LEVEL})";
@@ -161,7 +132,6 @@ public class Tower : MonoBehaviour
             if (button != null)
                 button.interactable = false;
 
-            // Use unaffordable sprite for grey-out
             if (upgradeButtonImage != null && unaffordableSprite != null)
                 upgradeButtonImage.sprite = unaffordableSprite;
 
@@ -210,7 +180,6 @@ public class Tower : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver()) return;
 
-        // Prevent upgrading beyond maximum level
         if (level >= MAX_LEVEL)
         {
             Debug.Log("[PLAYER TOWER] Already at MAX LEVEL!");
@@ -257,50 +226,41 @@ public class Tower : MonoBehaviour
     
     void OnTowerDestroyed()
     {
-        // Check assigned tutorial manager first
         TutorialManager tm = tutorialManager;
 
-        // If not assigned, try to find it
         if (tm == null)
         {
             tm = FindObjectOfType<TutorialManager>();
         }
 
-        // If tutorial is active, let tutorial manager handle it
         if (tm != null && tm.isActiveAndEnabled && tm.tutorialActive)
         {
             tm.OnTutorialTowerDestroyed(this);
-            return; // Don't show victory/game over panels during tutorial
+            return;
         }
 
-        // Normal game over/victory logic (only runs when tutorial is not active)
         if (owner == TowerOwner.Player)
         {
-            // PLAYER LOST - Show Game Over screen
             ShowGameOver();
         }
         else if (owner == TowerOwner.Enemy)
         {
-            // PLAYER WON - Show Victory screen and proceed to next level
-            ShowVictory();
+            // ✅ MODIFIED: Call dialogue first, then victory panel
+            StartCoroutine(VictoryWithDialogueSequence());
         }
     }
-
-
 
     private void ShowGameOver()
     {
         Debug.Log("[TOWER] Player Tower Destroyed - GAME OVER");
 
-        // Play dramatic Game Over SFX (duck music + boost SFX)
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayGameOverDramatic();
         }
-        // Stop game time
+
         Time.timeScale = 0f;
 
-        // Show game over panel
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
@@ -316,50 +276,42 @@ public class Tower : MonoBehaviour
         }
     }
 
-    private void ShowVictory()
+    // ✅ NEW: Direct victory sequence called from OnTowerDestroyed
+    private IEnumerator VictoryWithDialogueSequence()
     {
-        Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
+        Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY! Starting dialogue sequence...");
 
-        // Check if this is Level 1 - show victory dialogue first
-        if (LevelManager.Instance != null && LevelManager.Instance.GetCurrentLevel() == 1)
-        {
-            StartCoroutine(ShowLevel1VictorySequence());
-            return;
-        }
+        int currentLevel = GetCurrentLevel();
 
-        // Normal victory for other levels
-        ShowNormalVictory();
-    }
-
-    private IEnumerator ShowLevel1VictorySequence()
-    {
-        Debug.Log("[Tower] Level 1 victory - showing victory dialogue first");
-
-        // Play victory SFX
+        // Play victory SFX first
         if (AudioManager.Instance != null && AudioManager.Instance.gameWinSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.gameWinSFX);
 
-        // Show victory dialogue
+        // STEP 1: Show end dialogue immediately
         if (DialogueManager.Instance != null)
         {
-            DialogueManager.Instance.ShowLevelEndDialogueForced(1);
-            Debug.Log("[Tower] Level 1 victory dialogue started");
+            Debug.Log($"[Tower] Showing victory dialogue for Level {currentLevel}");
+            DialogueManager.Instance.ShowLevelEndDialogueForced(currentLevel);
 
             // Wait for dialogue to complete
             yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive());
-            Debug.Log("[Tower] Level 1 victory dialogue completed");
+            Debug.Log($"[Tower] Victory dialogue completed for Level {currentLevel}");
+        }
+        else
+        {
+            Debug.LogWarning("[Tower] DialogueManager not found - skipping victory dialogue");
         }
 
-        // Now show the normal victory panel
-        ShowNormalVictory();
+        // STEP 2: Show victory panel after dialogue
+        ShowVictoryPanel();
     }
 
-    private void ShowNormalVictory()
+
+    // ✅ REFACTORED: Separated victory panel logic
+    private void ShowVictoryPanel()
     {
-        // Freeze the screen
         Time.timeScale = 0f;
 
-        // Show victory panel
         if (victoryPanel != null)
         {
             victoryPanel.SetActive(true);
@@ -371,18 +323,24 @@ public class Tower : MonoBehaviour
                     int currentLevel = LevelManager.Instance.GetCurrentLevel();
                     int totalLevels = LevelManager.Instance.GetTotalLevels();
 
-                    if (currentLevel >= totalLevels)
+                    Debug.Log($"[Tower] 🎮 Victory panel - Current: {currentLevel}, Total: {totalLevels}, IsLastLevel: {LevelManager.Instance.IsLastLevel()}");
+
+                    // ✅ FIX: Use IsLastLevel() method for clarity
+                    if (LevelManager.Instance.IsLastLevel())
                     {
                         victoryText.text = "You've Completed All Levels!\nCongratulations!";
+                        Debug.Log($"[Tower] ✅ Showing 'All Levels Complete' message (Level {currentLevel} is last level, total: {totalLevels})");
                     }
                     else
                     {
                         victoryText.text = $"LEVEL {currentLevel} COMPLETE!\nProceeding to Level {currentLevel + 1}...";
+                        Debug.Log($"[Tower] ✅ Showing 'Next Level' message (Level {currentLevel} → {currentLevel + 1})");
                     }
                 }
                 else
                 {
                     victoryText.text = "VICTORY!\nEnemy Tower Destroyed!";
+                    Debug.LogWarning("[Tower] ⚠️ LevelManager not found - using default message");
                 }
             }
         }
@@ -391,9 +349,9 @@ public class Tower : MonoBehaviour
             Debug.LogWarning("[TOWER] victoryPanel is not assigned in Inspector!");
         }
 
-        // Set up next level button (player must click to proceed)
         if (nextLevelButton != null)
         {
+            nextLevelButton.onClick.RemoveAllListeners();
             nextLevelButton.onClick.AddListener(OnNextLevelClicked);
             nextLevelButton.gameObject.SetActive(true);
         }
@@ -402,9 +360,9 @@ public class Tower : MonoBehaviour
             Debug.LogWarning("[TOWER] Next level button not assigned! Player cannot proceed.");
         }
 
-        // Set up main menu button (player can click to return to menu)
         if (mainMenuButton != null)
         {
+            mainMenuButton.onClick.RemoveAllListeners();
             mainMenuButton.onClick.AddListener(OnMainMenuClicked);
             mainMenuButton.gameObject.SetActive(true);
         }
@@ -414,7 +372,22 @@ public class Tower : MonoBehaviour
         }
     }
 
-    // Called when player clicks the Next Level button
+    // ✅ NEW: Helper method to get current level
+    private int GetCurrentLevel()
+    {
+        if (LevelManager.Instance != null)
+        {
+            return LevelManager.Instance.GetCurrentLevel();
+        }
+
+        if (GameManager.Instance != null)
+        {
+            return (int)GameManager.Instance.currentLevel;
+        }
+
+        return 1; // Fallback
+    }
+
     private void OnNextLevelClicked()
     {
         Debug.Log("[TOWER] Next level button clicked!");
@@ -428,7 +401,6 @@ public class Tower : MonoBehaviour
         }
     }
 
-    // Called when player clicks the Main Menu button
     private void OnMainMenuClicked()
     {
         Debug.Log("[TOWER] Main menu button clicked!");

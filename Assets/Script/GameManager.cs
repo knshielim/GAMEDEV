@@ -249,6 +249,16 @@ public void TowerDestroyed(Tower destroyedTower)
         {
             ToggleFastForward();
         }
+
+        // ✅ DEBUG: Add 5 coins when 'C' key is pressed
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (CoinManager.Instance != null)
+            {
+                CoinManager.Instance.AddPlayerCoins(5);
+                Debug.Log("[GameManager] 🎁 DEBUG: Added 5 coins (shortcut key 'C')");
+            }
+        }
     }
 
     private void ToggleFastForward()

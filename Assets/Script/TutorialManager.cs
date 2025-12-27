@@ -52,16 +52,38 @@ public class TutorialManager : MonoBehaviour
     private bool mergeCompleted = false;
     public bool tutorialActive = true;
     private bool waitingForSlotClick = false;
-    private bool showingTutorialCompletion = false;
 
     private static bool tutorialShownThisSession = false;
 
-    // --- NEW: track the pause coroutine so we can cancel it if needed
     private Coroutine pauseCoroutine;
 
     private void Awake()
     {
-        if (SkipButton != null) SkipButton.SetActive(false);
+        // ✅ FIX: Setup skip button with proper GameObject find
+        if (SkipButton == null)
+        {
+            SkipButton = GameObject.Find("SkipButton");
+        }
+        
+        if (SkipButton != null)
+        {
+            Button skipBtn = SkipButton.GetComponent<Button>();
+            if (skipBtn != null)
+            {
+                skipBtn.onClick.RemoveAllListeners();
+                skipBtn.onClick.AddListener(OnSkipButtonPressed);
+                Debug.Log("[TutorialManager] ✅ Skip button listener added successfully");
+            }
+            else
+            {
+                Debug.LogError("[TutorialManager] ❌ Button component not found on SkipButton!");
+            }
+            SkipButton.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("[TutorialManager] ⚠️ SkipButton GameObject not found!");
+        }
 
         // --- Debug to always show tutorial
         if (TutorialDebug && !tutorialShownThisSession)
@@ -87,7 +109,6 @@ public class TutorialManager : MonoBehaviour
         }
 
         // For Level 1, don't start tutorial yet - wait for dialogue to complete
-        // For other levels, tutorial should run normally
         int currentLevel = GetCurrentLevel();
         if (currentLevel == 1)
         {
@@ -95,7 +116,6 @@ public class TutorialManager : MonoBehaviour
             tutorialActive = false; // Don't start yet
             EnemyDeployManager.tutorialActive = false;
             if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
-            // Stay enabled so we can start later
             return;
         }
 
@@ -111,7 +131,6 @@ public class TutorialManager : MonoBehaviour
     {
         if (enemyDeployManager == null) enemyDeployManager = FindObjectOfType<EnemyDeployManager>();
 
-        // Debugging mode
         bool hasCompletedTutorial = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
         if (hasCompletedTutorial && !TutorialDebug)
         {
@@ -128,6 +147,13 @@ public class TutorialManager : MonoBehaviour
     private void Update()
     {
         EnemyDeployManager.tutorialActive = tutorialActive;
+        
+        // ✅ FIX: Don't block keyboard shortcuts when tutorial is not active
+        if (!tutorialActive)
+        {
+            return;
+        }
+
         if (waitingForSecondSummon) return;
         if (waitingForSummon) return;
         if (waitingForDeploy) return;
@@ -135,7 +161,6 @@ public class TutorialManager : MonoBehaviour
 
         if (Input.GetKeyDown(continueKey))
         {
-            // Don't advance tutorial if DialogueManager is currently showing dialogue
             bool dialogueManagerActive = false;
             if (DialogueManager.Instance != null)
             {
@@ -153,8 +178,7 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // changed to optional pause flag (default true) so caller can show text without pausing
-        private void ShowStep(bool pause = true)
+    private void ShowStep(bool pause = true)
     {
         if (currentStep >= steps.Length)
         {
@@ -166,7 +190,6 @@ public class TutorialManager : MonoBehaviour
         dialoguePanel.SetActive(true);
         dialogueText.text = step.text;
 
-        // Clean image handling
         if (step.image != null)
         {
             dialogueImageHolder.gameObject.SetActive(true);
@@ -186,18 +209,15 @@ public class TutorialManager : MonoBehaviour
             PauseGame();
     }
 
-
     private void Advance()
     {
         if (currentStep == 4)
         {
             EnemyDeployManager.tutorialActive = true;
 
-            // Show the summon instruction first
             currentStep++;
-            ShowStep(pause: false); // Show step 5 without pausing
+            ShowStep(pause: false);
 
-            // Then prepare for summon
             ResumeGame();
             EnableOnly("Summon Button");
             waitingForSummon = true;
@@ -213,7 +233,6 @@ public class TutorialManager : MonoBehaviour
     {
         if (!gaveFirstTroop && tutorialFirstTroop != null)
         {
-            // -Deduct summon cost
             int cost = GachaManager.Instance.GetCurrentSummonCost();
 
             bool success = CoinManager.Instance.TrySpendPlayerCoins(cost);
@@ -232,7 +251,6 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("[Tutorial] First tutorial troop granted and cost deducted.");
         }
     }
-
 
     private void SetPlayerButtons(bool state)
     {
@@ -289,27 +307,115 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator ClosePanelOnContinue()
     {
-        // Do NOT pause game. Keep playing.
         while (!Input.GetKeyDown(continueKey))
             yield return null;
 
         dialoguePanel.SetActive(false);
-        // Tutorial is done with this section
         SetPlayerButtons(true);
         canAdvance = true;
     }
 
     public void OnTutorialTowerDestroyed(Tower destroyedTower)
     {
-        Debug.Log($"[Tutorial] OnTutorialTowerDestroyed called, tutorialActive = {tutorialActive}");
-
         if (!tutorialActive)
         {
             Debug.Log("[Tutorial] Tower destroyed but tutorial is not active (probably skipped) - ignoring");
             return;
         }
 
-        Debug.Log("[Tutorial] Tower destroyed during tutorial - showing completion message");
+        Debug.Log("[Tutorial] 🏁 Tower destroyed during tutorial - Tutorial Complete!");
+
+        // ✅ Mark tutorial as complete
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.tutorialLocked = false;
+
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
+        Debug.Log("[Tutorial] Tutorial completed - saved to PlayerPrefs");
+
+        // ✅ FIX: Show tutorial completion message in tutorial panel (NOT victory panel)
+        dialoguePanel.SetActive(true);
+        dialogueText.text = "🎉 Tutorial Completed! 🎉\n\nYou've learned the basics!\n\nPress SPACE to start the real Level 1...";
+        dialogueImageHolder.gameObject.SetActive(false);
+        if (SkipButton != null)
+            SkipButton.SetActive(false);
+
+        // Keep game paused
+        PauseGame();
+
+        // Wait for space then reload
+        StartCoroutine(WaitForSpaceThenReload());
+    }
+
+    private IEnumerator WaitForSpaceThenReload()
+    {
+        Debug.Log("[Tutorial] 🔑 Waiting for SPACE key press...");
+        
+        // Wait until player presses space (use unscaled time since game is paused)
+        bool spacePressed = false;
+        while (!spacePressed)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                spacePressed = true;
+                Debug.Log("[Tutorial] ✅ SPACE pressed - proceeding to reload");
+            }
+            yield return null;
+        }
+
+        Debug.Log("[Tutorial] 🔄 Reloading Level 1 for actual gameplay...");
+
+        dialoguePanel.SetActive(false);
+        ResumeGame();
+
+        yield return new WaitForSeconds(0.2f);
+
+        // Clean up all tutorial entities before reload
+        CleanupTutorialEntities();
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void CleanupTutorialEntities()
+    {
+        Debug.Log("[Tutorial] 🧹 Cleaning up tutorial entities...");
+        
+        // Clear all player troops
+        Troops[] playerTroops = FindObjectsOfType<Troops>();
+        foreach (Troops troop in playerTroops)
+        {
+            if (troop != null)
+            {
+                Destroy(troop.gameObject);
+            }
+        }
+        Debug.Log($"[Tutorial] ✅ Destroyed {playerTroops.Length} player troops");
+
+        // Clear all enemy units
+        Enemy[] tutorialEnemies = FindObjectsOfType<Enemy>();
+        foreach (Enemy enemy in tutorialEnemies)
+        {
+            if (enemy != null)
+            {
+                Destroy(enemy.gameObject);
+            }
+        }
+        Debug.Log($"[Tutorial] ✅ Destroyed {tutorialEnemies.Length} tutorial enemies");
+    }
+
+    // ✅ FIX: Separate method for button click
+    public void OnSkipButtonPressed()
+    {
+        Debug.Log("[Tutorial] ⏭️ SKIP BUTTON PRESSED!");
+        SkipTutorial();
+    }
+
+    public void SkipTutorial()
+    {
+        Debug.Log("[Tutorial] ⏭️ Skipping tutorial...");
 
         // Mark tutorial as complete
         tutorialActive = false;
@@ -318,148 +424,27 @@ public class TutorialManager : MonoBehaviour
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        // Save tutorial completion
         PlayerPrefs.SetInt("TutorialCompleted", 1);
         PlayerPrefs.Save();
-        Debug.Log("[Tutorial] Tutorial completed - saved to PlayerPrefs");
 
-        // Show tutorial completion message
+        // ✅ FIX: Show skip message in tutorial panel (NOT start gameplay immediately)
         dialoguePanel.SetActive(true);
-        dialogueText.text = "Tutorial Completed!";
+        dialogueText.text = "⏭️ Tutorial Skipped!\n\nYou can play the tutorial again from the main menu.\n\nPress SPACE to start Level 1...";
         dialogueImageHolder.gameObject.SetActive(false);
         if (SkipButton != null)
             SkipButton.SetActive(false);
 
-        // Set flag to prevent DialogueManager from interfering
-        showingTutorialCompletion = true;
-
-        // Pause game briefly for the message
+        // Keep game paused
         PauseGame();
 
-        // Start gameplay immediately after player presses space
-        StartCoroutine(StartGameplayAfterTutorialCompletion());
-    }
-
-    private IEnumerator StartGameplayAfterTutorialCompletion()
-    {
-        Debug.Log("[Tutorial] Waiting for player to press spacebar to acknowledge completion...");
-
-        // Wait for player to acknowledge completion
-        yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
-
-        Debug.Log("[Tutorial] Spacebar pressed - player acknowledged tutorial completion");
-
-        // Clear the tutorial completion flag
-        showingTutorialCompletion = false;
-
-        // Hide tutorial panel
-        dialoguePanel.SetActive(false);
-
-        // Resume game briefly for scene reload
-        ResumeGame();
-        Debug.Log($"[Tutorial] Game resumed, Time.timeScale = {Time.timeScale}");
-
-        // Small delay before reload
-        yield return new WaitForSeconds(0.2f);
-
-        Debug.Log("[Tutorial] Reloading Level 1 scene after tutorial completion");
-
-        // Reset/reload Level 1 scene
-        // Now that tutorial is completed, Level 1 will go directly to gameplay
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-        );
-    }
-
-    public void SkipTutorial()
-    {
-        Debug.Log("[Tutorial] Tutorial skipped by player");
-
-        // Disable all tutorial logic
-        tutorialActive = false;
-        EnemyDeployManager.tutorialActive = false;
-
-        // Unlock gacha
-        if (GachaManager.Instance != null)
-            GachaManager.Instance.tutorialLocked = false;
-
-        // Save skip as completed
-        PlayerPrefs.SetInt("TutorialCompleted", 1);
-        PlayerPrefs.Save();
-
-        // Show "Tutorial Skipped!" message briefly
-        dialoguePanel.SetActive(true);
-        dialogueText.text = "Tutorial Skipped!";
-        dialogueImageHolder.gameObject.SetActive(false);
-        if (SkipButton != null)
-            SkipButton.SetActive(false);
-
-        // Pause game briefly for the message
-        PauseGame();
-
-        // Reset scene after player acknowledges
-        StartCoroutine(ResetSceneAfterSkip());
-    }
-
-    private IEnumerator ResetSceneAfterSkip()
-    {
-        // Wait for player to acknowledge skip
-        yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
-
-        Debug.Log("[Tutorial] Player acknowledged tutorial skip - resetting Level 1");
-
-        // Hide tutorial panel
-        dialoguePanel.SetActive(false);
-
-        // Resume game briefly for scene reload
-        ResumeGame();
-
-        // Small delay before reload
-        yield return new WaitForSeconds(0.2f);
-
-        // Reset/reload Level 1 scene
-        // Now that tutorial is completed (skipped), Level 1 will go directly to gameplay
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-        );
-    }
-
-
-    private IEnumerator ShowStoryDialogueAfterTutorial()
-    {
-        // Small delay to ensure clean transition
-        yield return new WaitForSecondsRealtime(0.5f);
-
-        Debug.Log("[Tutorial] Starting story dialogue after tutorial completion");
-
-        // Show the story dialogue (DialogueManager will pause the game)
-        if (DialogueManager.Instance != null)
-        {
-            // Get current level (tutorial is always on level 1)
-            int currentLevel = 1;
-            
-            // Show level 1 end dialogue (forced mode for tutorial)
-            DialogueManager.Instance.ShowLevelEndDialogueForced(currentLevel);
-            
-            Debug.Log("[Tutorial] Story dialogue started - DialogueManager will handle pausing");
-        }
-        else
-        {
-            Debug.LogError("[Tutorial] DialogueManager not found! Cannot show story dialogue.");
-            // Fallback: just reload the scene
-            Time.timeScale = 1f;
-            yield return new WaitForSeconds(1f);
-            UnityEngine.SceneManagement.SceneManager.LoadScene(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-            );
-        }
+        // Wait for space before continuing
+        StartCoroutine(WaitForSpaceThenReload());
     }
 
     public void OnTutorialSummonClicked()
     {
         if (waitingForSecondSummon)
         {
-            // --- Deduct cost ---
             int cost = GachaManager.Instance.GetCurrentSummonCost();
             bool success = CoinManager.Instance.TrySpendPlayerCoins(cost);
 
@@ -469,10 +454,8 @@ public class TutorialManager : MonoBehaviour
                 return;
             }
 
-            // --- Perform actual summon ---
             TroopInventory.Instance.AddTroop(tutorialSecondTroop);
 
-            // Update cost 
             GachaManager.Instance.IncreaseSummonCost();
             GachaManager.Instance.UpdateSummonCostUI();
 
@@ -509,18 +492,17 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator ShowMergeAfterDelay()
     {
-    yield return new WaitForSeconds(0.5f); // delay for animation
+        yield return new WaitForSeconds(0.5f);
 
-    SetPlayerButtons(false);
-    EnableOnly("Merge Button");
+        SetPlayerButtons(false);
+        EnableOnly("Merge Button");
 
-    dialoguePanel.SetActive(true);
-    dialogueText.text = "Great job! Now merge your troops!";
+        dialoguePanel.SetActive(true);
+        dialogueText.text = "Great job! Now merge your troops!";
 
-    PauseGame();
-    waitingForMerge = true;
-    }   
-
+        PauseGame();
+        waitingForMerge = true;
+    }
 
     public void OnTutorialDeployClicked()
     {
@@ -595,7 +577,6 @@ public class TutorialManager : MonoBehaviour
 
     private void ResumeGame()
     {
-        // Resume the game normally 
         if (pauseCoroutine != null)
         {
             StopCoroutine(pauseCoroutine);
@@ -625,19 +606,16 @@ public class TutorialManager : MonoBehaviour
 
     private int GetCurrentLevel()
     {
-        // Try to get from GameManager first
         if (GameManager.Instance != null)
         {
             return (int)GameManager.Instance.currentLevel;
         }
 
-        // Try to get from LevelManager
         if (LevelManager.Instance != null)
         {
             return LevelManager.Instance.GetCurrentLevel();
         }
 
-        // Fallback: parse from scene name
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName.StartsWith("Level "))
         {
@@ -648,14 +626,13 @@ public class TutorialManager : MonoBehaviour
             }
         }
 
-        // Last fallback
         int buildIndex = SceneManager.GetActiveScene().buildIndex;
         if (buildIndex >= 2)
         {
-            return buildIndex - 1; // Level 1 scene (build index 2) = level 1
+            return buildIndex - 1;
         }
 
-        return 1; // Default fallback
+        return 1;
     }
 
     public void DisableTutorial()
@@ -664,20 +641,14 @@ public class TutorialManager : MonoBehaviour
         EnemyDeployManager.tutorialActive = false;
     }
 
-    // Called by DialogueManager after intro dialogue completes
     public void StartTutorialAfterDialogue()
     {
         Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
 
-        // Don't check tutorialActive here - this method is specifically called to start tutorial after dialogue
-        // The Awake method might have set tutorialActive, but we override it here
-
         Debug.Log("[TutorialManager] Starting tutorial after dialogue completion");
 
-        // Ensure we're enabled
         this.enabled = true;
 
-        // Initialize tutorial state (force it active)
         tutorialActive = true;
         EnemyDeployManager.tutorialActive = true;
         if (GachaManager.Instance != null)
@@ -697,7 +668,6 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("[TutorialManager] Skip button enabled");
         }
 
-        // Give starting coins and start tutorial
         if (CoinManager.Instance != null)
         {
             CoinManager.Instance.AddPlayerCoins(5);
@@ -708,23 +678,26 @@ public class TutorialManager : MonoBehaviour
         Debug.Log("[TutorialManager] Tutorial started - ShowStep() called");
     }
 
-    // Called by DialogueManager after tutorial victory dialogue completes
     public void StartActualGameplayAfterVictoryDialogue()
     {
         Debug.Log("[Tutorial] StartActualGameplayAfterVictoryDialogue called - starting real gameplay");
 
-        // Disable tutorial systems completely
         tutorialActive = false;
         EnemyDeployManager.tutorialActive = false;
 
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        // Ensure tutorial UI is hidden
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // Start actual level gameplay
+        // ✅ FIX: Reset coins when starting real gameplay after tutorial
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.ResetCoins();
+            Debug.Log("[Tutorial] Coins reset for real gameplay start");
+        }
+
         StartCoroutine(StartActualLevelplay());
     }
 
@@ -732,27 +705,16 @@ public class TutorialManager : MonoBehaviour
     {
         Debug.Log("[Tutorial] Starting actual gameplay after story dialogue");
 
-        // Wait a moment for dialogue cleanup (use realtime since game might be paused)
         yield return new WaitForSecondsRealtime(0.5f);
 
-        // Clear any tutorial enemies first
-        Enemy[] tutorialEnemies = GameObject.FindObjectsOfType<Enemy>();
-        foreach (Enemy enemy in tutorialEnemies)
-        {
-            if (enemy != null)
-            {
-                Destroy(enemy.gameObject);
-            }
-        }
-        Debug.Log($"[Tutorial] Cleared {tutorialEnemies.Length} tutorial enemies");
+        CleanupTutorialEntities();
 
-        // Find and repair the enemy tower
         Tower[] towers = GameObject.FindObjectsOfType<Tower>();
         Tower enemyTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Enemy);
         
         if (enemyTower != null)
         {
-            enemyTower.RepairTower(); // Restore full health
+            enemyTower.RepairTower();
             Debug.Log("[Tutorial] Enemy tower repaired for actual gameplay");
         }
         else
@@ -760,7 +722,6 @@ public class TutorialManager : MonoBehaviour
             Debug.LogError("[Tutorial] Could not find enemy tower to repair!");
         }
 
-        // Find and repair the player tower too (in case it was damaged)
         Tower playerTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Player);
         if (playerTower != null)
         {
@@ -768,17 +729,14 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("[Tutorial] Player tower repaired for actual gameplay");
         }
 
-        // Reset enemy deployment for actual gameplay
         if (enemyDeployManager != null)
         {
             EnemyDeployManager.tutorialActive = false;
             Debug.Log("[Tutorial] Enemy deployment enabled for normal gameplay");
         }
 
-        // Enable all player controls
         SetPlayerButtons(true);
 
-        // Ensure game is running
         Time.timeScale = 1f;
 
         Debug.Log("[Tutorial] Actual level gameplay started - defeat the enemy tower to complete Level 1!");

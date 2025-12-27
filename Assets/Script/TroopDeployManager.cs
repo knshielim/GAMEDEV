@@ -7,9 +7,8 @@ public class TroopDeployManager : MonoBehaviour
     public Transform playerTowerSpawnPoint;
 
     private int selectedTroopIndex = -1;
-    private bool canDeploy = true; // cooldown
+    private bool canDeploy = true;
 
-    // Highlight the selected slot border
     public void HighlightSelectedSlot(int index)
     {
         if (TroopInventory.Instance == null || TroopInventory.Instance.slotBorders == null)
@@ -39,10 +38,8 @@ public class TroopDeployManager : MonoBehaviour
         }
     }
 
-    // Select a troop slot
     public void SelectTroop(int index)
     {
-        // If clicking the same slot, deselect
         if (selectedTroopIndex == index)
         {
             selectedTroopIndex = -1;
@@ -56,7 +53,6 @@ public class TroopDeployManager : MonoBehaviour
         HighlightSelectedSlot(index);
     }
 
-    // Deploy the selected troop
     public void DeploySelectedTroop()
     {
         Debug.Log($"[DEPLOY] DeploySelectedTroop called at {Time.time}");
@@ -81,25 +77,19 @@ public class TroopDeployManager : MonoBehaviour
             return;
         }
 
-        // Instantiate the troop
         GameObject troopObj = Instantiate(troop.playerPrefab, playerTowerSpawnPoint.position, Quaternion.identity);
 
-        // Play different SFX depending on rarity
         if (troop.rarity == TroopRarity.Mythic)
         {
-            // Special SFX for Mythic deploy
             if (AudioManager.Instance != null && AudioManager.Instance.mythicSFX != null)
                 AudioManager.Instance.PlaySFX(AudioManager.Instance.mythicSFX);
         }
         else
         {
-            // Default summon SFX for non-Mythic troops
             if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
                 AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
         }
 
-
-        // Set TroopData
         Unit unit = troopObj.GetComponent<Unit>();
         if (unit != null)
         {
@@ -111,13 +101,10 @@ public class TroopDeployManager : MonoBehaviour
             Debug.LogWarning($"[DEPLOY] Spawned {troopObj.name} but it has no Unit component.");
         }
 
-        // Remove from inventory
         StoredTroopDeployed(selectedTroopIndex);
 
-        // Reset selection
         selectedTroopIndex = -1;
 
-        // Remove border highlight
         HighlightSelectedSlot(-1);
 
         StartCoroutine(DeployCooldown());
@@ -127,7 +114,6 @@ public class TroopDeployManager : MonoBehaviour
     {
         TroopInventory.Instance.ClearSlot(index);
 
-        // Remove highlight
         if (TroopInventory.Instance.slotBorders != null && 
             index >= 0 && index < TroopInventory.Instance.slotBorders.Count)
         {
@@ -151,14 +137,26 @@ public class TroopDeployManager : MonoBehaviour
 
     void Update()
     {
+        // ✅ FIX: Check if tutorial is active before processing keyboard shortcuts
+        bool tutorialActive = false;
+        TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
+        if (tutorialManager != null)
+        {
+            tutorialActive = tutorialManager.tutorialActive;
+        }
+
+        // ✅ FIX: If tutorial is active, don't process keyboard shortcuts
+        if (tutorialActive)
+        {
+            return;
+        }
+
         // Check for troop selection keys
         for (int i = 0; i < troopSelectionKeys.Length; i++)
         {
             if (Input.GetKeyDown(troopSelectionKeys[i]))
             {
-                // This 'i' is the inventory slot index (0 to 11)
                 SelectTroop(i);
-                // Stop checking after the first key press is handled
                 return;
             }
         }
@@ -166,7 +164,6 @@ public class TroopDeployManager : MonoBehaviour
         // Keyboard shortcuts for game actions
         if (Input.GetKeyDown(KeyCode.U))
         {
-            // Upgrade summon rate
             if (GachaManager.Instance != null)
             {
                 GachaManager.Instance.UpgradeGachaSystem();
@@ -175,7 +172,6 @@ public class TroopDeployManager : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.I))
         {
             AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
-            // Upgrade tower
             Tower[] towers = FindObjectsOfType<Tower>();
             Tower playerTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Player);
             if (playerTower != null)
@@ -185,12 +181,10 @@ public class TroopDeployManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.O))
         {
-            // Deploy selected troop
             DeploySelectedTroop();
         }
         else if (Input.GetKeyDown(KeyCode.P))
         {
-            // Summon troop
             if (GachaManager.Instance != null)
             {
                 GachaManager.Instance.SummonTroop();
@@ -198,7 +192,6 @@ public class TroopDeployManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.M))
         {
-            // Merge units in selected slot
             if (TroopInventory.Instance != null && selectedTroopIndex >= 0)
             {
                 TroopInventory.Instance.MergeUnits(selectedTroopIndex);
@@ -206,7 +199,6 @@ public class TroopDeployManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
-            // Alternative deploy shortcut (existing functionality)
             DeploySelectedTroop();
         }
     }
