@@ -606,9 +606,13 @@ public class SettingsManager : MonoBehaviour
                 headerText.color = new Color(1f, 0.7f, 0f);
                 headerText.text = "LEGENDARY";
                 break;
-            case TroopRarity.Mythic: 
+            case TroopRarity.Mythic:
                 headerText.color = new Color(1f, 0.4f, 0.8f);
                 headerText.text = "MYTHIC";
+                break;
+            case TroopRarity.Boss:
+                headerText.color = new Color(1f, 0.2f, 0.2f); // Dark red for boss
+                headerText.text = "BOSS";
                 break;
         }
 

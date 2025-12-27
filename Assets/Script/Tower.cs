@@ -70,9 +70,17 @@ public class Tower : MonoBehaviour
     [Tooltip("Button for player to return to main menu")]
     public Button mainMenuButton;
 
-    void Awake() 
+    void Awake()
     {
-        currentHealth = maxHealth; 
+        currentHealth = maxHealth;
+    }
+
+    // Method to repair/restore tower to full health (used after tutorial)
+    public void RepairTower()
+    {
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth);
+        Debug.Log($"[Tower] {owner} tower repaired to full health: {currentHealth}/{maxHealth}");
     }
 
     private void Start()
@@ -249,9 +257,18 @@ public class Tower : MonoBehaviour
     
    void OnTowerDestroyed()
     {
-    if (tutorialManager != null && tutorialManager.isActiveAndEnabled && tutorialManager.tutorialActive)
+    // Check assigned tutorial manager first
+    TutorialManager tm = tutorialManager;
+
+    // If not assigned, try to find it
+    if (tm == null)
     {
-    tutorialManager.OnTutorialTowerDestroyed(this);
+        tm = FindObjectOfType<TutorialManager>();
+    }
+
+    if (tm != null && tm.isActiveAndEnabled && tm.tutorialActive)
+    {
+    tm.OnTutorialTowerDestroyed(this);
     return;
     }
 

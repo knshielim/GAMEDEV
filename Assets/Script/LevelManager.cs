@@ -8,7 +8,7 @@ public class LevelManager : MonoBehaviour
     public static LevelManager Instance { get; private set; }
     
     [Header("Level Settings")]
-    [SerializeField] private int totalLevels = 3;
+    [SerializeField] private int totalLevels = 5;
     private int currentLevel = 1;
     
     [Header("UI References (Optional - Tower handles these)")]
@@ -63,17 +63,38 @@ public class LevelManager : MonoBehaviour
     
     private void Start()
     {
-        // Get current level from scene build index
-        currentLevel = SceneManager.GetActiveScene().buildIndex;
+        // Get current level by parsing scene name (more reliable than build index)
+        string sceneName = SceneManager.GetActiveScene().name;
+        currentLevel = ParseLevelFromSceneName(sceneName);
 
-        // If scene 0 is main menu, adjust
+        // Fallback to build index logic if scene name parsing fails
         if (currentLevel == 0)
-            currentLevel = 1;
+        {
+            currentLevel = SceneManager.GetActiveScene().buildIndex;
+            // Adjust for scene ordering: MainMenu=0, LevelSelect=1, Level 1=2, etc.
+            if (currentLevel >= 2)
+            {
+                currentLevel = currentLevel - 1; // Level 1 scene (build index 2) = level 1
+            }
+        }
 
-        Debug.Log($"[LevelManager] Started Level {currentLevel}/{totalLevels}");
+        Debug.Log($"[LevelManager] Started Level {currentLevel}/{totalLevels} (Scene: {sceneName}, BuildIndex: {SceneManager.GetActiveScene().buildIndex})");
 
         // Ensure time scale is normal
         Time.timeScale = 1f;
+    }
+
+    private int ParseLevelFromSceneName(string sceneName)
+    {
+        if (sceneName.StartsWith("Level "))
+        {
+            string levelStr = sceneName.Substring(6); // Remove "Level "
+            if (int.TryParse(levelStr, out int level))
+            {
+                return level;
+            }
+        }
+        return 0; // Not a level scene
     }
 
     // Called when a new scene is loaded
@@ -148,6 +169,12 @@ public class LevelManager : MonoBehaviour
             
         Debug.Log($"[LevelManager] Level {currentLevel} completed!");
         
+        // Show end-of-level dialogue before proceeding
+        ShowLevelEndDialogue();
+
+        // Unlock the next level for level select
+        UnlockNextLevel();
+
         // Check if there are more levels
         if (currentLevel < totalLevels)
         {
@@ -164,12 +191,20 @@ public class LevelManager : MonoBehaviour
     private IEnumerator LoadNextLevelDelayed()
     {
         isTransitioning = true;
-        
+
+        // Wait for dialogue to complete if it's showing
+        DialogueManager dialogueManager = FindObjectOfType<DialogueManager>();
+        if (dialogueManager != null && dialogueManager.IsDialogueActive())
+        {
+            Debug.Log("[LevelManager] Waiting for dialogue to complete before loading next level...");
+            yield return new WaitUntil(() => !dialogueManager.IsDialogueActive());
+        }
+
         Debug.Log($"[LevelManager] Loading next level in {levelTransitionDelay} seconds...");
-        
+
         // Wait before transitioning
         yield return new WaitForSeconds(levelTransitionDelay);
-        
+
         LoadNextLevel();
     }
     
@@ -256,17 +291,55 @@ public class LevelManager : MonoBehaviour
         }
     }
     
+    // Show end-of-level dialogue
+    private void ShowLevelEndDialogue()
+    {
+        // Find DialogueManager and show end dialogue
+        DialogueManager dialogueManager = FindObjectOfType<DialogueManager>();
+        if (dialogueManager != null)
+        {
+            dialogueManager.ShowLevelEndDialogue(currentLevel);
+        }
+    }
+
+    // Unlock the next level in level select
+    private void UnlockNextLevel()
+    {
+        int nextLevel = currentLevel + 1;
+        if (nextLevel <= totalLevels)
+        {
+            // Find LevelSelectManager in any loaded scenes
+            LevelSelectManager levelSelect = FindObjectOfType<LevelSelectManager>();
+            if (levelSelect != null)
+            {
+                levelSelect.UnlockLevel(nextLevel);
+                Debug.Log($"[LevelManager] Unlocked Level {nextLevel} in level select!");
+            }
+            else
+            {
+                // Save to PlayerPrefs directly if LevelSelectManager not found
+                int currentMax = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
+                if (nextLevel > currentMax)
+                {
+                    PlayerPrefs.SetInt("MaxUnlockedLevel", nextLevel);
+                    PlayerPrefs.Save();
+                    Debug.Log($"[LevelManager] Saved Level {nextLevel} unlock to PlayerPrefs!");
+                }
+            }
+        }
+    }
+
     // Public getters
     public int GetCurrentLevel()
     {
         return currentLevel;
     }
-    
+
     public int GetTotalLevels()
     {
         return totalLevels;
     }
-    
+
     public bool IsLastLevel()
     {
         return currentLevel >= totalLevels;

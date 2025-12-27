@@ -25,7 +25,9 @@ public class MainMenu : MonoBehaviour
     {
         if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+
+        // Load level select scene (this will replace the main menu scene)
+        SceneManager.LoadScene("LevelSelect");
     }
 
     public void ShowOptions()

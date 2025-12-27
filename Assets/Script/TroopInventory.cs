@@ -525,6 +525,8 @@ public float mergeEffectDuration = 1.5f;
                 return TroopRarity.Legendary;
             case TroopRarity.Mythic:
                 return TroopRarity.Mythic;
+            case TroopRarity.Boss:
+                return TroopRarity.Boss; // Boss units don't upgrade further
             default:
                 return current;
         }
@@ -592,7 +594,7 @@ public float mergeEffectDuration = 1.5f;
                 // Show merge button if applicable
                 if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
                 {
-                    bool canMerge = slot.count >= maxUnitsPerSlot && slot.troop.rarity != TroopRarity.Mythic;
+                    bool canMerge = slot.count >= maxUnitsPerSlot && slot.troop.rarity != TroopRarity.Mythic && slot.troop.rarity != TroopRarity.Boss;
                     mergeButtons[i].gameObject.SetActive(canMerge);
                 }
             }

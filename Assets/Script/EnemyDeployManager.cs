@@ -29,6 +29,32 @@ public class EnemyDeployManager : MonoBehaviour
     [Tooltip("Time between mythic spawns (in seconds).")]
     public float mythicSpawnInterval = 60f;
 
+    [Header("Level 4 Wave Management")]
+    [Tooltip("Enable wave-based spawning for level 4")]
+    [SerializeField] private bool enableWaveMode = true;
+
+    [Tooltip("Time when Wave 2 starts (seconds from level start)")]
+    [SerializeField] private float wave2StartTime = 60f;
+
+    [Tooltip("Time when Final Wave starts (seconds from level start)")]
+    [SerializeField] private float finalWaveStartTime = 60f; // Same as wave2 for now, can be adjusted
+
+    [Tooltip("Spawn interval during Wave 2")]
+    [SerializeField] private float wave2SpawnInterval = 20f;
+
+    [Tooltip("Spawn interval during Final Wave")]
+    [SerializeField] private float finalWaveSpawnInterval = 15f;
+
+    [Header("Level 5 Boss Trigger")]
+    [Tooltip("Enable boss spawning for level 5")]
+    [SerializeField] private bool enableBossMode = true;
+
+    [Tooltip("Boss unit to spawn when enemy tower reaches 50% HP")]
+    [SerializeField] private TroopData bossTroop;
+
+    [Tooltip("HP percentage threshold to trigger boss spawn (0.5 = 50%)")]
+    [SerializeField] private float bossTriggerHPPercent = 0.5f;
+
 
     //for testing only
     [Header("Testing Single Troop Spawn")]
@@ -45,6 +71,15 @@ public class EnemyDeployManager : MonoBehaviour
     private int currentLevel;
     private float currentSpawnInterval;
     private int currentTroopCost;
+
+    // Level 4 Wave Management
+    private float _levelStartTime;
+    private int _currentWave = 1;
+    private bool _wave2Announced = false;
+    private bool _finalWaveAnnounced = false;
+
+    // Level 5 Boss Trigger
+    private bool _bossSpawned = false;
     
     // Level-specific configurations
     private struct LevelConfig
@@ -87,6 +122,15 @@ public class EnemyDeployManager : MonoBehaviour
             currentLevel = 1;
             Debug.LogWarning("[EnemyDeploy] GameManager not found, defaulting to Level 1");
         }
+
+        // Initialize level timing
+        _levelStartTime = Time.time;
+        _currentWave = 1;
+        _wave2Announced = false;
+        _finalWaveAnnounced = false;
+
+        // Initialize boss state
+        _bossSpawned = false;
 
         ApplyLevelSettings();
         _mythicTimer = mythicSpawnInterval;
@@ -185,7 +229,8 @@ public class EnemyDeployManager : MonoBehaviour
                 { TroopRarity.Rare, 20f },      // 20% Rare
                 { TroopRarity.Epic, 5f },       // 5% Epic
                 { TroopRarity.Legendary, 0f },  // 0% Legendary
-                { TroopRarity.Mythic, 0f }      // 0% Mythic
+                { TroopRarity.Mythic, 0f },     // 0% Mythic
+                { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially)
             },
             canDeployMythic = false,
             mythicChance = 0f
@@ -201,17 +246,19 @@ public class EnemyDeployManager : MonoBehaviour
             {
 
                 // yg baru
-                { TroopRarity.Common, 60f },   
-                { TroopRarity.Rare, 28f },      
-                { TroopRarity.Epic, 12f },      
+                { TroopRarity.Common, 60f },
+                { TroopRarity.Rare, 28f },
+                { TroopRarity.Epic, 12f },
                 { TroopRarity.Legendary, 5f },  // coba jadi 2 kalo masih belum balance
-                { TroopRarity.Mythic, 0f }      
+                { TroopRarity.Mythic, 0f },
+                { TroopRarity.Boss, 0f }      
                 /*
                 { TroopRarity.Common, 50f },    // 50% Common
                 { TroopRarity.Rare, 30f },      // 30% Rare
                 { TroopRarity.Epic, 15f },      // 15% Epic
                 { TroopRarity.Legendary, 5f },  // 5% Legendary
-                { TroopRarity.Mythic, 0f }      // 0% Mythic
+                { TroopRarity.Mythic, 0f },     // 0% Mythic
+                { TroopRarity.Boss, 0f }        // 0% Boss
                 */
             },
             canDeployMythic = false,
@@ -230,7 +277,8 @@ public class EnemyDeployManager : MonoBehaviour
                 { TroopRarity.Rare, 35f },      // 35% Rare
                 { TroopRarity.Epic, 30f },      // 30% Epic
                 { TroopRarity.Legendary, 10f }, // 10% Legendary
-                { TroopRarity.Mythic, 0f }      // 0% Mythic (deployed separately)
+                { TroopRarity.Mythic, 0f },     // 0% Mythic (deployed separately)
+                { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially)
             },
             canDeployMythic = true,
             mythicChance = 100f // Always deploy mythic when timer triggers
@@ -300,12 +348,24 @@ public class EnemyDeployManager : MonoBehaviour
         }
         
         // --- AI normal ---
+        // Handle wave transitions for Level 4
+        if (currentLevel == 4 && enableWaveMode)
+        {
+            UpdateWaveState();
+        }
+
+        // Handle boss trigger for Level 5
+        if (currentLevel == 5 && enableBossMode && !_bossSpawned)
+        {
+            CheckBossTrigger();
+        }
+
         // Regular spawn timer
         _spawnTimer += Time.deltaTime;
         if (_spawnTimer >= currentSpawnInterval)
         {
             _spawnTimer = 0f;
-            Debug.Log($"[EnemyDeploy] 🕒 SPAWN TIMER TRIGGERED (Level {currentLevel})");
+            Debug.Log($"[EnemyDeploy] 🕒 SPAWN TIMER TRIGGERED (Level {currentLevel}, Wave {_currentWave})");
             Debug.Log($"[EnemyDeploy] ⏱️  Spawn interval: {currentSpawnInterval:F1} seconds");
             Debug.Log($"[EnemyDeploy] 🎯 Attempting to spawn enemy unit...");
             TrySpawnEnemy();
@@ -331,6 +391,48 @@ public class EnemyDeployManager : MonoBehaviour
 
         // Boost AI coins periodically based on level multiplier
         BoostAICoins();
+    }
+
+    private void UpdateWaveState()
+    {
+        if (currentLevel != 4 || !enableWaveMode)
+            return;
+
+        float elapsedTime = Time.time - _levelStartTime;
+
+        // Transition to Wave 2
+        if (_currentWave == 1 && elapsedTime >= wave2StartTime && !_wave2Announced)
+        {
+            _currentWave = 2;
+            currentSpawnInterval = wave2SpawnInterval;
+            _wave2Announced = true;
+
+            Debug.Log($"[EnemyDeploy] 🌊 WAVE 2 STARTED! (Level 4, {elapsedTime:F1}s elapsed)");
+            Debug.Log($"[EnemyDeploy] ⚡ Increased spawn rate: Every {currentSpawnInterval:F1} seconds");
+
+            // Optional: Show wave announcement UI or play sound
+            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
+            {
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
+            }
+        }
+
+        // Transition to Final Wave
+        if (_currentWave == 2 && elapsedTime >= finalWaveStartTime && !_finalWaveAnnounced)
+        {
+            _currentWave = 3;
+            currentSpawnInterval = finalWaveSpawnInterval;
+            _finalWaveAnnounced = true;
+
+            Debug.Log($"[EnemyDeploy] 🔥 FINAL WAVE STARTED! (Level 4, {elapsedTime:F1}s elapsed)");
+            Debug.Log($"[EnemyDeploy] ⚡ Maximum spawn rate: Every {currentSpawnInterval:F1} seconds");
+
+            // Optional: Show final wave announcement UI or play sound
+            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
+            {
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
+            }
+        }
     }
 
     private float _coinBoostTimer = 0f;
@@ -526,5 +628,49 @@ public class EnemyDeployManager : MonoBehaviour
                $"Spawn Speed: {(1f / config.spawnIntervalMultiplier):F1}x\n" +
                $"AI Coins: +{config.coinGenerationMultiplier:F1}x\n" +
                $"Mythic Units: {mythicStatus}";
+    }
+
+    private void CheckBossTrigger()
+    {
+        if (_bossSpawned || bossTroop == null)
+            return;
+
+        // Find the enemy tower
+        Tower enemyTower = GameObject.FindObjectsOfType<Tower>()
+            .FirstOrDefault(t => t.owner == Tower.TowerOwner.Enemy);
+
+        if (enemyTower == null)
+            return;
+
+        // Check if tower HP is at or below the trigger percentage
+        float currentHPPercent = (float)enemyTower.currentHealth / enemyTower.maxHealth;
+
+        if (currentHPPercent <= bossTriggerHPPercent)
+        {
+            SpawnBoss();
+        }
+    }
+
+    private void SpawnBoss()
+    {
+        if (_bossSpawned || bossTroop == null)
+            return;
+
+        _bossSpawned = true;
+
+        Debug.Log($"[EnemyDeploy] 👑 BOSS SPAWN TRIGGERED! (Level 5)");
+        Debug.Log($"[EnemyDeploy] 🏰 Enemy tower HP dropped to {(bossTriggerHPPercent * 100):F0}%, spawning boss!");
+
+        // Spawn the boss (bosses are free or cost a lot)
+        SpawnTroop(bossTroop, false); // isMythic = false (boss spawns as regular enemy)
+
+        // Optional: Play dramatic music or sound effect
+        if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
+        }
+
+        // Optional: Show boss announcement
+        Debug.Log($"[EnemyDeploy] ⚔️ BOSS {bossTroop.displayName} HAS ENTERED THE BATTLE!");
     }
 }

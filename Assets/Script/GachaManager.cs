@@ -38,7 +38,8 @@ public class GachaManager : MonoBehaviour
         new RarityDropRate { rarity = TroopRarity.Rare, dropPercentage = 15f },
         new RarityDropRate { rarity = TroopRarity.Epic, dropPercentage = 4f },
         new RarityDropRate { rarity = TroopRarity.Legendary, dropPercentage = 1f },
-        new RarityDropRate { rarity = TroopRarity.Mythic, dropPercentage = 0f }
+        new RarityDropRate { rarity = TroopRarity.Mythic, dropPercentage = 0f },
+        new RarityDropRate { rarity = TroopRarity.Boss, dropPercentage = 0f } // Boss units are not obtained through gacha
     };
 
     [Header("Spawn Position")]

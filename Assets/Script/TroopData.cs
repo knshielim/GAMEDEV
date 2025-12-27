@@ -8,7 +8,8 @@ public enum TroopRarity
     Rare,
     Epic,
     Legendary,
-    Mythic
+    Mythic,
+    Boss
 }
 
 [CreateAssetMenu(

@@ -435,6 +435,9 @@ private void ShootProjectileInDirection(Vector2 direction)
             case TroopRarity.Mythic:
                 coinsEarned = 20; // Bonus for mythic enemies
                 break;
+            case TroopRarity.Boss:
+                coinsEarned = 50; // Massive reward for defeating boss
+                break;
             default:
                 coinsEarned = 1; // Fallback
                 break;

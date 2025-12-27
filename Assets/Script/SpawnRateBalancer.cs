@@ -73,6 +73,7 @@ public class SpawnRateBalancer : MonoBehaviour
     [SerializeField] private float baseEpicRate = 4f; // Balanced rate - obtainable but not easy
     [SerializeField] private float baseLegendaryRate = 2f; // Slightly increased for better accessibility
     [SerializeField] private float baseMythicRate = 0f;
+    [SerializeField] private float baseBossRate = 0f; // Boss units are spawned specially, not through gacha
 
     [Header("Upgrade System")]
     [SerializeField, Range(0, 10)] private int upgradeLevel = 0;
@@ -107,7 +108,8 @@ public class SpawnRateBalancer : MonoBehaviour
         TroopRarity.Rare,
         TroopRarity.Epic,
         TroopRarity.Legendary,
-        TroopRarity.Mythic
+        TroopRarity.Mythic,
+        TroopRarity.Boss
     };
 
     private void Awake()
@@ -124,6 +126,7 @@ public class SpawnRateBalancer : MonoBehaviour
         currentRates[TroopRarity.Epic] = baseEpicRate;
         currentRates[TroopRarity.Legendary] = baseLegendaryRate;
         currentRates[TroopRarity.Mythic] = baseMythicRate;
+        currentRates[TroopRarity.Boss] = baseBossRate;
 
         // Apply upgrade modifiers
         ApplyUpgradeModifiers();
@@ -470,7 +473,7 @@ public class SpawnRateBalancer : MonoBehaviour
     // Reactive balancing system - called when enemy spawns high-rarity unit
     public void ActivateReactiveBoost(TroopRarity rarity)
     {
-        if (rarity != TroopRarity.Epic && rarity != TroopRarity.Legendary) return;
+        if (rarity != TroopRarity.Epic && rarity != TroopRarity.Legendary && rarity != TroopRarity.Boss) return;
 
         isReactiveBoostActive = true;
         boostedRarity = rarity;

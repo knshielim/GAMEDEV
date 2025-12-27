@@ -484,4 +484,108 @@ public class TutorialManager : MonoBehaviour
         tutorialActive = false;
         EnemyDeployManager.tutorialActive = false;
     }
+
+    // Called by DialogueManager after intro dialogue completes
+    public void StartTutorialAfterDialogue()
+    {
+        Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
+
+        if (tutorialActive || PlayerPrefs.GetInt("TutorialCompleted", 0) == 1)
+        {
+            Debug.Log("[TutorialManager] Tutorial already active or completed, not starting");
+            return; // Already active or completed
+        }
+
+        Debug.Log("[TutorialManager] Starting tutorial after dialogue completion");
+
+        // Ensure we're enabled
+        this.enabled = true;
+
+        // Initialize tutorial state
+        tutorialActive = true;
+        EnemyDeployManager.tutorialActive = true;
+        if (GachaManager.Instance != null)
+        {
+            GachaManager.Instance.tutorialLocked = true;
+            Debug.Log("[TutorialManager] Gacha locked for tutorial");
+        }
+        else
+        {
+            Debug.LogWarning("[TutorialManager] GachaManager not found!");
+        }
+
+        SetPlayerButtons(false);
+        if (SkipButton != null)
+        {
+            SkipButton.SetActive(true);
+            Debug.Log("[TutorialManager] Skip button enabled");
+        }
+
+        // Give starting coins and start tutorial
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.AddPlayerCoins(5);
+            Debug.Log("[TutorialManager] Added 5 coins for tutorial");
+        }
+
+        ShowStep();
+        Debug.Log("[TutorialManager] Tutorial started - ShowStep() called");
+    }
+
+    // Called by DialogueManager after tutorial victory dialogue completes
+    public void StartActualGameplayAfterVictoryDialogue()
+    {
+        Debug.Log("[Tutorial] StartActualGameplayAfterVictoryDialogue called - starting real gameplay");
+
+        // Disable tutorial systems completely
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.tutorialLocked = false;
+
+        // Ensure tutorial UI is hidden
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        // Start actual level gameplay
+        StartCoroutine(StartActualLevelplay());
+    }
+
+    private IEnumerator StartActualLevelplay()
+    {
+        // Wait a moment for tutorial cleanup
+        yield return new WaitForSeconds(2f);
+
+        // Repair the enemy tower that was "destroyed" during tutorial
+        Tower enemyTower = GameObject.FindObjectOfType<Tower>();
+        if (enemyTower != null && enemyTower.owner == Tower.TowerOwner.Enemy)
+        {
+            enemyTower.RepairTower(); // Restore full health
+            Debug.Log("[Tutorial] Enemy tower repaired for actual gameplay");
+        }
+
+        // Reset enemy deployment for actual gameplay
+        if (enemyDeployManager != null)
+        {
+            // Make sure enemies can spawn normally now
+            EnemyDeployManager.tutorialActive = false;
+            Debug.Log("[Tutorial] Enemy deployment enabled for normal gameplay");
+        }
+
+        // Enable all player controls
+        SetPlayerButtons(true);
+
+        // Clear any tutorial enemies
+        Enemy[] tutorialEnemies = GameObject.FindObjectsOfType<Enemy>();
+        foreach (Enemy enemy in tutorialEnemies)
+        {
+            if (enemy != null)
+            {
+                Destroy(enemy.gameObject);
+            }
+        }
+
+        Debug.Log("[Tutorial] Actual level gameplay started - defeat the enemy tower to complete the level and see end dialogue!");
+    }
 }

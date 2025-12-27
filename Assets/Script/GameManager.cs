@@ -9,7 +9,9 @@ public enum GameLevel
 {
     Level1 = 1,
     Level2 = 2,
-    Level3 = 3
+    Level3 = 3,
+    Level4 = 4,
+    Level5 = 5
 }
 
 public class GameManager : MonoBehaviour
@@ -28,9 +30,15 @@ public class GameManager : MonoBehaviour
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
     public TextMeshProUGUI gameOverText;
-    //public Text gameOverText; 
+    //public Text gameOverText;
+
+    [Header("Speed Control")]
+    [SerializeField] private KeyCode fastForwardKey = KeyCode.F;
+    [SerializeField] private float normalSpeed = 1f;
+    [SerializeField] private float fastForwardSpeed = 2f;
 
     private bool isGameOver = false;
+    private bool isFastForward = false;
 
     private void Awake()
     {
@@ -79,8 +87,9 @@ public class GameManager : MonoBehaviour
             gameOverPanel.SetActive(false);
         }
 
-        // Make sure timeScale is normal
-        Time.timeScale = 1f;
+        // Make sure timeScale is normal (reset fast forward)
+        Time.timeScale = normalSpeed;
+        isFastForward = false;
 
         // Fix button references in Start() in case OnSceneLoaded ran too early
         if (gameObject.scene.buildIndex > 0)
@@ -228,11 +237,41 @@ public void TowerDestroyed(Tower destroyedTower)
             gameOverPanel.SetActive(true);
         if (gameOverText != null)
             gameOverText.text = message;
-            
-        Time.timeScale = 0f;
+
+        Time.timeScale = 0f; // Always pause on game over, regardless of fast forward
     }
 }
 
+    private void Update()
+    {
+        // Handle fast forward toggle
+        if (Input.GetKeyDown(fastForwardKey) && !isGameOver)
+        {
+            ToggleFastForward();
+        }
+    }
+
+    private void ToggleFastForward()
+    {
+        isFastForward = !isFastForward;
+        float newSpeed = isFastForward ? fastForwardSpeed : normalSpeed;
+
+        Time.timeScale = newSpeed;
+
+        Debug.Log($"[GameManager] Fast forward {(isFastForward ? "ON" : "OFF")} - Speed: {newSpeed}x");
+
+        // Optional: You could add UI feedback here
+    }
+
+    public bool IsFastForwardActive()
+    {
+        return isFastForward;
+    }
+
+    public float GetCurrentSpeedMultiplier()
+    {
+        return isFastForward ? fastForwardSpeed : normalSpeed;
+    }
 
     private float lastSummonTime = -1f;
     private const float SUMMON_COOLDOWN = 0.1f; // Prevent summons more frequent than 0.1 seconds
