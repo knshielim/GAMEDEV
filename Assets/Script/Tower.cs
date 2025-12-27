@@ -351,9 +351,20 @@ public class Tower : MonoBehaviour
 
         if (nextLevelButton != null)
         {
-            nextLevelButton.onClick.RemoveAllListeners();
-            nextLevelButton.onClick.AddListener(OnNextLevelClicked);
-            nextLevelButton.gameObject.SetActive(true);
+            // ✅ FIX: Hide next level button if this is the final level
+            bool isLastLevel = LevelManager.Instance != null && LevelManager.Instance.IsLastLevel();
+            if (isLastLevel)
+            {
+                nextLevelButton.gameObject.SetActive(false);
+                Debug.Log("[Tower] 🎉 Final level completed - next level button hidden");
+            }
+            else
+            {
+                nextLevelButton.onClick.RemoveAllListeners();
+                nextLevelButton.onClick.AddListener(OnNextLevelClicked);
+                nextLevelButton.gameObject.SetActive(true);
+                Debug.Log("[Tower] ✅ Next level button activated and made interactable");
+            }
         }
         else
         {

@@ -181,6 +181,7 @@ public class DialogueManager : MonoBehaviour
         FindUIComponents();
 
         // Reset the intro check flag for the new scene
+        Debug.Log($"[Dialogue] 📦 Resetting hasCheckedIntroForCurrentScene to false for scene '{scene.name}'");
         hasCheckedIntroForCurrentScene = false;
 
         // ✅ FIX: Don't try to show dialogue in scenes without UI components (like MainMenu)
@@ -188,6 +189,20 @@ public class DialogueManager : MonoBehaviour
         {
             Debug.Log($"[Dialogue] Skipping dialogue check for menu scene: {scene.name}");
             return;
+        }
+
+        // ✅ FIX: For level scenes, check if intro dialogue is needed
+        // (Start() only runs once for DontDestroyOnLoad objects)
+        // But only if UI components are properly initialized
+        Debug.Log($"[Dialogue] 📦 OnSceneLoaded - checking UI readiness: Panel={dialoguePanel}, Text={dialogueText}, Speaker={speakerNameText}, Portrait={speakerPortrait}");
+        if (dialoguePanel != null && dialogueText != null)
+        {
+            Debug.Log($"[Dialogue] 📦 About to call CheckIfIntroNeeded() for scene '{scene.name}'");
+            CheckIfIntroNeeded();
+        }
+        else
+        {
+            Debug.LogWarning($"[Dialogue] ⚠️ UI components not ready yet for scene '{scene.name}' - Panel: {dialoguePanel}, Text: {dialogueText}");
         }
     }
 
@@ -266,6 +281,7 @@ public class DialogueManager : MonoBehaviour
         Debug.Log($"[Dialogue] 🚀 Start() called at {Time.time}s - Instance: {Instance}, GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         InitializeDialogueSystem();
         FindUIComponents();
+        Debug.Log($"[Dialogue] 🚀 About to call CheckIfIntroNeeded() in scene '{gameObject.scene.name}'");
         CheckIfIntroNeeded();
     }
 
@@ -288,6 +304,7 @@ public class DialogueManager : MonoBehaviour
     private void CheckIfIntroNeeded()
     {
         Debug.Log($"[Dialogue] 🔍 CheckIfIntroNeeded() called at {Time.time}s - Instance: {Instance}, GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        Debug.Log($"[Dialogue] 🔍 hasCheckedIntroForCurrentScene: {hasCheckedIntroForCurrentScene}");
 
         // Prevent duplicate calls in the same scene
         if (hasCheckedIntroForCurrentScene)
@@ -520,39 +537,57 @@ public class DialogueManager : MonoBehaviour
             Debug.LogError("[Dialogue] Skip button is NULL - cannot show skip functionality!");
         }
 
-        if (dialoguePanel != null)
+        if (dialoguePanel != null && dialogueText != null)
         {
+            Debug.Log($"[Dialogue] 🎬 Activating dialogue panel - current state: {dialoguePanel.activeSelf}");
+
             // ✅ CRITICAL FIX: Force panel to be active and visible
             dialoguePanel.SetActive(true);
-            
+
             // Ensure it's at the root level or has proper parent
             Canvas parentCanvas = dialoguePanel.GetComponentInParent<Canvas>();
             if (parentCanvas != null)
             {
                 Debug.Log($"[Dialogue] ✅ Parent Canvas found: {parentCanvas.name}, renderMode: {parentCanvas.renderMode}");
+                // Also ensure parent canvas is active
+                if (!parentCanvas.gameObject.activeSelf)
+                {
+                    parentCanvas.gameObject.SetActive(true);
+                    Debug.Log($"[Dialogue] ✅ Activated parent Canvas: {parentCanvas.name}");
+                }
             }
-            
+
             // Force refresh layout
             LayoutRebuilder.ForceRebuildLayoutImmediate(dialoguePanel.GetComponent<RectTransform>());
-            
+
             Debug.Log($"[Dialogue] ✅ Dialogue panel activated! Active: {dialoguePanel.activeSelf}, Position: {dialoguePanel.transform.position}");
         }
         else
         {
-            Debug.LogError("[Dialogue] ❌ CRITICAL ERROR: Dialogue panel is NULL!");
+            Debug.LogError($"[Dialogue] ❌ CRITICAL ERROR: Dialogue components missing - Panel: {dialoguePanel}, Text: {dialogueText}");
+            // Reset dialogue state since we can't start
+            isShowingDialogue = false;
+            isShowingStartDialogue = false;
+            isShowingEndDialogue = false;
+            // Reset the intro check flag so it can be retried when components are ready
+            hasCheckedIntroForCurrentScene = false;
             return;
         }
 
         Time.timeScale = 0f;
         Debug.Log("[Dialogue] ⏸️  Game paused (Time.timeScale = 0)");
 
+        Debug.Log($"[Dialogue] 🎬 Calling DisplayNextLine() with {dialogueQueue.Count} lines in queue");
         DisplayNextLine();
     }
 
     private void DisplayNextLine()
     {
+        Debug.Log($"[Dialogue] 📝 DisplayNextLine called, queue has {dialogueQueue.Count} lines");
+
         if (dialogueQueue.Count == 0)
         {
+            Debug.Log($"[Dialogue] 📝 No more lines, ending dialogue");
             EndDialogue();
             return;
         }

@@ -15,10 +15,10 @@ MonoBehaviour:
   id: Boss_Monster
   displayName: Boss Monster
   rarity: 5
-  maxHealth: 1000
-  attack: 50
+  maxHealth: 300
+  attack: 20
   moveSpeed: 1
-  attackInterval: 2
+  attackInterval: 1
   level: 5
   isRanged: 0
   attackRange: 1

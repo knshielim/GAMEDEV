@@ -85,6 +85,9 @@ public class LevelSelectManager : MonoBehaviour
         // Starts with level 1 unlocked by default
         maxUnlockedLevel = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
 
+        // Always unlock Level 5 for boss testing (no progression required)
+        maxUnlockedLevel = Mathf.Max(maxUnlockedLevel, 5);
+
         // Clamp to valid range
         maxUnlockedLevel = Mathf.Clamp(maxUnlockedLevel, 1, 5);
     }
@@ -100,6 +103,7 @@ public class LevelSelectManager : MonoBehaviour
             UpdateLevelButtons(); // Refresh the UI
         }
     }
+
 
     private void UpdateLevelButtons()
     {
@@ -208,4 +212,5 @@ public class LevelSelectManager : MonoBehaviour
         }
         return "No description available.";
     }
+
 }

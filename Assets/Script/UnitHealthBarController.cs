@@ -11,6 +11,8 @@ public class UnitHealthBarController : MonoBehaviour
     public GameObject HealthBarPrefab;
 
     [Header("Offset Settings")]
+    [Tooltip("Horizontal offset from the unit center")]
+    public float xOffset = 0f;
     [Tooltip("Vertical offset above the unit")]
     public float yOffset = 1.5f;
     
@@ -74,7 +76,7 @@ public class UnitHealthBarController : MonoBehaviour
         healthBarInstance = Instantiate(HealthBarPrefab, transform);
 
         // Set local position with offset
-        healthBarInstance.transform.localPosition = new Vector3(0, yOffset, 0);
+        healthBarInstance.transform.localPosition = new Vector3(xOffset, yOffset, 0);
 
         // Ensure the rotation is clean (important when parented)
         healthBarInstance.transform.localRotation = Quaternion.identity;
@@ -91,9 +93,17 @@ public class UnitHealthBarController : MonoBehaviour
             RectTransform canvasRect = healthBarCanvas.GetComponent<RectTransform>();
             if (canvasRect != null)
             {
-                // Use the configurable scale (default 0.1 for 2D, adjust in Inspector if needed)
-                canvasRect.localScale = new Vector3(canvasScale, canvasScale, canvasScale);
-                Debug.Log($"[HealthBar] Set Canvas scale to {canvasScale} for {targetUnit.name} (Camera orthographic: {Camera.main?.orthographic})");
+                float finalScale = canvasScale;
+
+                // ✅ REDUCE HEALTH BAR SIZE FOR BOSS UNITS (since they're 5x larger)
+                if (targetUnit.GetTroopData() != null && targetUnit.GetTroopData().rarity == TroopRarity.Boss)
+                {
+                    finalScale *= 0.2f; // Make boss health bars 80% smaller (20% of normal size)
+                    Debug.Log($"[HealthBar] 🏰 Boss detected - reducing health bar scale to {finalScale} (was {canvasScale})");
+                }
+
+                canvasRect.localScale = new Vector3(finalScale, finalScale, finalScale);
+                Debug.Log($"[HealthBar] Set Canvas scale to {finalScale} for {targetUnit.name} (Camera orthographic: {Camera.main?.orthographic})");
             }
         }
         else

@@ -6683,11 +6683,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9dc48b7240106e45b23263c75b71d0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialoguePanel: {fileID: 0}
-  dialogueText: {fileID: 0}
-  speakerNameText: {fileID: 0}
-  skipButton: {fileID: 0}
-  speakerPortrait: {fileID: 0}
+  dialoguePanel: {fileID: 367331910}
+  dialogueText: {fileID: 1627891207}
+  speakerNameText: {fileID: 342352693}
+  skipButton: {fileID: 1686761038}
+  speakerPortrait: {fileID: 944048020}
   typingSpeed: 0.05
   autoAdvanceDelay: 2
   levelDialogues:

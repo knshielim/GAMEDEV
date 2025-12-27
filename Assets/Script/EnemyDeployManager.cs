@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,6 +8,10 @@ public class EnemyDeployManager : MonoBehaviour
      public static bool tutorialActive = false;
     [Header("Tower Reference")]
     [SerializeField] private Tower playerTower;
+
+    [Header("Boss Summon UI")]
+    [SerializeField] private GameObject bossSummonPanel;
+    [SerializeField] private TMPro.TextMeshProUGUI bossSummonText;
 
     [Header("Spawn Settings")]
     [Tooltip("Where enemy troops will appear (usually in front of the enemy tower).")]
@@ -80,6 +85,7 @@ public class EnemyDeployManager : MonoBehaviour
 
     // Level 5 Boss Trigger
     private bool _bossSpawned = false;
+    private bool _levelSettingsApplied = false;
     
     // Level-specific configurations
     private struct LevelConfig
@@ -113,15 +119,43 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void Start()
     {
-        if (GameManager.Instance != null)
+        // Get current level from scene name/build index (not GameManager progress)
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        int buildIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+
+        // Scene naming: MainMenu=0, LevelSelect=1, Level1=2, Level2=3, Level3=4, Level4=5, Level5=6
+        if (sceneName.StartsWith("Level"))
         {
-            currentLevel = (int)GameManager.Instance.currentLevel;
+            // Extract level number from scene name (e.g., "Level5" -> 5)
+            if (int.TryParse(sceneName.Substring(5), out int levelFromName))
+            {
+                currentLevel = levelFromName;
+                Debug.Log($"[EnemyDeploy] ✅ Detected level {currentLevel} from scene name: {sceneName}");
+            }
+            else
+            {
+                Debug.LogWarning($"[EnemyDeploy] Could not parse level from scene name: {sceneName}, using build index fallback");
+                // Fallback to build index: Level1 = buildIndex 2, so level = buildIndex - 1
+                if (buildIndex >= 2)
+                {
+                    currentLevel = buildIndex - 1;
+                    Debug.Log($"[EnemyDeploy] ✅ Detected level {currentLevel} from build index: {buildIndex}");
+                }
+                else
+                {
+                    currentLevel = 1;
+                    Debug.LogWarning($"[EnemyDeploy] Invalid build index {buildIndex}, defaulting to Level 1");
+                }
+            }
         }
         else
         {
+            // Not a level scene, default to 1
             currentLevel = 1;
-            Debug.LogWarning("[EnemyDeploy] GameManager not found, defaulting to Level 1");
+            Debug.Log($"[EnemyDeploy] Not a level scene ({sceneName}), defaulting to Level 1");
         }
+
+        Debug.Log($"[EnemyDeploy] 🎯 Final level detection: {currentLevel} (Scene: {sceneName}, BuildIndex: {buildIndex})");
 
         // Initialize level timing
         _levelStartTime = Time.time;
@@ -131,6 +165,20 @@ public class EnemyDeployManager : MonoBehaviour
 
         // Initialize boss state
         _bossSpawned = false;
+
+        // Debug: Check boss configuration for Level 5
+        if (currentLevel == 5)
+        {
+            Debug.Log($"[EnemyDeploy] 🏰 Level 5 Boss Config - Enabled: {enableBossMode}, Troop: {bossTroop?.name ?? "NULL"}, Trigger HP: {bossTriggerHPPercent * 100f:F1}%");
+            if (bossTroop == null)
+            {
+                Debug.LogError("[EnemyDeploy] ❌ BOSS TROOP NOT ASSIGNED! Boss will not spawn.");
+            }
+            if (!enableBossMode)
+            {
+                Debug.LogWarning("[EnemyDeploy] ⚠️ Boss mode disabled for Level 5");
+            }
+        }
 
         ApplyLevelSettings();
         _mythicTimer = mythicSpawnInterval;
@@ -287,6 +335,12 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void ApplyLevelSettings()
     {
+        if (_levelSettingsApplied)
+        {
+            Debug.Log($"[EnemyDeploy] Level settings already applied for level {currentLevel}, skipping");
+            return;
+        }
+
         if (!levelConfigs.ContainsKey(currentLevel))
         {
             Debug.LogWarning($"[EnemyDeploy] No config found for level {currentLevel}, using default");
@@ -322,6 +376,8 @@ public class EnemyDeployManager : MonoBehaviour
                   $"Mythic Enabled={config.canDeployMythic}");
         Debug.Log($"[EnemyDeploy] ⏱️  Enemy spawn timing: Every {currentSpawnInterval:F1} seconds (base: {baseSpawnInterval:F1}s × {levelConfigs[currentLevel].spawnIntervalMultiplier:F1})");
         Debug.Log($"[EnemyDeploy] 💰 Enemy coin cost per spawn: {currentTroopCost} coins");
+
+        _levelSettingsApplied = true;
     }
 
     private void Update()
@@ -329,6 +385,27 @@ public class EnemyDeployManager : MonoBehaviour
             // STOP ENEMY SPAWNING DURING TUTORIAL
          if (tutorialActive)
              return;
+
+        // DEBUG: Log current level occasionally and refresh level detection if needed
+        if (Time.frameCount % 600 == 0) // Every 10 seconds
+        {
+            Tower enemyTower = GameObject.FindObjectsOfType<Tower>().FirstOrDefault(t => t.owner == Tower.TowerOwner.Enemy);
+
+            // Double-check level detection in case scene loaded after Start()
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (sceneName.StartsWith("Level") && int.TryParse(sceneName.Substring(5), out int levelFromScene))
+            {
+                if (levelFromScene != currentLevel)
+                {
+                    Debug.Log($"[EnemyDeploy] 🔄 Level mismatch detected! Scene: {sceneName} (Level {levelFromScene}), but currentLevel: {currentLevel}. Updating...");
+                    currentLevel = levelFromScene;
+                    _levelSettingsApplied = false; // Reset flag so settings can be reapplied
+                    ApplyLevelSettings(); // Reapply settings for correct level
+                }
+            }
+
+            Debug.Log($"[EnemyDeploy] 📊 Current status - Level: {currentLevel}, EnemyTowerHP: {enemyTower?.currentHealth ?? 0}/{enemyTower?.maxHealth ?? 0}, BossMode: {enableBossMode}, BossSpawned: {_bossSpawned}");
+        }
 
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
             return;
@@ -354,10 +431,76 @@ public class EnemyDeployManager : MonoBehaviour
             UpdateWaveState();
         }
 
+        // DEBUG: Press B to force spawn boss (for testing)
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            Debug.Log($"[EnemyDeploy] 🎮 DEBUG: B key pressed! Level: {currentLevel}, Should be 5: {currentLevel == 5}, BossSpawned: {_bossSpawned}, BossTroop: {bossTroop?.name ?? "NULL"}");
+            if (currentLevel == 5)
+            {
+                Debug.Log("[EnemyDeploy] 🎮 DEBUG: Force spawning boss with B key!");
+                if (!_bossSpawned)
+                {
+                    SpawnBoss();
+                }
+                else
+                {
+                    Debug.Log("[EnemyDeploy] ⚠️ Boss already spawned, cannot force spawn again");
+                }
+            }
+            else
+            {
+                Debug.Log($"[EnemyDeploy] ⚠️ Not in Level 5 (current: {currentLevel}), cannot force spawn boss");
+            }
+        }
+
+        // DEBUG: Press N to manually check boss trigger (for testing HP detection)
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            Debug.Log($"[EnemyDeploy] 🎮 DEBUG: N key pressed! Level: {currentLevel}, Should be 5: {currentLevel == 5}");
+            if (currentLevel == 5)
+            {
+                Debug.Log("[EnemyDeploy] 🎮 DEBUG: Manually checking boss trigger with N key!");
+                CheckBossTrigger();
+            }
+            else
+            {
+                Debug.Log($"[EnemyDeploy] ⚠️ Not in Level 5 (current: {currentLevel}), cannot check boss trigger");
+            }
+        }
+
         // Handle boss trigger for Level 5
         if (currentLevel == 5 && enableBossMode && !_bossSpawned)
         {
+            // Debug: Always log when actively checking (but not too frequently)
+            if (Time.frameCount % 30 == 0) // Every ~0.5 seconds at 60 FPS (more frequent)
+            {
+                Debug.Log($"[EnemyDeploy] 🔍 ACTIVELY checking boss trigger (Level 5, bossMode: {enableBossMode}, spawned: {_bossSpawned})");
+            }
             CheckBossTrigger();
+        }
+        else
+        {
+            // Debug: Log why boss isn't being checked (only occasionally to avoid spam)
+            if (Time.frameCount % 300 == 0) // Every ~5 seconds at 60 FPS
+            {
+                string reason = currentLevel != 5 ? $"Wrong level ({currentLevel})" :
+                                !enableBossMode ? "Boss mode disabled" :
+                                _bossSpawned ? "Boss already spawned" : "Unknown";
+                Debug.Log($"[EnemyDeploy] ℹ️ Boss check SKIPPED: {reason} - Level: {currentLevel}, BossMode: {enableBossMode}, AlreadySpawned: {_bossSpawned}, BossTroop: {bossTroop?.name ?? "NULL"}");
+
+                if (currentLevel != 5)
+                {
+                    Debug.Log($"[EnemyDeploy] 💡 TIP: Boss spawning only works in Level 5! Make sure you're in Level 5.");
+                }
+                else if (!enableBossMode)
+                {
+                    Debug.Log($"[EnemyDeploy] 💡 TIP: Boss mode is disabled! Check EnemyDeployManager Inspector.");
+                }
+                else if (_bossSpawned)
+                {
+                    Debug.Log($"[EnemyDeploy] 💡 TIP: Boss already spawned! Can only spawn once per level.");
+                }
+            }
         }
 
         // Regular spawn timer
@@ -562,6 +705,14 @@ public class EnemyDeployManager : MonoBehaviour
         GameObject prefabToUse = data.enemyPrefab != null ? data.enemyPrefab : data.playerPrefab;
         GameObject enemyObj = Instantiate(prefabToUse, enemySpawnPoint.position, Quaternion.identity);
 
+        // ✅ SCALE UP BOSS UNITS
+        if (data.rarity == TroopRarity.Boss)
+        {
+            float bossScaleMultiplier = 5.0f; // Make boss 500% larger (5x bigger)
+            enemyObj.transform.localScale *= bossScaleMultiplier;
+            Debug.Log($"[EnemyDeploy] 🏰 Boss {data.displayName} scaled up by {bossScaleMultiplier}x (new scale: {enemyObj.transform.localScale})");
+        }
+
         Enemy enemyUnit = enemyObj.GetComponent<Enemy>();
         if (enemyUnit != null)
         {
@@ -632,45 +783,124 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void CheckBossTrigger()
     {
-        if (_bossSpawned || bossTroop == null)
+        Debug.Log($"[EnemyDeploy] 🔍 CheckBossTrigger called - _bossSpawned: {_bossSpawned}, bossTroop: {bossTroop?.name ?? "NULL"}");
+
+        if (_bossSpawned)
+        {
+            Debug.Log("[EnemyDeploy] ⚠️ Boss already spawned, skipping check");
+            return; // Boss already spawned
+        }
+
+        if (bossTroop == null)
+        {
+            Debug.LogWarning("[EnemyDeploy] ⚠️ Boss troop not assigned in Inspector! Cannot spawn boss.");
             return;
+        }
 
         // Find the enemy tower
         Tower enemyTower = GameObject.FindObjectsOfType<Tower>()
             .FirstOrDefault(t => t.owner == Tower.TowerOwner.Enemy);
 
         if (enemyTower == null)
+        {
+            Debug.LogWarning("[EnemyDeploy] ⚠️ Enemy tower not found for boss trigger check!");
             return;
+        }
 
         // Check if tower HP is at or below the trigger percentage
         float currentHPPercent = (float)enemyTower.currentHealth / enemyTower.maxHealth;
+        float currentHPPercentDisplay = currentHPPercent * 100f;
+        float triggerPercentDisplay = bossTriggerHPPercent * 100f;
+
+        Debug.Log($"[EnemyDeploy] 👀 Boss HP Check - Tower: {enemyTower.currentHealth}/{enemyTower.maxHealth} ({currentHPPercentDisplay:F1}%), Trigger: {triggerPercentDisplay:F1}%, Condition: {currentHPPercent:F3} <= {bossTriggerHPPercent:F3} = {currentHPPercent <= bossTriggerHPPercent}");
 
         if (currentHPPercent <= bossTriggerHPPercent)
         {
+            Debug.Log($"[EnemyDeploy] 🎯 BOSS TRIGGER ACTIVATED! Tower HP at {currentHPPercentDisplay:F1}% (threshold: {triggerPercentDisplay:F1}%) - IMMEDIATE PAUSE & BOSS SUMMON!");
             SpawnBoss();
+        }
+        else
+        {
+            // Only log when HP is close to threshold (every few checks to avoid spam)
+            if (currentHPPercent <= bossTriggerHPPercent + 0.1f) // Within 10% of threshold
+            {
+                Debug.Log($"[EnemyDeploy] ⏳ Boss trigger approaching - need tower HP <= {triggerPercentDisplay:F1}% (currently {currentHPPercentDisplay:F1}%)");
+            }
         }
     }
 
     private void SpawnBoss()
     {
+        Debug.Log($"[EnemyDeploy] 👑 SpawnBoss called - _bossSpawned: {_bossSpawned}, bossTroop: {bossTroop?.name ?? "NULL"}");
+
         if (_bossSpawned || bossTroop == null)
+        {
+            Debug.Log($"[EnemyDeploy] ⚠️ SpawnBoss aborted - _bossSpawned: {_bossSpawned}, bossTroop null: {bossTroop == null}");
             return;
+        }
 
         _bossSpawned = true;
 
         Debug.Log($"[EnemyDeploy] 👑 BOSS SPAWN TRIGGERED! (Level 5)");
         Debug.Log($"[EnemyDeploy] 🏰 Enemy tower HP dropped to {(bossTriggerHPPercent * 100):F0}%, spawning boss!");
+        Debug.Log($"[EnemyDeploy] 🎭 Boss UI - Panel: {bossSummonPanel?.name ?? "NULL"}, Text: {bossSummonText?.name ?? "NULL"}");
 
-        // Spawn the boss (bosses are free or cost a lot)
+        // Dramatic pause when boss spawns
+        StartCoroutine(BossSpawnPauseSequence());
+    }
+
+    private IEnumerator BossSpawnPauseSequence()
+    {
+        Debug.Log("[EnemyDeploy] ⏸️ IMMEDIATE BOSS SPAWN SEQUENCE - PAUSING GAME!");
+
+        // IMMEDIATE PAUSE - Game stops instantly
+        Time.timeScale = 0f;
+        Debug.Log("[EnemyDeploy] 🛑 GAME PAUSED - Time.timeScale = 0");
+
+        // Show boss summon UI instantly
+        if (bossSummonPanel != null)
+        {
+            bossSummonPanel.SetActive(true);
+            Debug.Log("[EnemyDeploy] 📋 Boss summon panel displayed IMMEDIATELY");
+        }
+
+        if (bossSummonText != null)
+        {
+            bossSummonText.text = "BOSS SUMMONED";
+            bossSummonText.gameObject.SetActive(true);
+            Debug.Log("[EnemyDeploy] 📝 Boss summon text displayed IMMEDIATELY: 'BOSS SUMMONED'");
+        }
+
+        // Spawn the boss DURING the pause (while screen is frozen)
+        Debug.Log("[EnemyDeploy] 🏰 Spawning boss during pause...");
         SpawnTroop(bossTroop, false); // isMythic = false (boss spawns as regular enemy)
 
-        // Optional: Play dramatic music or sound effect
+        // Play sound effect
         if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
         {
             AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
+            Debug.Log("[EnemyDeploy] 🔊 Boss summon sound effect played");
         }
 
-        // Optional: Show boss announcement
-        Debug.Log($"[EnemyDeploy] ⚔️ BOSS {bossTroop.displayName} HAS ENTERED THE BATTLE!");
+        // Dramatic 2-second pause with boss on screen
+        Debug.Log("[EnemyDeploy] ⏳ Holding pause for 2 seconds with boss visible...");
+        yield return new WaitForSecondsRealtime(2f);
+
+        // Hide the summon UI
+        if (bossSummonPanel != null)
+        {
+            bossSummonPanel.SetActive(false);
+            Debug.Log("[EnemyDeploy] 📋 Boss summon panel hidden");
+        }
+
+        if (bossSummonText != null)
+        {
+            bossSummonText.gameObject.SetActive(false);
+            Debug.Log("[EnemyDeploy] 📝 Boss summon text hidden");
+        }
+
+        // RESUME GAME
+        Time.timeScale = 1f;
+        Debug.Log("[EnemyDeploy] ▶️ BOSS SPAWN COMPLETE - GAME RESUMED! Boss battle begins!");
     }
 }
