@@ -140,6 +140,7 @@ public class DialogueManager : MonoBehaviour
     private Queue<Sprite> portraitQueue;
     private bool isTyping = false;
     private bool skipRequested = false;
+    private bool isShowingDialogue = false;
     private Coroutine currentTypingCoroutine;
     private bool isShowingStartDialogue = false;
     private bool isShowingEndDialogue = false;
@@ -162,13 +163,11 @@ public class DialogueManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Refresh UI references when a new scene loads
         FindUIComponents();
     }
 
     private void FindUIComponents()
     {
-        // Try to find UI components in the current scene
         if (dialoguePanel == null)
         {
             GameObject panelObj = GameObject.Find("DialoguePanel");
@@ -177,6 +176,10 @@ public class DialogueManager : MonoBehaviour
                 dialoguePanel = panelObj;
                 Debug.Log("[Dialogue] Found DialoguePanel in scene");
             }
+            else
+            {
+                Debug.LogError("[Dialogue] ❌ CRITICAL: DialoguePanel not found in scene!");
+            }
         }
 
         if (dialogueText == null)
@@ -184,6 +187,8 @@ public class DialogueManager : MonoBehaviour
             dialogueText = GameObject.Find("DialogueText")?.GetComponent<TMPro.TextMeshProUGUI>();
             if (dialogueText != null)
                 Debug.Log("[Dialogue] Found DialogueText in scene");
+            else
+                Debug.LogError("[Dialogue] ❌ CRITICAL: DialogueText not found!");
         }
 
         if (speakerNameText == null)
@@ -202,12 +207,28 @@ public class DialogueManager : MonoBehaviour
                 Debug.Log("[Dialogue] Found SkipButton in scene");
             }
         }
+
+        // ✅ CRITICAL FIX: Force DialoguePanel to render on top
+        if (dialoguePanel != null)
+        {
+            Canvas dialogueCanvas = dialoguePanel.GetComponent<Canvas>();
+            if (dialogueCanvas == null)
+            {
+                dialogueCanvas = dialoguePanel.AddComponent<Canvas>();
+            }
+            
+            // Force it to be an overlay canvas (renders on top of everything)
+            dialogueCanvas.overrideSorting = true;
+            dialogueCanvas.sortingOrder = 9999; // Very high value to ensure it's on top
+            
+            Debug.Log($"[Dialogue] ✅ Set DialoguePanel Canvas sortingOrder to {dialogueCanvas.sortingOrder}");
+        }
     }
 
     private void Start()
     {
         InitializeDialogueSystem();
-        FindUIComponents(); // Try to find UI components
+        FindUIComponents();
         CheckIfIntroNeeded();
     }
 
@@ -218,7 +239,10 @@ public class DialogueManager : MonoBehaviour
         portraitQueue = new Queue<Sprite>();
 
         if (dialoguePanel != null)
+        {
             dialoguePanel.SetActive(false);
+            Debug.Log("[Dialogue] DialoguePanel initially hidden");
+        }
 
         if (skipButton != null)
             skipButton.onClick.AddListener(SkipDialogue);
@@ -226,84 +250,169 @@ public class DialogueManager : MonoBehaviour
 
     private void CheckIfIntroNeeded()
     {
-        // Check if UI components are assigned
         if (dialoguePanel == null || dialogueText == null)
         {
-            Debug.LogWarning("[Dialogue] Dialogue UI components not assigned! Skipping dialogue.");
+            Debug.LogWarning("[Dialogue] ⚠️ Dialogue UI components not assigned! Skipping dialogue.");
             return;
         }
 
-        // Get current level
         int currentLevel = GetCurrentLevel();
 
         if (currentLevel >= 1 && currentLevel <= 5)
         {
-            // SPECIAL CASE: Check if we just completed the tutorial and should show Level 1 end dialogue
-            bool tutorialJustCompleted = PlayerPrefs.GetInt("TutorialJustCompleted", 0) == 1;
-            bool tutorialCompleted = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+            Debug.Log($"[Dialogue] 🎬 Level {currentLevel} loaded - showing dialogue sequence");
 
-            Debug.Log($"[Dialogue] CheckIfIntroNeeded - Level {currentLevel}, tutorialJustCompleted: {tutorialJustCompleted}, tutorialCompleted: {tutorialCompleted}");
+            // Always show the full dialogue sequence for this level
+            StartCoroutine(ShowFullLevelDialogueSequence(currentLevel));
+        }
+    }
 
-            if (tutorialJustCompleted && currentLevel == 1)
-            {
-                Debug.Log("[Dialogue] Tutorial just completed - showing Level 1 end dialogue");
-                // Clear the flag
-                PlayerPrefs.SetInt("TutorialJustCompleted", 0);
-                PlayerPrefs.Save();
-                // Show end dialogue for Level 1
-                StartCoroutine(ShowLevelEndDialogueForcedCoroutine(levelDialogues[0].endDialogueLines, levelDialogues[0].endSpeakerNames, levelDialogues[0].endPortraits));
-                return;
-            }
+    private IEnumerator ShowFullLevelDialogueSequence(int levelNumber)
+    {
+        Debug.Log($"[Dialogue] Starting dialogue sequence for Level {levelNumber}");
 
-            // Check if start dialogue for this level has been seen
-            string levelStartKey = $"Level{currentLevel}_StartDialogueSeen";
-            bool hasSeenLevelStart = PlayerPrefs.GetInt(levelStartKey, 0) == 1;
+        LevelDialogue dialogue = GetLevelDialogue(levelNumber);
+        if (dialogue == null)
+        {
+            Debug.LogError($"[Dialogue] No dialogue data found for Level {levelNumber}!");
+            yield break;
+        }
 
-            if (!hasSeenLevelStart)
-            {
-                StartCoroutine(ShowLevelStartDialogue(currentLevel));
-            }
+        // SPECIAL HANDLING FOR LEVEL 1
+        if (levelNumber == 1)
+        {
+            yield return StartCoroutine(HandleLevel1Sequence(dialogue));
+            yield break;
+        }
+
+        // NORMAL HANDLING FOR OTHER LEVELS
+        // Show start dialogue first
+        if (dialogue.startDialogueLines.Length > 0)
+        {
+            Debug.Log($"[Dialogue] Showing start dialogue ({dialogue.startDialogueLines.Length} lines)");
+            StartDialogue(dialogue.startDialogueLines, dialogue.startSpeakerNames, dialogue.startPortraits, true);
+
+            // Wait for start dialogue to complete
+            yield return new WaitUntil(() => !isShowingDialogue);
+            Debug.Log("[Dialogue] Start dialogue completed");
+        }
+
+        // Small pause between start and end dialogue
+        yield return new WaitForSecondsRealtime(1f);
+
+        // Show end dialogue
+        if (dialogue.endDialogueLines.Length > 0)
+        {
+            Debug.Log($"[Dialogue] Showing end dialogue ({dialogue.endDialogueLines.Length} lines)");
+            StartDialogue(dialogue.endDialogueLines, dialogue.endSpeakerNames, dialogue.endPortraits, false);
+
+            // Wait for end dialogue to complete
+            yield return new WaitUntil(() => !isShowingDialogue);
+            Debug.Log("[Dialogue] End dialogue completed");
+        }
+
+        // Mark dialogues as seen
+        string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
+        string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
+        PlayerPrefs.SetInt(levelStartKey, 1);
+        PlayerPrefs.SetInt(levelEndKey, 1);
+        PlayerPrefs.Save();
+
+        Debug.Log($"[Dialogue] Full dialogue sequence completed for Level {levelNumber}");
+
+        // Start gameplay
+        StartCoroutine(StartGameplayAfterDialogue());
+    }
+
+    private IEnumerator HandleLevel1Sequence(LevelDialogue dialogue)
+    {
+        Debug.Log("[Dialogue] Handling special Level 1 sequence");
+
+        // STEP 1: Show Level 1 start dialogue
+        if (dialogue.startDialogueLines.Length > 0)
+        {
+            Debug.Log($"[Dialogue] Showing Level 1 start dialogue ({dialogue.startDialogueLines.Length} lines)");
+            StartDialogue(dialogue.startDialogueLines, dialogue.startSpeakerNames, dialogue.startPortraits, true);
+
+            // Wait for start dialogue to complete
+            yield return new WaitUntil(() => !isShowingDialogue);
+            Debug.Log("[Dialogue] Level 1 start dialogue completed");
+
+            // Mark start dialogue as seen
+            PlayerPrefs.SetInt("Level1_StartDialogueSeen", 1);
+            PlayerPrefs.Save();
+        }
+
+        // STEP 2: Always start tutorial for Level 1 (reset completion status first)
+        Debug.Log("[Dialogue] Resetting tutorial completion status for Level 1");
+        PlayerPrefs.SetInt("TutorialCompleted", 0); // Reset so tutorial can run again
+        PlayerPrefs.Save();
+
+        Debug.Log("[Dialogue] Starting tutorial for Level 1");
+        StartTutorialIfNeeded();
+
+        // Wait for tutorial to complete (it will disable itself when done)
+        yield return new WaitUntil(() => PlayerPrefs.GetInt("TutorialCompleted", 0) == 1);
+        Debug.Log("[Dialogue] Tutorial completed - proceeding to real Level 1 gameplay");
+
+        // STEP 3: Start actual Level 1 gameplay
+        StartCoroutine(StartGameplayAfterDialogue());
+    }
+
+    private IEnumerator StartGameplayAfterDialogue()
+    {
+        Debug.Log("[Dialogue] Starting gameplay after dialogue");
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        // Ensure game is running
+        Time.timeScale = 1f;
+
+        // Find TutorialManager and start gameplay if it exists
+        TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
+        if (tutorialManager != null)
+        {
+            tutorialManager.StartActualGameplayDirectly();
+        }
+        else
+        {
+            Debug.Log("[Dialogue] No TutorialManager found, gameplay should start normally");
         }
     }
 
     private int GetCurrentLevel()
     {
-        // Try to get from GameManager first
         if (GameManager.Instance != null)
         {
             return (int)GameManager.Instance.currentLevel;
         }
 
-        // Try to get from LevelManager
         if (LevelManager.Instance != null)
         {
             return LevelManager.Instance.GetCurrentLevel();
         }
 
-        // Fallback: parse from scene name
         string sceneName = SceneManager.GetActiveScene().name;
         if (sceneName.StartsWith("Level "))
         {
-            string levelStr = sceneName.Substring(6); // Remove "Level "
+            string levelStr = sceneName.Substring(6);
             if (int.TryParse(levelStr, out int level))
             {
                 return level;
             }
         }
 
-        // Last fallback: use build index with offset
         int buildIndex = SceneManager.GetActiveScene().buildIndex;
         if (buildIndex >= 2)
         {
-            return buildIndex - 1; // Level 1 scene (build index 2) = level 1
+            return buildIndex - 1;
         }
 
-        return 1; // Default fallback
+        return 1;
     }
 
     public void StartDialogue(string[] lines, string[] speakers = null, Sprite[] portraits = null, bool isStartDialogue = true)
     {
-        Debug.Log($"[Dialogue] StartDialogue called with {lines?.Length ?? 0} lines, isStartDialogue={isStartDialogue}, isForcedEndDialogue={isForcedEndDialogue}");
+        Debug.Log($"[Dialogue] 🎬 StartDialogue called with {lines?.Length ?? 0} lines");
 
         dialogueQueue.Clear();
         speakerQueue.Clear();
@@ -312,7 +421,6 @@ public class DialogueManager : MonoBehaviour
         foreach (string line in lines)
         {
             dialogueQueue.Enqueue(line);
-            Debug.Log($"[Dialogue] Added line: '{line}'");
         }
 
         if (speakers != null)
@@ -331,26 +439,37 @@ public class DialogueManager : MonoBehaviour
             }
         }
 
-        // Set dialogue type flags
         isShowingStartDialogue = isStartDialogue;
         isShowingEndDialogue = !isStartDialogue;
+        isShowingDialogue = true;
 
-        // Hide any tutorial panels before showing dialogue
         HideTutorialPanels();
 
         if (dialoguePanel != null)
         {
+            // ✅ CRITICAL FIX: Force panel to be active and visible
             dialoguePanel.SetActive(true);
-            Debug.Log("[Dialogue] Dialogue panel activated");
+            
+            // Ensure it's at the root level or has proper parent
+            Canvas parentCanvas = dialoguePanel.GetComponentInParent<Canvas>();
+            if (parentCanvas != null)
+            {
+                Debug.Log($"[Dialogue] ✅ Parent Canvas found: {parentCanvas.name}, renderMode: {parentCanvas.renderMode}");
+            }
+            
+            // Force refresh layout
+            LayoutRebuilder.ForceRebuildLayoutImmediate(dialoguePanel.GetComponent<RectTransform>());
+            
+            Debug.Log($"[Dialogue] ✅ Dialogue panel activated! Active: {dialoguePanel.activeSelf}, Position: {dialoguePanel.transform.position}");
         }
         else
         {
-            Debug.LogError("[Dialogue] Dialogue panel is null!");
+            Debug.LogError("[Dialogue] ❌ CRITICAL ERROR: Dialogue panel is NULL!");
+            return;
         }
 
-        // PAUSE THE GAME during dialogue
         Time.timeScale = 0f;
-        Debug.Log("[Dialogue] Game paused during dialogue (Time.timeScale = 0)");
+        Debug.Log("[Dialogue] ⏸️  Game paused (Time.timeScale = 0)");
 
         DisplayNextLine();
     }
@@ -396,24 +515,24 @@ public class DialogueManager : MonoBehaviour
             }
 
             dialogueText.text += letter;
-            yield return new WaitForSecondsRealtime(typingSpeed); // Use realtime instead of regular time
+            yield return new WaitForSecondsRealtime(typingSpeed);
         }
 
         isTyping = false;
 
-        // Auto-advance after delay, but allow clicking to skip the wait
-        float timer = 0f;
-        while (timer < autoAdvanceDelay)
+        // Wait for spacebar input to advance (no auto-advance)
+        Debug.Log("[Dialogue] Line typing complete - press SPACEBAR to continue to next line");
+
+        // Wait indefinitely for spacebar
+        while (true)
         {
-            timer += Time.unscaledDeltaTime; // Use unscaled delta time
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
+                DisplayNextLine();
                 break;
             }
             yield return null;
         }
-
-        DisplayNextLine();
     }
 
     public void SkipDialogue()
@@ -424,7 +543,6 @@ public class DialogueManager : MonoBehaviour
         }
         else
         {
-            // Skip entire dialogue sequence
             EndDialogue();
         }
     }
@@ -434,23 +552,19 @@ public class DialogueManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
 
-        // RESUME THE GAME after dialogue
         Time.timeScale = 1f;
-        Debug.Log("[Dialogue] Game resumed after dialogue (Time.timeScale = 1)");
+        Debug.Log("[Dialogue] ▶️  Game resumed (Time.timeScale = 1)");
 
         int currentLevel = GetCurrentLevel();
 
-        // Mark appropriate dialogue as seen based on context
         if (isShowingStartDialogue)
         {
-            // Mark level start dialogue as seen
             string levelStartKey = $"Level{currentLevel}_StartDialogueSeen";
             PlayerPrefs.SetInt(levelStartKey, 1);
             PlayerPrefs.Save();
 
             Debug.Log($"[Dialogue] Level {currentLevel} start dialogue completed");
 
-            // After start dialogue completes, start the tutorial if it's Level 1 and hasn't been completed
             if (currentLevel == 1)
             {
                 StartTutorialIfNeeded();
@@ -458,7 +572,6 @@ public class DialogueManager : MonoBehaviour
         }
         else if (isShowingEndDialogue)
         {
-            // Only mark as seen if this isn't a forced tutorial victory dialogue
             if (!isForcedEndDialogue)
             {
                 string levelEndKey = $"Level{currentLevel}_EndDialogueSeen";
@@ -468,52 +581,36 @@ public class DialogueManager : MonoBehaviour
 
             Debug.Log($"[Dialogue] Level {currentLevel} end dialogue completed (forced: {isForcedEndDialogue})");
 
-            // If this was a forced tutorial victory dialogue, start actual gameplay
             if (isForcedEndDialogue && currentLevel == 1)
             {
                 StartActualGameplayAfterTutorialVictory();
             }
         }
 
-        // Reset flags
         isShowingStartDialogue = false;
         isShowingEndDialogue = false;
         isForcedEndDialogue = false;
+        isShowingDialogue = false;
     }
 
     private void HideTutorialPanels()
     {
         Debug.Log("[Dialogue] HideTutorialPanels called");
-        // Find and hide any tutorial panels before showing dialogue
         TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
         if (tutorialManager != null)
         {
             Debug.Log($"[Dialogue] Found TutorialManager, enabled={tutorialManager.enabled}");
-            // Hide tutorial dialogue panel if it exists
             if (tutorialManager.dialoguePanel != null)
             {
                 tutorialManager.dialoguePanel.SetActive(false);
-                Debug.Log("[Dialogue] Tutorial panel hidden before showing dialogue");
-            }
-            else
-            {
-                Debug.Log("[Dialogue] TutorialManager.dialoguePanel is null");
+                Debug.Log("[Dialogue] Tutorial panel hidden");
             }
 
-            // Hide tutorial skip button if it exists
             if (tutorialManager.SkipButton != null)
             {
                 tutorialManager.SkipButton.SetActive(false);
-                Debug.Log("[Dialogue] Tutorial skip button hidden before showing dialogue");
+                Debug.Log("[Dialogue] Tutorial skip button hidden");
             }
-            else
-            {
-                Debug.Log("[Dialogue] TutorialManager.SkipButton is null");
-            }
-        }
-        else
-        {
-            Debug.Log("[Dialogue] TutorialManager not found in scene");
         }
     }
 
@@ -527,38 +624,30 @@ public class DialogueManager : MonoBehaviour
 
     private void StartTutorialIfNeeded()
     {
-        // Check if tutorial needs to run
         bool hasCompletedTutorial = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
         int currentBuildIndex = SceneManager.GetActiveScene().buildIndex;
         string currentSceneName = SceneManager.GetActiveScene().name;
 
         Debug.Log($"[Dialogue] Checking tutorial: completed={hasCompletedTutorial}, buildIndex={currentBuildIndex}, sceneName={currentSceneName}");
 
-        if (!hasCompletedTutorial && GetCurrentLevel() == 1) // Check by level number instead of build index
+        if (!hasCompletedTutorial && GetCurrentLevel() == 1)
         {
-            // Find and enable the TutorialManager
             TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
             if (tutorialManager != null)
             {
-                Debug.Log($"[Dialogue] Found TutorialManager, enabled={tutorialManager.enabled}, calling StartTutorialAfterDialogue");
+                Debug.Log($"[Dialogue] Found TutorialManager, calling StartTutorialAfterDialogue");
                 tutorialManager.enabled = true;
                 tutorialManager.StartTutorialAfterDialogue();
-                Debug.Log("[Dialogue] StartTutorialAfterDialogue called successfully");
             }
             else
             {
-                Debug.LogError("[Dialogue] TutorialManager not found in scene! Make sure TutorialManager component exists in Level 1 scene.");
+                Debug.LogError("[Dialogue] TutorialManager not found!");
             }
-        }
-        else
-        {
-            Debug.Log($"[Dialogue] Tutorial not started: completed={hasCompletedTutorial}, level={GetCurrentLevel()}");
         }
     }
 
     private void StartActualGameplayAfterTutorialVictory()
     {
-        // Find TutorialManager and start actual gameplay
         TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
         if (tutorialManager != null)
         {
@@ -572,48 +661,48 @@ public class DialogueManager : MonoBehaviour
 
     private void Update()
     {
-        // Allow clicking to advance dialogue (works even when Time.timeScale = 0)
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) &&
             dialoguePanel != null && dialoguePanel.activeSelf)
         {
             if (isTyping)
             {
                 skipRequested = true;
+                Debug.Log("[Dialogue] Skipping typing animation");
             }
-            else
-            {
-                DisplayNextLine();
-            }
+            // Note: Line advancement is now handled in TypeText coroutine
         }
     }
 
     private IEnumerator ShowLevelStartDialogue(int levelNumber)
     {
-        yield return new WaitForSeconds(1f); // Brief delay before starting
+        yield return new WaitForSeconds(1f);
 
         LevelDialogue dialogue = GetLevelDialogue(levelNumber);
         if (dialogue != null && dialogue.startDialogueLines.Length > 0)
         {
+            Debug.Log($"[Dialogue] 🎬 Starting level {levelNumber} intro dialogue");
             StartDialogue(dialogue.startDialogueLines, dialogue.startSpeakerNames, dialogue.startPortraits);
         }
     }
 
     private LevelDialogue GetLevelDialogue(int levelNumber)
     {
+        Debug.Log($"[Dialogue] GetLevelDialogue called for level {levelNumber}, levelDialogues.Length = {levelDialogues.Length}");
+        
         foreach (LevelDialogue dialogue in levelDialogues)
         {
+            Debug.Log($"[Dialogue] Checking dialogue for level {dialogue.levelNumber}");
             if (dialogue.levelNumber == levelNumber)
             {
+                Debug.Log($"[Dialogue] Found dialogue for level {levelNumber}, endDialogueLines.Length = {dialogue.endDialogueLines.Length}");
                 return dialogue;
             }
         }
         return null;
     }
 
-    // Public method to show end-of-level dialogue
     public void ShowLevelEndDialogue(int levelNumber)
     {
-        // Check if end dialogue for this level has been seen
         string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
         bool hasSeenLevelEnd = PlayerPrefs.GetInt(levelEndKey, 0) == 1;
 
@@ -627,14 +716,13 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    // Public method to force show end-of-level dialogue (for tutorial completion)
     public void ShowLevelEndDialogueForced(int levelNumber)
     {
-        // Check if UI components are assigned
+        Debug.Log($"[Dialogue] ShowLevelEndDialogueForced called for level {levelNumber}");
+        
         if (dialoguePanel == null || dialogueText == null)
         {
-            Debug.LogError("[Dialogue] Cannot show victory dialogue - UI components not assigned in DialogueManager!");
-            // Fallback: try to start gameplay directly
+            Debug.LogError("[Dialogue] ❌ Cannot show victory dialogue - UI components not assigned!");
             StartActualGameplayAfterTutorialVictory();
             return;
         }
@@ -642,7 +730,8 @@ public class DialogueManager : MonoBehaviour
         LevelDialogue dialogue = GetLevelDialogue(levelNumber);
         if (dialogue != null && dialogue.endDialogueLines.Length > 0)
         {
-            StartCoroutine(ShowLevelEndDialogueForcedCoroutine(dialogue.endDialogueLines, dialogue.endSpeakerNames, dialogue.endPortraits));
+            Debug.Log($"[Dialogue] ShowLevelEndDialogueForcedCoroutine starting with {dialogue.endDialogueLines.Length} lines");
+            StartCoroutine(ShowLevelEndDialogueForcedCoroutine(dialogue.endDialogueLines, dialogue.endSpeakerNames, dialogue.endPortraits, levelNumber));
         }
         else
         {
@@ -651,39 +740,48 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowLevelEndDialogueForcedCoroutine(string[] lines, string[] speakers, Sprite[] portraits)
+    private IEnumerator ShowLevelEndDialogueForcedCoroutine(string[] lines, string[] speakers, Sprite[] portraits, int levelNumber)
     {
-        yield return new WaitForSeconds(1f); // Brief delay
+        Debug.Log($"[Dialogue] ShowLevelEndDialogueForcedCoroutine starting with {lines?.Length ?? 0} lines for level {levelNumber}");
+
+        yield return new WaitForSeconds(1f);
 
         Debug.Log($"[Dialogue] Showing forced end dialogue with {lines.Length} lines");
 
         isForcedEndDialogue = true;
-        StartDialogue(lines, speakers, portraits, false); // false = end dialogue
+        StartDialogue(lines, speakers, portraits, false);
+
+        Debug.Log("[Dialogue] StartDialogue called for forced end dialogue");
+
+        // Wait for dialogue to complete
+        yield return new WaitUntil(() => !isShowingDialogue);
+
+        // Mark end dialogue as seen
+        string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
+        PlayerPrefs.SetInt(levelEndKey, 1);
+        PlayerPrefs.Save();
+        Debug.Log($"[Dialogue] Marked Level {levelNumber} end dialogue as seen");
     }
 
     private IEnumerator ShowLevelEndDialogueCoroutine(string[] lines, string[] speakers, Sprite[] portraits)
     {
-        yield return new WaitForSeconds(2f); // Brief delay after level completion
+        yield return new WaitForSeconds(2f);
 
-        StartDialogue(lines, speakers, portraits, false); // false = end dialogue
+        StartDialogue(lines, speakers, portraits, false);
     }
 
-    // Public method to trigger intro manually (for testing)
     public void PlayIntro()
     {
-        // Reset level 1 start dialogue flag
         string levelStartKey = $"Level{1}_StartDialogueSeen";
         PlayerPrefs.SetInt(levelStartKey, 0);
         StartCoroutine(ShowLevelStartDialogue(1));
     }
 
-    // Public method to check if dialogue is currently active
     public bool IsDialogueActive()
     {
         return dialoguePanel != null && dialoguePanel.activeSelf;
     }
 
-    // Public method to show custom dialogue
     public void ShowCustomDialogue(string[] lines, string speakerName = "Narrator", Sprite portrait = null)
     {
         string[] speakers = new string[lines.Length];

@@ -255,23 +255,25 @@ public class Tower : MonoBehaviour
         }
     }
     
-   void OnTowerDestroyed()
+    void OnTowerDestroyed()
     {
-    // Check assigned tutorial manager first
-    TutorialManager tm = tutorialManager;
+        // Check assigned tutorial manager first
+        TutorialManager tm = tutorialManager;
 
-    // If not assigned, try to find it
-    if (tm == null)
-    {
-        tm = FindObjectOfType<TutorialManager>();
-    }
+        // If not assigned, try to find it
+        if (tm == null)
+        {
+            tm = FindObjectOfType<TutorialManager>();
+        }
 
-    if (tm != null && tm.isActiveAndEnabled && tm.tutorialActive)
-    {
-    tm.OnTutorialTowerDestroyed(this);
-    return;
-    }
+        // If tutorial is active, let tutorial manager handle it
+        if (tm != null && tm.isActiveAndEnabled && tm.tutorialActive)
+        {
+            tm.OnTutorialTowerDestroyed(this);
+            return; // Don't show victory/game over panels during tutorial
+        }
 
+        // Normal game over/victory logic (only runs when tutorial is not active)
         if (owner == TowerOwner.Player)
         {
             // PLAYER LOST - Show Game Over screen
@@ -318,10 +320,42 @@ public class Tower : MonoBehaviour
     {
         Debug.Log("[TOWER] Enemy Tower Destroyed - VICTORY!");
 
+        // Check if this is Level 1 - show victory dialogue first
+        if (LevelManager.Instance != null && LevelManager.Instance.GetCurrentLevel() == 1)
+        {
+            StartCoroutine(ShowLevel1VictorySequence());
+            return;
+        }
+
+        // Normal victory for other levels
+        ShowNormalVictory();
+    }
+
+    private IEnumerator ShowLevel1VictorySequence()
+    {
+        Debug.Log("[Tower] Level 1 victory - showing victory dialogue first");
+
         // Play victory SFX
         if (AudioManager.Instance != null && AudioManager.Instance.gameWinSFX != null)
             AudioManager.Instance.PlaySFX(AudioManager.Instance.gameWinSFX);
 
+        // Show victory dialogue
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.ShowLevelEndDialogueForced(1);
+            Debug.Log("[Tower] Level 1 victory dialogue started");
+
+            // Wait for dialogue to complete
+            yield return new WaitUntil(() => !DialogueManager.Instance.IsDialogueActive());
+            Debug.Log("[Tower] Level 1 victory dialogue completed");
+        }
+
+        // Now show the normal victory panel
+        ShowNormalVictory();
+    }
+
+    private void ShowNormalVictory()
+    {
         // Freeze the screen
         Time.timeScale = 0f;
 
@@ -329,7 +363,7 @@ public class Tower : MonoBehaviour
         if (victoryPanel != null)
         {
             victoryPanel.SetActive(true);
-            
+
             if (victoryText != null)
             {
                 if (LevelManager.Instance != null)

@@ -118,7 +118,24 @@ public class TutorialManager : MonoBehaviour
         if (waitingForDeploy) return;
         if (!canAdvance) return;
 
-        if (Input.GetKeyDown(continueKey)) Advance();
+        if (Input.GetKeyDown(continueKey))
+        {
+            // Don't advance tutorial if DialogueManager is currently showing dialogue
+            bool dialogueManagerActive = false;
+            if (DialogueManager.Instance != null)
+            {
+                dialogueManagerActive = DialogueManager.Instance.IsDialogueActive();
+            }
+
+            if (!dialogueManagerActive)
+            {
+                Advance();
+            }
+            else
+            {
+                Debug.Log("[Tutorial] Not advancing - DialogueManager is active");
+            }
+        }
     }
 
     // changed to optional pause flag (default true) so caller can show text without pausing
@@ -175,30 +192,6 @@ public class TutorialManager : MonoBehaviour
 
         currentStep++;
         ShowStep();
-    }
-
-    public void SkipTutorial()
-    {
-        // Disable all tutorial logic
-        tutorialActive = false;
-        EnemyDeployManager.tutorialActive = false;
-
-        // Unlock gacha
-        if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
-
-        // Save skip if NOT debug mode
-        if (!TutorialDebug)
-        {
-            PlayerPrefs.SetInt("TutorialCompleted", 1);
-            PlayerPrefs.Save();
-        }
-
-        // Hide UI
-        dialoguePanel.SetActive(false);
-        SkipButton.gameObject.SetActive(false);
-        Time.timeScale = 1f;
-        SetPlayerButtons(true);
-        this.enabled = false;
     }
 
     private void GiveFirstTutorialTroop()
@@ -293,55 +286,116 @@ public class TutorialManager : MonoBehaviour
 
     public void OnTutorialTowerDestroyed(Tower destroyedTower)
     {
-        if (!tutorialActive) return;
+        if (!tutorialActive)
+        {
+            Debug.Log("[Tutorial] Tower destroyed but tutorial is not active (probably skipped) - ignoring");
+            return;
+        }
+
         Debug.Log("[Tutorial] Tower destroyed during tutorial!");
-        // Pause game immediately
-        PauseGame();
-        // Show tutorial completion message
+
+        // Mark tutorial as complete
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.tutorialLocked = false;
+
+        // Save tutorial completion
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
+        Debug.Log("[Tutorial] Tutorial completed - saved to PlayerPrefs");
+
+        // Show tutorial completion message briefly
         dialoguePanel.SetActive(true);
-        dialogueText.text = "Great job! Tutorial Complete!";
+        dialogueText.text = "Tutorial Completed!";
         dialogueImageHolder.gameObject.SetActive(false);
-        // Wait for player to acknowledge, then transition to story dialogue
-        StartCoroutine(TransitionToStoryDialogue());
+        if (SkipButton != null)
+            SkipButton.SetActive(false);
+
+        // Pause game briefly for the message
+        PauseGame();
+
+        // Start gameplay immediately after player presses space
+        StartCoroutine(StartGameplayAfterTutorialCompletion());
     }
 
-    private IEnumerator TransitionToStoryDialogue()
+    private IEnumerator StartGameplayAfterTutorialCompletion()
     {
-        // Wait for the user to press continue
+        // Wait for player to acknowledge completion
         yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
+
+        Debug.Log("[Tutorial] Player acknowledged tutorial completion - starting real gameplay");
 
         // Hide tutorial panel
         dialoguePanel.SetActive(false);
 
-        // Mark tutorial as complete (but keep game paused)
+        // Resume game and start actual gameplay
+        ResumeGame();
+
+        // Small delay for smooth transition
+        yield return new WaitForSeconds(0.5f);
+
+        // Start the actual level gameplay
+        StartCoroutine(StartActualLevelplay());
+    }
+
+    public void SkipTutorial()
+    {
+        Debug.Log("[Tutorial] Tutorial skipped by player");
+
+        // Disable all tutorial logic
         tutorialActive = false;
         EnemyDeployManager.tutorialActive = false;
+
+        // Unlock gacha
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        // Save tutorial completion (if not in debug mode)
-        if (!TutorialDebug)
-        {
-            PlayerPrefs.SetInt("TutorialCompleted", 1);
-            PlayerPrefs.Save();
-        }
+        // Save skip
+        PlayerPrefs.SetInt("TutorialCompleted", 1);
+        PlayerPrefs.Save();
 
-        // Now show the story dialogue (DialogueManager should handle it)
+        // Hide tutorial UI
+        dialoguePanel.SetActive(false);
+        if (SkipButton != null)
+            SkipButton.SetActive(false);
+
+        // Resume game
+        Time.timeScale = 1f;
+        SetPlayerButtons(true);
+
+        // Disable this component
+        this.enabled = false;
+
+        Debug.Log("[Tutorial] Tutorial skipped - proceeding to normal gameplay");
+    }
+
+
+    private IEnumerator ShowStoryDialogueAfterTutorial()
+    {
+        // Small delay to ensure clean transition
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        Debug.Log("[Tutorial] Starting story dialogue after tutorial completion");
+
+        // Show the story dialogue (DialogueManager will pause the game)
         if (DialogueManager.Instance != null)
         {
-            // Get current level
-            int currentLevel = 1; // Tutorial is always on level 1
-
-            // Show level 1 end dialogue
+            // Get current level (tutorial is always on level 1)
+            int currentLevel = 1;
+            
+            // Show level 1 end dialogue (forced mode for tutorial)
             DialogueManager.Instance.ShowLevelEndDialogueForced(currentLevel);
-
-            Debug.Log("[Tutorial] Transitioned to story dialogue - game remains paused");
+            
+            Debug.Log("[Tutorial] Story dialogue started - DialogueManager will handle pausing");
         }
         else
         {
             Debug.LogError("[Tutorial] DialogueManager not found! Cannot show story dialogue.");
-            // Fallback: just resume and reload
-            ResumeGame();
+            // Fallback: just reload the scene
+            Time.timeScale = 1f;
+            yield return new WaitForSeconds(1f);
             UnityEngine.SceneManagement.SceneManager.LoadScene(
                 UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
             );
@@ -497,6 +551,25 @@ public class TutorialManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    public void StartActualGameplayDirectly()
+    {
+        Debug.Log("[Tutorial] Starting gameplay directly (no dialogue available)");
+
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.tutorialLocked = false;
+
+        dialoguePanel.SetActive(false);
+        if (SkipButton != null)
+            SkipButton.SetActive(false);
+
+        SetPlayerButtons(true);
+        Time.timeScale = 1f;
+
+        StartCoroutine(StartActualLevelplay());
+    }
+
     public void DisableTutorial()
     {
         tutorialActive = false;
@@ -572,29 +645,12 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator StartActualLevelplay()
     {
-        // Wait a moment for tutorial cleanup
-        yield return new WaitForSeconds(2f);
+        Debug.Log("[Tutorial] Starting actual gameplay after story dialogue");
 
-        // Repair the enemy tower that was "destroyed" during tutorial
-        Tower enemyTower = GameObject.FindObjectOfType<Tower>();
-        if (enemyTower != null && enemyTower.owner == Tower.TowerOwner.Enemy)
-        {
-            enemyTower.RepairTower(); // Restore full health
-            Debug.Log("[Tutorial] Enemy tower repaired for actual gameplay");
-        }
+        // Wait a moment for dialogue cleanup (use realtime since game might be paused)
+        yield return new WaitForSecondsRealtime(0.5f);
 
-        // Reset enemy deployment for actual gameplay
-        if (enemyDeployManager != null)
-        {
-            // Make sure enemies can spawn normally now
-            EnemyDeployManager.tutorialActive = false;
-            Debug.Log("[Tutorial] Enemy deployment enabled for normal gameplay");
-        }
-
-        // Enable all player controls
-        SetPlayerButtons(true);
-
-        // Clear any tutorial enemies
+        // Clear any tutorial enemies first
         Enemy[] tutorialEnemies = GameObject.FindObjectsOfType<Enemy>();
         foreach (Enemy enemy in tutorialEnemies)
         {
@@ -603,7 +659,43 @@ public class TutorialManager : MonoBehaviour
                 Destroy(enemy.gameObject);
             }
         }
+        Debug.Log($"[Tutorial] Cleared {tutorialEnemies.Length} tutorial enemies");
 
-        Debug.Log("[Tutorial] Actual level gameplay started - defeat the enemy tower to complete the level and see end dialogue!");
+        // Find and repair the enemy tower
+        Tower[] towers = GameObject.FindObjectsOfType<Tower>();
+        Tower enemyTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Enemy);
+        
+        if (enemyTower != null)
+        {
+            enemyTower.RepairTower(); // Restore full health
+            Debug.Log("[Tutorial] Enemy tower repaired for actual gameplay");
+        }
+        else
+        {
+            Debug.LogError("[Tutorial] Could not find enemy tower to repair!");
+        }
+
+        // Find and repair the player tower too (in case it was damaged)
+        Tower playerTower = System.Array.Find(towers, t => t.owner == Tower.TowerOwner.Player);
+        if (playerTower != null)
+        {
+            playerTower.RepairTower();
+            Debug.Log("[Tutorial] Player tower repaired for actual gameplay");
+        }
+
+        // Reset enemy deployment for actual gameplay
+        if (enemyDeployManager != null)
+        {
+            EnemyDeployManager.tutorialActive = false;
+            Debug.Log("[Tutorial] Enemy deployment enabled for normal gameplay");
+        }
+
+        // Enable all player controls
+        SetPlayerButtons(true);
+
+        // Ensure game is running
+        Time.timeScale = 1f;
+
+        Debug.Log("[Tutorial] Actual level gameplay started - defeat the enemy tower to complete Level 1!");
     }
 }
