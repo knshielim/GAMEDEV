@@ -52,6 +52,7 @@ public class TutorialManager : MonoBehaviour
     private bool mergeCompleted = false;
     public bool tutorialActive = true;
     private bool waitingForSlotClick = false;
+    private bool showingTutorialCompletion = false;
 
     private static bool tutorialShownThisSession = false;
 
@@ -300,13 +301,15 @@ public class TutorialManager : MonoBehaviour
 
     public void OnTutorialTowerDestroyed(Tower destroyedTower)
     {
+        Debug.Log($"[Tutorial] OnTutorialTowerDestroyed called, tutorialActive = {tutorialActive}");
+
         if (!tutorialActive)
         {
             Debug.Log("[Tutorial] Tower destroyed but tutorial is not active (probably skipped) - ignoring");
             return;
         }
 
-        Debug.Log("[Tutorial] Tower destroyed during tutorial!");
+        Debug.Log("[Tutorial] Tower destroyed during tutorial - showing completion message");
 
         // Mark tutorial as complete
         tutorialActive = false;
@@ -320,12 +323,15 @@ public class TutorialManager : MonoBehaviour
         PlayerPrefs.Save();
         Debug.Log("[Tutorial] Tutorial completed - saved to PlayerPrefs");
 
-        // Show tutorial completion message briefly
+        // Show tutorial completion message
         dialoguePanel.SetActive(true);
         dialogueText.text = "Tutorial Completed!";
         dialogueImageHolder.gameObject.SetActive(false);
         if (SkipButton != null)
             SkipButton.SetActive(false);
+
+        // Set flag to prevent DialogueManager from interfering
+        showingTutorialCompletion = true;
 
         // Pause game briefly for the message
         PauseGame();
@@ -336,19 +342,27 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator StartGameplayAfterTutorialCompletion()
     {
+        Debug.Log("[Tutorial] Waiting for player to press spacebar to acknowledge completion...");
+
         // Wait for player to acknowledge completion
         yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
 
-        Debug.Log("[Tutorial] Player acknowledged tutorial completion - resetting Level 1");
+        Debug.Log("[Tutorial] Spacebar pressed - player acknowledged tutorial completion");
+
+        // Clear the tutorial completion flag
+        showingTutorialCompletion = false;
 
         // Hide tutorial panel
         dialoguePanel.SetActive(false);
 
         // Resume game briefly for scene reload
         ResumeGame();
+        Debug.Log($"[Tutorial] Game resumed, Time.timeScale = {Time.timeScale}");
 
         // Small delay before reload
         yield return new WaitForSeconds(0.2f);
+
+        Debug.Log("[Tutorial] Reloading Level 1 scene after tutorial completion");
 
         // Reset/reload Level 1 scene
         // Now that tutorial is completed, Level 1 will go directly to gameplay
@@ -369,23 +383,45 @@ public class TutorialManager : MonoBehaviour
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        // Save skip
+        // Save skip as completed
         PlayerPrefs.SetInt("TutorialCompleted", 1);
         PlayerPrefs.Save();
 
-        // Hide tutorial UI
-        dialoguePanel.SetActive(false);
+        // Show "Tutorial Skipped!" message briefly
+        dialoguePanel.SetActive(true);
+        dialogueText.text = "Tutorial Skipped!";
+        dialogueImageHolder.gameObject.SetActive(false);
         if (SkipButton != null)
             SkipButton.SetActive(false);
 
-        // Resume game
-        Time.timeScale = 1f;
-        SetPlayerButtons(true);
+        // Pause game briefly for the message
+        PauseGame();
 
-        // Disable this component
-        this.enabled = false;
+        // Reset scene after player acknowledges
+        StartCoroutine(ResetSceneAfterSkip());
+    }
 
-        Debug.Log("[Tutorial] Tutorial skipped - proceeding to normal gameplay");
+    private IEnumerator ResetSceneAfterSkip()
+    {
+        // Wait for player to acknowledge skip
+        yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
+
+        Debug.Log("[Tutorial] Player acknowledged tutorial skip - resetting Level 1");
+
+        // Hide tutorial panel
+        dialoguePanel.SetActive(false);
+
+        // Resume game briefly for scene reload
+        ResumeGame();
+
+        // Small delay before reload
+        yield return new WaitForSeconds(0.2f);
+
+        // Reset/reload Level 1 scene
+        // Now that tutorial is completed (skipped), Level 1 will go directly to gameplay
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+        );
     }
 
 
