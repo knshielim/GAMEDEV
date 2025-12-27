@@ -238,6 +238,23 @@ public class DialogueManager : MonoBehaviour
 
         if (currentLevel >= 1 && currentLevel <= 5)
         {
+            // SPECIAL CASE: Check if we just completed the tutorial and should show Level 1 end dialogue
+            bool tutorialJustCompleted = PlayerPrefs.GetInt("TutorialJustCompleted", 0) == 1;
+            bool tutorialCompleted = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+
+            Debug.Log($"[Dialogue] CheckIfIntroNeeded - Level {currentLevel}, tutorialJustCompleted: {tutorialJustCompleted}, tutorialCompleted: {tutorialCompleted}");
+
+            if (tutorialJustCompleted && currentLevel == 1)
+            {
+                Debug.Log("[Dialogue] Tutorial just completed - showing Level 1 end dialogue");
+                // Clear the flag
+                PlayerPrefs.SetInt("TutorialJustCompleted", 0);
+                PlayerPrefs.Save();
+                // Show end dialogue for Level 1
+                StartCoroutine(ShowLevelEndDialogueForcedCoroutine(levelDialogues[0].endDialogueLines, levelDialogues[0].endSpeakerNames, levelDialogues[0].endPortraits));
+                return;
+            }
+
             // Check if start dialogue for this level has been seen
             string levelStartKey = $"Level{currentLevel}_StartDialogueSeen";
             bool hasSeenLevelStart = PlayerPrefs.GetInt(levelStartKey, 0) == 1;
@@ -318,6 +335,9 @@ public class DialogueManager : MonoBehaviour
         isShowingStartDialogue = isStartDialogue;
         isShowingEndDialogue = !isStartDialogue;
 
+        // Hide any tutorial panels before showing dialogue
+        HideTutorialPanels();
+
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(true);
@@ -327,6 +347,10 @@ public class DialogueManager : MonoBehaviour
         {
             Debug.LogError("[Dialogue] Dialogue panel is null!");
         }
+
+        // PAUSE THE GAME during dialogue
+        Time.timeScale = 0f;
+        Debug.Log("[Dialogue] Game paused during dialogue (Time.timeScale = 0)");
 
         DisplayNextLine();
     }
@@ -372,7 +396,7 @@ public class DialogueManager : MonoBehaviour
             }
 
             dialogueText.text += letter;
-            yield return new WaitForSeconds(typingSpeed);
+            yield return new WaitForSecondsRealtime(typingSpeed); // Use realtime instead of regular time
         }
 
         isTyping = false;
@@ -381,7 +405,7 @@ public class DialogueManager : MonoBehaviour
         float timer = 0f;
         while (timer < autoAdvanceDelay)
         {
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime; // Use unscaled delta time
             if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
             {
                 break;
@@ -409,6 +433,10 @@ public class DialogueManager : MonoBehaviour
     {
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
+
+        // RESUME THE GAME after dialogue
+        Time.timeScale = 1f;
+        Debug.Log("[Dialogue] Game resumed after dialogue (Time.timeScale = 1)");
 
         int currentLevel = GetCurrentLevel();
 
@@ -451,6 +479,42 @@ public class DialogueManager : MonoBehaviour
         isShowingStartDialogue = false;
         isShowingEndDialogue = false;
         isForcedEndDialogue = false;
+    }
+
+    private void HideTutorialPanels()
+    {
+        Debug.Log("[Dialogue] HideTutorialPanels called");
+        // Find and hide any tutorial panels before showing dialogue
+        TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
+        if (tutorialManager != null)
+        {
+            Debug.Log($"[Dialogue] Found TutorialManager, enabled={tutorialManager.enabled}");
+            // Hide tutorial dialogue panel if it exists
+            if (tutorialManager.dialoguePanel != null)
+            {
+                tutorialManager.dialoguePanel.SetActive(false);
+                Debug.Log("[Dialogue] Tutorial panel hidden before showing dialogue");
+            }
+            else
+            {
+                Debug.Log("[Dialogue] TutorialManager.dialoguePanel is null");
+            }
+
+            // Hide tutorial skip button if it exists
+            if (tutorialManager.SkipButton != null)
+            {
+                tutorialManager.SkipButton.SetActive(false);
+                Debug.Log("[Dialogue] Tutorial skip button hidden before showing dialogue");
+            }
+            else
+            {
+                Debug.Log("[Dialogue] TutorialManager.SkipButton is null");
+            }
+        }
+        else
+        {
+            Debug.Log("[Dialogue] TutorialManager not found in scene");
+        }
     }
 
     private void OnDestroy()
@@ -508,8 +572,9 @@ public class DialogueManager : MonoBehaviour
 
     private void Update()
     {
-        // Allow clicking to advance dialogue
-        if (Input.GetMouseButtonDown(0) && dialoguePanel != null && dialoguePanel.activeSelf)
+        // Allow clicking to advance dialogue (works even when Time.timeScale = 0)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) &&
+            dialoguePanel != null && dialoguePanel.activeSelf)
         {
             if (isTyping)
             {

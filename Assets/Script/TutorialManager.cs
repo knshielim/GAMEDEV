@@ -160,8 +160,13 @@ public class TutorialManager : MonoBehaviour
         if (currentStep == 4)
         {
             EnemyDeployManager.tutorialActive = true;
+
+            // Show the summon instruction first
+            currentStep++;
+            ShowStep(pause: false); // Show step 5 without pausing
+
+            // Then prepare for summon
             ResumeGame();
-            dialoguePanel.SetActive(false);
             EnableOnly("Summon Button");
             waitingForSummon = true;
             canAdvance = false;
@@ -288,46 +293,59 @@ public class TutorialManager : MonoBehaviour
 
     public void OnTutorialTowerDestroyed(Tower destroyedTower)
     {
-    if (!tutorialActive) return;
-
-    Debug.Log("[Tutorial] Completed!");
-
-    // Pause game and show the final tutorial message
-    PauseGame();
-    dialoguePanel.SetActive(true);
-    dialogueText.text = "Great job! Tutorial Complete!";
-    dialogueImageHolder.gameObject.SetActive(false);
-
-    // Wait for player input
-    StartCoroutine(WaitForTutorialFinish());
+        if (!tutorialActive) return;
+        Debug.Log("[Tutorial] Tower destroyed during tutorial!");
+        // Pause game immediately
+        PauseGame();
+        // Show tutorial completion message
+        dialoguePanel.SetActive(true);
+        dialogueText.text = "Great job! Tutorial Complete!";
+        dialogueImageHolder.gameObject.SetActive(false);
+        // Wait for player to acknowledge, then transition to story dialogue
+        StartCoroutine(TransitionToStoryDialogue());
     }
 
-    private IEnumerator WaitForTutorialFinish()
+    private IEnumerator TransitionToStoryDialogue()
     {
-    // Wait for the user to manually confirm completion
-    yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
+        // Wait for the user to press continue
+        yield return new WaitUntil(() => Input.GetKeyDown(continueKey));
 
-    // Now officially complete the tutorial
-    tutorialActive = false;
-    EnemyDeployManager.tutorialActive = false;
+        // Hide tutorial panel
+        dialoguePanel.SetActive(false);
 
-    if (GachaManager.Instance != null)
-        GachaManager.Instance.tutorialLocked = false;
+        // Mark tutorial as complete (but keep game paused)
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+        if (GachaManager.Instance != null)
+            GachaManager.Instance.tutorialLocked = false;
 
-    if (!TutorialDebug)
-    {
-        PlayerPrefs.SetInt("TutorialCompleted", 1);
-        PlayerPrefs.Save();
-    }
+        // Save tutorial completion (if not in debug mode)
+        if (!TutorialDebug)
+        {
+            PlayerPrefs.SetInt("TutorialCompleted", 1);
+            PlayerPrefs.Save();
+        }
 
-    // UI cleaning and resume game 
-    dialoguePanel.SetActive(false);
-    ResumeGame();
+        // Now show the story dialogue (DialogueManager should handle it)
+        if (DialogueManager.Instance != null)
+        {
+            // Get current level
+            int currentLevel = 1; // Tutorial is always on level 1
 
-    // Reload scene without tutorial
-    UnityEngine.SceneManagement.SceneManager.LoadScene(
-        UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-    );
+            // Show level 1 end dialogue
+            DialogueManager.Instance.ShowLevelEndDialogueForced(currentLevel);
+
+            Debug.Log("[Tutorial] Transitioned to story dialogue - game remains paused");
+        }
+        else
+        {
+            Debug.LogError("[Tutorial] DialogueManager not found! Cannot show story dialogue.");
+            // Fallback: just resume and reload
+            ResumeGame();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            );
+        }
     }
 
     public void OnTutorialSummonClicked()
