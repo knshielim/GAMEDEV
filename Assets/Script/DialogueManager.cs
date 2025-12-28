@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class DialogueManager : MonoBehaviour
 {
@@ -148,6 +149,10 @@ public class DialogueManager : MonoBehaviour
     private bool hasCheckedIntroForCurrentScene = false;
     private bool sceneChangedDuringDialogue = false;
 
+    // Pause state tracking
+    private bool gameWasPausedByDialogue = false;
+    private float originalTimeScale = 1f;
+
     private void Awake()
     {
         if (Instance == null)
@@ -160,6 +165,58 @@ public class DialogueManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+    }
+
+    // ==========================================
+    // ROBUST PAUSE/RESUME SYSTEM
+    // ==========================================
+
+    /// <summary>
+    /// Forces the game to pause during dialogue. Stores the original time scale.
+    /// </summary>
+    private void ForceGamePause()
+    {
+        if (!gameWasPausedByDialogue)
+        {
+            originalTimeScale = Time.timeScale;
+            gameWasPausedByDialogue = true;
+            Debug.Log($"[Dialogue] ⏸️  ForceGamePause - Stored original Time.timeScale: {originalTimeScale}");
+        }
+
+        Time.timeScale = 0f;
+        Debug.Log("[Dialogue] ⏸️  Game FORCED to pause (Time.timeScale = 0)");
+    }
+
+    /// <summary>
+    /// Safely resumes the game after dialogue, restoring the original time scale.
+    /// </summary>
+    private void ForceGameResume()
+    {
+        if (gameWasPausedByDialogue)
+        {
+            Time.timeScale = originalTimeScale;
+            gameWasPausedByDialogue = false;
+            Debug.Log($"[Dialogue] ▶️  Game resumed to original Time.timeScale: {originalTimeScale}");
+        }
+        else
+        {
+            // Fallback: ensure game is running
+            Time.timeScale = 1f;
+            Debug.Log("[Dialogue] ▶️  Game resumed (fallback, Time.timeScale = 1)");
+        }
+    }
+
+    /// <summary>
+    /// Ensures the game stays paused during active dialogue.
+    /// Call this periodically to prevent other systems from interfering.
+    /// </summary>
+    private void EnsureGameStaysPaused()
+    {
+        if (isShowingDialogue && Time.timeScale != 0f)
+        {
+            Debug.LogWarning($"[Dialogue] ⚠️  Game was unpaused during dialogue! Forcing pause. Time.timeScale was: {Time.timeScale}");
+            ForceGamePause();
         }
     }
 
@@ -194,31 +251,45 @@ public class DialogueManager : MonoBehaviour
         // ✅ FIX: For level scenes, check if intro dialogue is needed
         // (Start() only runs once for DontDestroyOnLoad objects)
         // But only if UI components are properly initialized
-        Debug.Log($"[Dialogue] 📦 OnSceneLoaded - checking UI readiness: Panel={dialoguePanel}, Text={dialogueText}, Speaker={speakerNameText}, Portrait={speakerPortrait}");
+        Debug.Log($"[Dialogue] 📦 OnSceneLoaded - checking UI readiness for '{scene.name}': Panel={dialoguePanel}, Text={dialogueText}, Speaker={speakerNameText}, Portrait={speakerPortrait}");
         if (dialoguePanel != null && dialogueText != null)
         {
-            Debug.Log($"[Dialogue] 📦 About to call CheckIfIntroNeeded() for scene '{scene.name}'");
+            Debug.Log($"[Dialogue] ✅ UI components ready, calling CheckIfIntroNeeded() for scene '{scene.name}'");
             CheckIfIntroNeeded();
         }
         else
         {
-            Debug.LogWarning($"[Dialogue] ⚠️ UI components not ready yet for scene '{scene.name}' - Panel: {dialoguePanel}, Text: {dialogueText}");
+            Debug.LogWarning($"[Dialogue] ⚠️ UI components NOT ready for scene '{scene.name}' - Panel: {dialoguePanel}, Text: {dialogueText}");
+            if (dialoguePanel == null) Debug.LogWarning("[Dialogue]   - DialoguePanel is NULL");
+            if (dialogueText == null) Debug.LogWarning("[Dialogue]   - DialogueText is NULL");
+            if (speakerNameText == null) Debug.LogWarning("[Dialogue]   - SpeakerNameText is NULL");
         }
     }
 
     private void FindUIComponents()
     {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        Debug.Log($"[Dialogue] 🔍 FindUIComponents called for scene: {sceneName}");
+
         if (dialoguePanel == null)
         {
             GameObject panelObj = GameObject.Find("DialoguePanel");
             if (panelObj != null)
             {
                 dialoguePanel = panelObj;
-                Debug.Log("[Dialogue] Found DialoguePanel in scene");
+                Debug.Log($"[Dialogue] ✅ Found DialoguePanel in scene: {sceneName} - Active: {panelObj.activeSelf}");
             }
             else
             {
-                Debug.LogError("[Dialogue] ❌ CRITICAL: DialoguePanel not found in scene!");
+                Debug.LogError($"[Dialogue] ❌ CRITICAL: DialoguePanel not found in scene: {sceneName}!");
+                // List all GameObjects with "dialogue" in name for debugging
+                GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+                var dialogueObjects = allObjects.Where(obj => obj.name.ToLower().Contains("dialogue")).ToArray();
+                Debug.Log($"[Dialogue] 🔍 Found {dialogueObjects.Length} objects with 'dialogue' in name:");
+                foreach (var obj in dialogueObjects)
+                {
+                    Debug.Log($"[Dialogue]   - {obj.name} (Active: {obj.activeSelf})");
+                }
             }
         }
 
@@ -303,27 +374,29 @@ public class DialogueManager : MonoBehaviour
 
     private void CheckIfIntroNeeded()
     {
-        Debug.Log($"[Dialogue] 🔍 CheckIfIntroNeeded() called at {Time.time}s - Instance: {Instance}, GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        Debug.Log($"[Dialogue] 🔍 CheckIfIntroNeeded() called for scene '{sceneName}' at {Time.time}s");
         Debug.Log($"[Dialogue] 🔍 hasCheckedIntroForCurrentScene: {hasCheckedIntroForCurrentScene}");
 
         // Prevent duplicate calls in the same scene
         if (hasCheckedIntroForCurrentScene)
         {
-            Debug.Log($"[Dialogue] ⏭️ Skipping duplicate CheckIfIntroNeeded call for current scene");
+            Debug.Log($"[Dialogue] ⏭️ Skipping duplicate CheckIfIntroNeeded call for scene '{sceneName}'");
             return;
         }
 
         if (dialoguePanel == null || dialogueText == null)
         {
-            Debug.LogWarning("[Dialogue] ⚠️ Dialogue UI components not assigned! Skipping dialogue.");
+            Debug.LogWarning($"[Dialogue] ⚠️ Dialogue UI components not assigned for scene '{sceneName}'! Skipping dialogue.");
             return;
         }
 
         int currentLevel = GetCurrentLevel();
+        Debug.Log($"[Dialogue] 🎯 Detected level: {currentLevel} for scene '{sceneName}'");
 
         if (currentLevel >= 1 && currentLevel <= 5)
         {
-            Debug.Log($"[Dialogue] 🎬 Level {currentLevel} loaded - showing dialogue sequence (ID: {System.Guid.NewGuid().ToString().Substring(0, 8)})");
+            Debug.Log($"[Dialogue] 🎬 Level {currentLevel} loaded in scene '{sceneName}' - showing dialogue sequence");
 
             // Get the dialogue data to verify it's correct
             LevelDialogue dialogue = GetLevelDialogue(currentLevel);
@@ -337,12 +410,13 @@ public class DialogueManager : MonoBehaviour
             }
 
             // Show the intro/start dialogue sequence for this level
+            Debug.Log($"[Dialogue] 🚀 Starting dialogue sequence for Level {currentLevel}");
             StartCoroutine(ShowLevelStartDialogueSequence(currentLevel));
             hasCheckedIntroForCurrentScene = true;
         }
         else
         {
-            Debug.Log($"[Dialogue] Current level {currentLevel} is outside supported range (1-5), no dialogue will be shown");
+            Debug.Log($"[Dialogue] Current level {currentLevel} is outside supported range (1-5), no dialogue will be shown for scene '{sceneName}'");
             hasCheckedIntroForCurrentScene = true;
         }
     }
@@ -366,10 +440,22 @@ public class DialogueManager : MonoBehaviour
         }
 
         // NORMAL HANDLING FOR OTHER LEVELS
-        // Show ONLY start dialogue
+        // TEMPORARILY DISABLE seen check for debugging - show dialogue every time
+        /*
+        string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
+        bool hasSeenLevelStart = PlayerPrefs.GetInt(levelStartKey, 0) == 1;
+
+        if (hasSeenLevelStart)
+        {
+            Debug.Log($"[Dialogue] Skipping start dialogue for Level {levelNumber} - already seen");
+            yield break;
+        }
+        */
+
+        // Show start dialogue for debugging
         if (dialogue.startDialogueLines.Length > 0)
         {
-            Debug.Log($"[Dialogue] Showing start dialogue ({dialogue.startDialogueLines.Length} lines)");
+            Debug.Log($"[Dialogue] 🔧 DEBUG: Showing start dialogue ({dialogue.startDialogueLines.Length} lines) for Level {levelNumber}");
             StartDialogue(dialogue.startDialogueLines, dialogue.startSpeakerNames, dialogue.startPortraits, true);
 
             // Wait for start dialogue to complete
@@ -377,9 +463,9 @@ public class DialogueManager : MonoBehaviour
             Debug.Log("[Dialogue] Start dialogue completed");
 
             // Mark start dialogue as seen
-            string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
-            PlayerPrefs.SetInt(levelStartKey, 1);
-            PlayerPrefs.Save();
+            // string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
+            // PlayerPrefs.SetInt(levelStartKey, 1);
+            // PlayerPrefs.Save();
         }
 
         Debug.Log($"[Dialogue] Start dialogue sequence completed for Level {levelNumber} - gameplay will begin");
@@ -574,8 +660,7 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        Time.timeScale = 0f;
-        Debug.Log("[Dialogue] ⏸️  Game paused (Time.timeScale = 0)");
+        ForceGamePause();
 
         Debug.Log($"[Dialogue] 🎬 Calling DisplayNextLine() with {dialogueQueue.Count} lines in queue");
         DisplayNextLine();
@@ -670,8 +755,7 @@ public class DialogueManager : MonoBehaviour
         if (skipButton != null)
             skipButton.gameObject.SetActive(false);
 
-        Time.timeScale = 1f;
-        Debug.Log("[Dialogue] ▶️  Game resumed (Time.timeScale = 1)");
+        ForceGameResume();
 
         int currentLevel = GetCurrentLevel();
 
@@ -779,6 +863,9 @@ public class DialogueManager : MonoBehaviour
 
     private void Update()
     {
+        // Ensure game stays paused during active dialogue
+        EnsureGameStaysPaused();
+
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) &&
             dialoguePanel != null && dialoguePanel.activeSelf)
         {
@@ -917,9 +1004,31 @@ public class DialogueManager : MonoBehaviour
         StartCoroutine(ShowLevelStartDialogue(1));
     }
 
+    /// <summary>
+    /// Reset dialogue seen status for a specific level (useful for testing)
+    /// </summary>
+    public void ResetDialogueStatus(int levelNumber)
+    {
+        string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
+        string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
+        PlayerPrefs.SetInt(levelStartKey, 0);
+        PlayerPrefs.SetInt(levelEndKey, 0);
+        PlayerPrefs.Save();
+        Debug.Log($"[Dialogue] Reset dialogue status for Level {levelNumber}");
+    }
+
     public bool IsDialogueActive()
     {
         return dialoguePanel != null && dialoguePanel.activeSelf;
+    }
+
+    /// <summary>
+    /// Returns true if dialogue is currently active and the game should be paused.
+    /// Use this to check if other systems should pause their activities.
+    /// </summary>
+    public bool ShouldGameBePaused()
+    {
+        return isShowingDialogue;
     }
 
     public void ShowCustomDialogue(string[] lines, string speakerName = "Narrator", Sprite portrait = null)

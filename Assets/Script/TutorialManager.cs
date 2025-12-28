@@ -338,7 +338,7 @@ public class TutorialManager : MonoBehaviour
 
         // ✅ FIX: Show tutorial completion message in tutorial panel (NOT victory panel)
         dialoguePanel.SetActive(true);
-        dialogueText.text = "🎉 Tutorial Completed! 🎉\n\nYou've learned the basics!\n\nPress SPACE to start the real Level 1...";
+        dialogueText.text = "🎉 Tutorial Completed! 🎉\n\nYou've learned the basics!";
         dialogueImageHolder.gameObject.SetActive(false);
         if (SkipButton != null)
             SkipButton.SetActive(false);
@@ -740,5 +740,10 @@ public class TutorialManager : MonoBehaviour
         Time.timeScale = 1f;
 
         Debug.Log("[Tutorial] Actual level gameplay started - defeat the enemy tower to complete Level 1!");
+
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.ResetCoins();
+        }
     }
 }

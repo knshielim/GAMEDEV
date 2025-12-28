@@ -32,7 +32,7 @@ public class EnemyDeployManager : MonoBehaviour
     public List<TroopData> mythicTroops = new List<TroopData>();
 
     [Tooltip("Time between mythic spawns (in seconds).")]
-    public float mythicSpawnInterval = 60f;
+    public float mythicSpawnInterval = 90f;
 
     [Header("Level 4 Wave Management")]
     [Tooltip("Enable wave-based spawning for level 4")]
@@ -85,6 +85,7 @@ public class EnemyDeployManager : MonoBehaviour
 
     // Level 5 Boss Trigger
     private bool _bossSpawned = false;
+    private bool _bossBattleActive = false; // Pause enemy deployment during boss battles
     private bool _levelSettingsApplied = false;
     
     // Level-specific configurations
@@ -123,18 +124,21 @@ public class EnemyDeployManager : MonoBehaviour
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         int buildIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
 
+        Debug.Log($"[EnemyDeploy] 🔍 Level detection - Scene: '{sceneName}', BuildIndex: {buildIndex}");
+
         // Scene naming: MainMenu=0, LevelSelect=1, Level1=2, Level2=3, Level3=4, Level4=5, Level5=6
         if (sceneName.StartsWith("Level"))
         {
-            // Extract level number from scene name (e.g., "Level5" -> 5)
-            if (int.TryParse(sceneName.Substring(5), out int levelFromName))
+            // Extract level number from scene name (handles both "Level5" and "Level 5")
+            string levelString = sceneName.Substring(5).Trim(); // Remove "Level" and trim spaces
+            if (int.TryParse(levelString, out int levelFromName))
             {
                 currentLevel = levelFromName;
-                Debug.Log($"[EnemyDeploy] ✅ Detected level {currentLevel} from scene name: {sceneName}");
+                Debug.Log($"[EnemyDeploy] ✅ Detected level {currentLevel} from scene name: '{sceneName}' (parsed: '{levelString}')");
             }
             else
             {
-                Debug.LogWarning($"[EnemyDeploy] Could not parse level from scene name: {sceneName}, using build index fallback");
+                Debug.LogWarning($"[EnemyDeploy] Could not parse level from scene name: '{sceneName}' (tried to parse: '{levelString}'), using build index fallback");
                 // Fallback to build index: Level1 = buildIndex 2, so level = buildIndex - 1
                 if (buildIndex >= 2)
                 {
@@ -165,6 +169,7 @@ public class EnemyDeployManager : MonoBehaviour
 
         // Initialize boss state
         _bossSpawned = false;
+        _bossBattleActive = false;
 
         // Debug: Check boss configuration for Level 5
         if (currentLevel == 5)
@@ -181,7 +186,7 @@ public class EnemyDeployManager : MonoBehaviour
         }
 
         ApplyLevelSettings();
-        _mythicTimer = mythicSpawnInterval;
+        _mythicTimer = 0f; // Start mythic timer at 0 so it counts up properly
 
     }
 
@@ -318,7 +323,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 600,
             coinGenerationMultiplier = 2.0f,
-            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns - challenging
+            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns - more manageable
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 25f },    // 25% Common
@@ -327,6 +332,44 @@ public class EnemyDeployManager : MonoBehaviour
                 { TroopRarity.Legendary, 10f }, // 10% Legendary
                 { TroopRarity.Mythic, 0f },     // 0% Mythic (deployed separately)
                 { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially)
+            },
+            canDeployMythic = true,
+            mythicChance = 100f // Always deploy mythic when timer triggers
+        };
+
+        // LEVEL 4 - EXTREME (Wave-based challenge)
+        levelConfigs[4] = new LevelConfig
+        {
+            startingCoins = 800,
+            coinGenerationMultiplier = 2.5f,
+            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns - more balanced
+            rarityWeights = new Dictionary<TroopRarity, float>
+            {
+                { TroopRarity.Common, 15f },    // 15% Common
+                { TroopRarity.Rare, 30f },      // 30% Rare
+                { TroopRarity.Epic, 35f },      // 35% Epic
+                { TroopRarity.Legendary, 15f }, // 15% Legendary
+                { TroopRarity.Mythic, 5f },     // 5% Mythic
+                { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially)
+            },
+            canDeployMythic = true,
+            mythicChance = 100f // Always deploy mythic when timer triggers
+        };
+
+        // LEVEL 5 - NIGHTMARE (Boss level)
+        levelConfigs[5] = new LevelConfig
+        {
+            startingCoins = 1000,
+            coinGenerationMultiplier = 3.0f,
+            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns - challenging but fair
+            rarityWeights = new Dictionary<TroopRarity, float>
+            {
+                { TroopRarity.Common, 10f },    // 10% Common
+                { TroopRarity.Rare, 20f },      // 20% Rare
+                { TroopRarity.Epic, 30f },      // 30% Epic
+                { TroopRarity.Legendary, 25f }, // 25% Legendary
+                { TroopRarity.Mythic, 15f },    // 15% Mythic
+                { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially at 50% HP)
             },
             canDeployMythic = true,
             mythicChance = 100f // Always deploy mythic when timer triggers
@@ -386,6 +429,14 @@ public class EnemyDeployManager : MonoBehaviour
          if (tutorialActive)
              return;
 
+        // STOP ENEMY SPAWNING DURING BOSS BATTLES
+        if (_bossBattleActive)
+        {
+            // Check if boss is defeated
+            CheckBossDefeat();
+            return;
+        }
+
         // DEBUG: Log current level occasionally and refresh level detection if needed
         if (Time.frameCount % 600 == 0) // Every 10 seconds
         {
@@ -393,14 +444,18 @@ public class EnemyDeployManager : MonoBehaviour
 
             // Double-check level detection in case scene loaded after Start()
             string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            if (sceneName.StartsWith("Level") && int.TryParse(sceneName.Substring(5), out int levelFromScene))
+            if (sceneName.StartsWith("Level"))
             {
-                if (levelFromScene != currentLevel)
+                string levelString = sceneName.Substring(5).Trim(); // Handle both "Level5" and "Level 5"
+                if (int.TryParse(levelString, out int levelFromScene))
                 {
-                    Debug.Log($"[EnemyDeploy] 🔄 Level mismatch detected! Scene: {sceneName} (Level {levelFromScene}), but currentLevel: {currentLevel}. Updating...");
-                    currentLevel = levelFromScene;
-                    _levelSettingsApplied = false; // Reset flag so settings can be reapplied
-                    ApplyLevelSettings(); // Reapply settings for correct level
+                    if (levelFromScene != currentLevel)
+                    {
+                        Debug.Log($"[EnemyDeploy] 🔄 Level mismatch detected! Scene: '{sceneName}' (Level {levelFromScene}), but currentLevel: {currentLevel}. Updating...");
+                        currentLevel = levelFromScene;
+                        _levelSettingsApplied = false; // Reset flag so settings can be reapplied
+                        ApplyLevelSettings(); // Reapply settings for correct level
+                    }
                 }
             }
 
@@ -840,13 +895,31 @@ public class EnemyDeployManager : MonoBehaviour
         }
 
         _bossSpawned = true;
+        _bossBattleActive = true; // Pause enemy deployment during boss battle
 
-        Debug.Log($"[EnemyDeploy] 👑 BOSS SPAWN TRIGGERED! (Level 5)");
+        Debug.Log($"[EnemyDeploy] 👑 BOSS SPAWN TRIGGERED! (Level 5) - Enemy deployment PAUSED");
         Debug.Log($"[EnemyDeploy] 🏰 Enemy tower HP dropped to {(bossTriggerHPPercent * 100):F0}%, spawning boss!");
         Debug.Log($"[EnemyDeploy] 🎭 Boss UI - Panel: {bossSummonPanel?.name ?? "NULL"}, Text: {bossSummonText?.name ?? "NULL"}");
 
         // Dramatic pause when boss spawns
         StartCoroutine(BossSpawnPauseSequence());
+    }
+
+    /// <summary>
+    /// Check if the boss has been defeated and resume enemy deployment
+    /// </summary>
+    private void CheckBossDefeat()
+    {
+        // Check if any boss units are still alive
+        bool bossStillAlive = Enemy.aliveEnemies.Any(enemy =>
+            enemy.GetTroopData() != null &&
+            enemy.GetTroopData().rarity == TroopRarity.Boss);
+
+        if (!bossStillAlive && _bossBattleActive)
+        {
+            _bossBattleActive = false;
+            Debug.Log("[EnemyDeploy] 🏆 BOSS DEFEATED! Enemy deployment RESUMED");
+        }
     }
 
     private IEnumerator BossSpawnPauseSequence()
@@ -882,6 +955,10 @@ public class EnemyDeployManager : MonoBehaviour
             Debug.Log("[EnemyDeploy] 🔊 Boss summon sound effect played");
         }
 
+        // Start screen shake effect
+        StartCoroutine(ScreenShake(2f, 0.3f));
+        Debug.Log("[EnemyDeploy] 🌋 Screen shake effect started");
+
         // Dramatic 2-second pause with boss on screen
         Debug.Log("[EnemyDeploy] ⏳ Holding pause for 2 seconds with boss visible...");
         yield return new WaitForSecondsRealtime(2f);
@@ -902,5 +979,41 @@ public class EnemyDeployManager : MonoBehaviour
         // RESUME GAME
         Time.timeScale = 1f;
         Debug.Log("[EnemyDeploy] ▶️ BOSS SPAWN COMPLETE - GAME RESUMED! Boss battle begins!");
+    }
+
+    /// <summary>
+    /// Creates a screen shake effect by moving the main camera
+    /// </summary>
+    /// <param name="duration">How long the shake lasts in seconds</param>
+    /// <param name="magnitude">How intense the shake is</param>
+    private IEnumerator ScreenShake(float duration, float magnitude)
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            Debug.LogWarning("[EnemyDeploy] ⚠️ No main camera found for screen shake effect");
+            yield break;
+        }
+
+        Vector3 originalPosition = mainCamera.transform.position;
+        float elapsed = 0f;
+
+        Debug.Log($"[EnemyDeploy] 🌋 Starting screen shake - Duration: {duration}s, Magnitude: {magnitude}");
+
+        while (elapsed < duration)
+        {
+            // Generate random shake offset
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+
+            mainCamera.transform.position = originalPosition + new Vector3(x, y, 0f);
+
+            elapsed += Time.unscaledDeltaTime; // Use unscaled time since game is paused
+            yield return null;
+        }
+
+        // Reset camera position
+        mainCamera.transform.position = originalPosition;
+        Debug.Log("[EnemyDeploy] 🌋 Screen shake completed - camera reset to original position");
     }
 }

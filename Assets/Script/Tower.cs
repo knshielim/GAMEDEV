@@ -81,11 +81,19 @@ public class Tower : MonoBehaviour
 
     private void Update()
     {
+        // Ensure game stays paused when victory or game over panels are active
+        if ((victoryPanel != null && victoryPanel.activeSelf && Time.timeScale != 0f) ||
+            (gameOverPanel != null && gameOverPanel.activeSelf && Time.timeScale != 0f))
+        {
+            Time.timeScale = 0f;
+            Debug.LogWarning("[Tower] ⚠️ Game was unpaused while victory/game over panel is active - forcing pause");
+        }
+
         HandleCoinGeneration();
 
         if (owner == TowerOwner.Player)
         {
-            UpdateUpgradeUI(); 
+            UpdateUpgradeUI();
         }
     }
 
@@ -259,7 +267,9 @@ public class Tower : MonoBehaviour
             AudioManager.Instance.PlayGameOverDramatic();
         }
 
+        // Ensure game is immediately paused when game over panel appears
         Time.timeScale = 0f;
+        Debug.Log("[Tower] ⏸️ Game PAUSED - Player tower destroyed, game over panel shown");
 
         if (gameOverPanel != null)
         {
@@ -310,7 +320,9 @@ public class Tower : MonoBehaviour
     // ✅ REFACTORED: Separated victory panel logic
     private void ShowVictoryPanel()
     {
+        // Ensure game is immediately paused when victory panel appears
         Time.timeScale = 0f;
+        Debug.Log("[Tower] ⏸️ Game PAUSED - Victory panel shown");
 
         if (victoryPanel != null)
         {
@@ -404,7 +416,9 @@ public class Tower : MonoBehaviour
         Debug.Log("[TOWER] Next level button clicked!");
         if (LevelManager.Instance != null)
         {
-            LevelManager.Instance.LevelCompleted();
+            // ✅ FIX: Call LoadNextLevel() directly instead of LevelCompleted()
+            // LevelCompleted() shows dialogue again, but we already showed it
+            LevelManager.Instance.LoadNextLevel();
         }
         else
         {

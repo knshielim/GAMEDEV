@@ -74,6 +74,8 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         //Debug.Log($"[GameManager] Final Instance set to: {Instance} for scene: {gameObject.scene.name}");
+
+        ResetGameState();
     }
 
     private void Start()
@@ -107,6 +109,19 @@ public class GameManager : MonoBehaviour
     private void ResetGameState()
     {
         isGameOver = false;
+
+        // Reset coins when gameplay starts
+        if (CoinManager.Instance != null)
+        {
+            CoinManager.Instance.ResetCoins();
+        }
+
+        // Reset summon rates and upgrades when gameplay starts
+        if (SpawnRateBalancer.Instance != null)
+        {
+            SpawnRateBalancer.Instance.ResetUpgrades();
+        }
+
         //Debug.Log("[GameManager] Game state reset for new scene");
     }
 
@@ -216,8 +231,10 @@ public void TowerDestroyed(Tower destroyedTower)
             gameOverPanel.SetActive(true);
         if (gameOverText != null)
             gameOverText.text = message;
-            
+
+        // Ensure game is immediately paused when game over panel appears
         Time.timeScale = 0f;
+        Debug.Log("[GameManager] ⏸️ Game PAUSED - Player lost, game over panel shown");
     }
     else if (destroyedTower == aiTower || destroyedTower.owner == Tower.TowerOwner.Enemy)
     {
@@ -238,12 +255,21 @@ public void TowerDestroyed(Tower destroyedTower)
         if (gameOverText != null)
             gameOverText.text = message;
 
+        // Ensure game is immediately paused when game over panel appears
         Time.timeScale = 0f; // Always pause on game over, regardless of fast forward
+        Debug.Log("[GameManager] ⏸️ Game PAUSED - Game over panel shown");
     }
 }
 
     private void Update()
     {
+        // Ensure game stays paused when game over panel is active
+        if (gameOverPanel != null && gameOverPanel.activeSelf && Time.timeScale != 0f)
+        {
+            Time.timeScale = 0f;
+            Debug.LogWarning("[GameManager] ⚠️ Game was unpaused while game over panel is active - forcing pause");
+        }
+
         // Handle fast forward toggle
         if (Input.GetKeyDown(fastForwardKey) && !isGameOver)
         {

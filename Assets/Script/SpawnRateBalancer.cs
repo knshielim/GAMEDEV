@@ -470,6 +470,17 @@ public class SpawnRateBalancer : MonoBehaviour
         Debug.Log("[SpawnRateBalancer] Balancing reset to base rates");
     }
 
+    /// <summary>
+    /// Resets upgrade level to 0 and clears all balancing data.
+    /// Call this when starting a new game or level.
+    /// </summary>
+    public void ResetUpgrades()
+    {
+        upgradeLevel = 0;
+        ResetBalancing();
+        Debug.Log("[SpawnRateBalancer] 🔄 All upgrades and balancing reset for new game/level");
+    }
+
     // Reactive balancing system - called when enemy spawns high-rarity unit
     public void ActivateReactiveBoost(TroopRarity rarity)
     {

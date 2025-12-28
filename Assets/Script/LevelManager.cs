@@ -41,13 +41,13 @@ public class LevelManager : MonoBehaviour
         }
 
         Instance = this;
-        Debug.Log($"[LevelManager] Set as Instance with totalLevels: {totalLevels}");
     }
     
     private void Start()
     {
         // ✅ CRITICAL FIX: Force totalLevels to 5 (override any Inspector settings)
         totalLevels = 5;
+        Debug.Log($"[LevelManager] Set as Instance with totalLevels: {totalLevels}");
 
         // ✅ FIX: More robust level detection
         currentLevel = DetermineCurrentLevel();
@@ -112,15 +112,16 @@ public class LevelManager : MonoBehaviour
         UnlockNextLevel();
 
         // Check if there are more levels
-        if (currentLevel < totalLevels)
-        {
-            Debug.Log($"[LevelManager] ➡️ Next level available: Level {currentLevel + 1}");
-            StartCoroutine(LoadNextLevelDelayed());
-        }
-        else
+        if (currentLevel >= totalLevels)
         {
             Debug.Log($"[LevelManager] 🎉 ALL {totalLevels} LEVELS COMPLETED! Game finished!");
             StartCoroutine(GameCompletedDelayed());
+        }
+        else
+        {
+            // ✅ FIX: Don't start automatic transition here - Tower will show victory panel
+            // and let player manually proceed via Next Level button
+            Debug.Log($"[LevelManager] 📋 Victory dialogue shown - waiting for player to click Next Level button");
         }
     }
     
@@ -138,8 +139,16 @@ public class LevelManager : MonoBehaviour
 
         Debug.Log($"[LevelManager] Loading next level in {levelTransitionDelay} seconds...");
 
-        // Wait before transitioning
-        yield return new WaitForSeconds(levelTransitionDelay);
+        // Keep game paused during transition delay to prevent enemy spawning
+        Time.timeScale = 0f;
+        Debug.Log("[LevelManager] ⏸️ Game paused during level transition");
+
+        // Wait before transitioning (using realtime to work while paused)
+        yield return new WaitForSecondsRealtime(levelTransitionDelay);
+
+        // Resume game before loading next level
+        Time.timeScale = 1f;
+        Debug.Log("[LevelManager] ▶️ Game resumed, loading next level");
 
         LoadNextLevel();
     }
@@ -217,6 +226,9 @@ public class LevelManager : MonoBehaviour
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
+            // Ensure game is immediately paused when game over panel appears
+            Time.timeScale = 0f;
+            Debug.Log("[LevelManager] ⏸️ Game PAUSED - Game over panel shown");
         }
     }
 
