@@ -449,9 +449,9 @@ MonoBehaviour:
   typingSpeed: 0.05
   advanceKey: 32
   alwaysShowBackstory: 0
-  mainMenuButtons: {fileID: 0}
-  optionsMenu: {fileID: 0}
-  backButton: {fileID: 0}
+  mainMenuButtons: {fileID: 1549072253}
+  optionsMenu: {fileID: 1670746262}
+  backButton: {fileID: 1854774563}
   backstoryPanel: {fileID: 777075435}
   backstoryTitle: {fileID: 1497824844}
   backstoryText: {fileID: 1378189656}
