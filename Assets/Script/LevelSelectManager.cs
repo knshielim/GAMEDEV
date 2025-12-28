@@ -212,5 +212,4 @@ public class LevelSelectManager : MonoBehaviour
         }
         return "No description available.";
     }
-
 }

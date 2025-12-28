@@ -13,6 +13,19 @@ public class EnemyDeployManager : MonoBehaviour
     [SerializeField] private GameObject bossSummonPanel;
     [SerializeField] private TMPro.TextMeshProUGUI bossSummonText;
 
+    [Header("Level 4 Wave UI")]
+    [Tooltip("Panel containing wave indicator UI")]
+    [SerializeField] private GameObject waveIndicatorPanel;
+
+    [Tooltip("Progress bar showing time until next wave")]
+    [SerializeField] private UnityEngine.UI.Slider waveProgressBar;
+
+    [Tooltip("Image component of the slider fill for color changes")]
+    [SerializeField] private UnityEngine.UI.Image waveProgressFill;
+
+    [Tooltip("Text showing current wave or time to next wave")]
+    [SerializeField] private TMPro.TextMeshProUGUI currentWaveText;
+
     [Header("Spawn Settings")]
     [Tooltip("Where enemy troops will appear (usually in front of the enemy tower).")]
     public Transform enemySpawnPoint;
@@ -34,21 +47,12 @@ public class EnemyDeployManager : MonoBehaviour
     [Tooltip("Time between mythic spawns (in seconds).")]
     public float mythicSpawnInterval = 90f;
 
-    [Header("Level 4 Wave Management")]
-    [Tooltip("Enable wave-based spawning for level 4")]
-    [SerializeField] private bool enableWaveMode = true;
+    [Header("Level 4 Wave Progression")]
+    [Tooltip("Enable wave progression for level 4 (wave number increases every 60 seconds)")]
+    [SerializeField] private bool enableWaveProgression = true;
 
-    [Tooltip("Time when Wave 2 starts (seconds from level start)")]
-    [SerializeField] private float wave2StartTime = 60f;
-
-    [Tooltip("Time when Final Wave starts (seconds from level start)")]
-    [SerializeField] private float finalWaveStartTime = 60f; // Same as wave2 for now, can be adjusted
-
-    [Tooltip("Spawn interval during Wave 2")]
-    [SerializeField] private float wave2SpawnInterval = 20f;
-
-    [Tooltip("Spawn interval during Final Wave")]
-    [SerializeField] private float finalWaveSpawnInterval = 15f;
+    [Tooltip("Time interval for wave transitions (seconds)")]
+    [SerializeField] private float waveTransitionInterval = 60f;
 
     [Header("Level 5 Boss Trigger")]
     [Tooltip("Enable boss spawning for level 5")]
@@ -77,11 +81,9 @@ public class EnemyDeployManager : MonoBehaviour
     private float currentSpawnInterval;
     private int currentTroopCost;
 
-    // Level 4 Wave Management
+    // Level 4 Progressive Difficulty
     private float _levelStartTime;
     private int _currentWave = 1;
-    private bool _wave2Announced = false;
-    private bool _finalWaveAnnounced = false;
 
     // Level 5 Boss Trigger
     private bool _bossSpawned = false;
@@ -161,15 +163,21 @@ public class EnemyDeployManager : MonoBehaviour
 
         Debug.Log($"[EnemyDeploy] 🎯 Final level detection: {currentLevel} (Scene: {sceneName}, BuildIndex: {buildIndex})");
 
-        // Initialize level timing
+        // Initialize level timing and progressive difficulty state
         _levelStartTime = Time.time;
         _currentWave = 1;
-        _wave2Announced = false;
-        _finalWaveAnnounced = false;
 
         // Initialize boss state
         _bossSpawned = false;
         _bossBattleActive = false;
+
+        // Initialize wave UI
+        if (waveIndicatorPanel != null)
+            waveIndicatorPanel.SetActive(false);
+
+        // Set initial wave progress bar color to yellow (waiting for wave)
+        if (waveProgressFill != null)
+            waveProgressFill.color = Color.yellow;
 
         // Debug: Check boss configuration for Level 5
         if (currentLevel == 5)
@@ -275,7 +283,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 200,
             coinGenerationMultiplier = 1.0f,
-            spawnIntervalMultiplier = 1.0f,
+            spawnIntervalMultiplier = 1.0f, // 30 seconds
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 75f },    // 75% Common
@@ -294,7 +302,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 300,   // awalnya 400
             coinGenerationMultiplier = 1.3f, // awalnya 1.3f
-            spawnIntervalMultiplier = 0.8f, // 24 seconds between spawns
+            spawnIntervalMultiplier = 0.9f, // 27 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
 
@@ -323,7 +331,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 600,
             coinGenerationMultiplier = 2.0f,
-            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns - more manageable
+            spawnIntervalMultiplier = 0.83f, // 25 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 25f },    // 25% Common
@@ -342,18 +350,18 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 800,
             coinGenerationMultiplier = 2.5f,
-            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns - more balanced
+            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 15f },    // 15% Common
                 { TroopRarity.Rare, 30f },      // 30% Rare
                 { TroopRarity.Epic, 35f },      // 35% Epic
                 { TroopRarity.Legendary, 15f }, // 15% Legendary
-                { TroopRarity.Mythic, 5f },     // 5% Mythic
+                { TroopRarity.Mythic, 0f },     // 0% Mythic
                 { TroopRarity.Boss, 0f }        // 0% Boss (spawned specially)
             },
-            canDeployMythic = true,
-            mythicChance = 100f // Always deploy mythic when timer triggers
+            canDeployMythic = false,
+            mythicChance = 0f // No mythic deployment for level 4
         };
 
         // LEVEL 5 - NIGHTMARE (Boss level)
@@ -361,7 +369,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 1000,
             coinGenerationMultiplier = 3.0f,
-            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns - challenging but fair
+            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 10f },    // 10% Common
@@ -481,7 +489,7 @@ public class EnemyDeployManager : MonoBehaviour
         
         // --- AI normal ---
         // Handle wave transitions for Level 4
-        if (currentLevel == 4 && enableWaveMode)
+        if (currentLevel == 4 && enableWaveProgression)
         {
             UpdateWaveState();
         }
@@ -593,43 +601,103 @@ public class EnemyDeployManager : MonoBehaviour
 
     private void UpdateWaveState()
     {
-        if (currentLevel != 4 || !enableWaveMode)
+        if (currentLevel != 4 || !enableWaveProgression)
+        {
+            // Hide wave UI if not in level 4
+            if (waveIndicatorPanel != null)
+                waveIndicatorPanel.SetActive(false);
             return;
+        }
+
+        // Show wave UI for level 4
+        if (waveIndicatorPanel != null)
+            waveIndicatorPanel.SetActive(true);
 
         float elapsedTime = Time.time - _levelStartTime;
 
-        // Transition to Wave 2
-        if (_currentWave == 1 && elapsedTime >= wave2StartTime && !_wave2Announced)
+        // Update wave progression
+        UpdateProgressiveDifficulty(elapsedTime);
+
+        // Update wave progress bar and text
+        UpdateWaveUI(elapsedTime);
+    }
+
+    /// <summary>
+    /// Update wave progression (same spawn rate, just wave number increases)
+    /// </summary>
+    private void UpdateProgressiveDifficulty(float elapsedTime)
+    {
+        // Calculate current wave number based on time (increases every 60 seconds)
+        int waveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
+
+        // Update current wave number for UI display
+        _currentWave = waveNumber;
+
+        // Keep spawn interval constant (use level 4 base rate)
+        float baseInterval = levelConfigs[4].spawnIntervalMultiplier * baseSpawnInterval;
+        currentSpawnInterval = baseInterval; // No changes to spawn rate
+
+        // Log wave transitions
+        int newWaveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
+        if (newWaveNumber != _currentWave && newWaveNumber > 1)
         {
-            _currentWave = 2;
-            currentSpawnInterval = wave2SpawnInterval;
-            _wave2Announced = true;
+            Debug.Log($"[EnemyDeploy] 🌊 WAVE {newWaveNumber} STARTED! at {elapsedTime:F1}s");
+            Debug.Log($"[EnemyDeploy] ⚡ Spawn rate remains constant: Every {currentSpawnInterval:F1} seconds");
 
-            Debug.Log($"[EnemyDeploy] 🌊 WAVE 2 STARTED! (Level 4, {elapsedTime:F1}s elapsed)");
-            Debug.Log($"[EnemyDeploy] ⚡ Increased spawn rate: Every {currentSpawnInterval:F1} seconds");
+            // Shake screen for wave transition
+            StartCoroutine(ScreenShake(0.5f, 0.2f)); // Short, subtle shake
+            Debug.Log($"[EnemyDeploy] 🌋 Screen shake triggered for Wave {newWaveNumber}");
 
-            // Optional: Show wave announcement UI or play sound
+            // Optional: Show wave transition UI or play sound
             if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
             {
                 AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
             }
         }
+    }
 
-        // Transition to Final Wave
-        if (_currentWave == 2 && elapsedTime >= finalWaveStartTime && !_finalWaveAnnounced)
+    /// <summary>
+    /// Update the wave indicator UI elements for progressive difficulty
+    /// </summary>
+    private void UpdateWaveUI(float elapsedTime)
+    {
+        if (waveIndicatorPanel == null || waveProgressBar == null || currentWaveText == null)
+            return;
+
+        // Calculate current wave number and progress within current wave
+        int waveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
+        float progressInCurrentWave = (elapsedTime % waveTransitionInterval) / waveTransitionInterval;
+
+        // Determine if we're waiting for next wave transition
+        bool isWaitingForWave = progressInCurrentWave < 1f;
+
+        // Update text based on state
+        if (isWaitingForWave)
         {
-            _currentWave = 3;
-            currentSpawnInterval = finalWaveSpawnInterval;
-            _finalWaveAnnounced = true;
+            // Show time remaining until next wave
+            float timeInCurrentWave = elapsedTime % waveTransitionInterval;
+            float timeRemaining = waveTransitionInterval - timeInCurrentWave;
 
-            Debug.Log($"[EnemyDeploy] 🔥 FINAL WAVE STARTED! (Level 4, {elapsedTime:F1}s elapsed)");
-            Debug.Log($"[EnemyDeploy] ⚡ Maximum spawn rate: Every {currentSpawnInterval:F1} seconds");
+            currentWaveText.text = $"Time to next wave: {Mathf.CeilToInt(timeRemaining)}s";
 
-            // Optional: Show final wave announcement UI or play sound
-            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
-            {
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
-            }
+            // Set progress bar color to yellow (waiting)
+            if (waveProgressFill != null)
+                waveProgressFill.color = Color.yellow;
+        }
+        else
+        {
+            // Show current wave number
+            currentWaveText.text = $"Wave {waveNumber}";
+
+            // Set progress bar color to red (active)
+            if (waveProgressFill != null)
+                waveProgressFill.color = Color.red;
+        }
+
+        // Update progress bar value (shows progress within current wave)
+        if (waveProgressBar != null)
+        {
+            waveProgressBar.value = progressInCurrentWave;
         }
     }
 

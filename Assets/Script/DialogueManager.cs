@@ -34,104 +34,146 @@ public class DialogueManager : MonoBehaviour
     }
 
     [SerializeField] private LevelDialogue[] levelDialogues = {
+        // ═══════════════════════════════════════════════════════
+        // LEVEL 1: FOREST OUTPOST - THE FIRST STAND
+        // ═══════════════════════════════════════════════════════
         new LevelDialogue {
             levelNumber = 1,
             startDialogueLines = new string[] {
-                "Welcome, young summoner! The ancient spirits have chosen you to defend our lands.",
-                "Dark forces are gathering beyond the mountains. You must use your gacha powers wisely.",
-                "Each level will test your strategic mind and summoning skills. Choose your troops carefully!",
-                "Remember: Common troops are numerous but weak. Rare ones are balanced. Epic and Legendary units are powerful but rare.",
-                "The enemy tower grows stronger with each victory. Don't let them reach your base!",
+                "Welcome, young summoner! The Ancient Spirits have chosen you to defend our lands.",
+                "You stand at the Forest Outpost, where the Shadow King's forces first strike. Dark forces gather beyond the mountains.",
+                "You must use your gacha summoning powers wisely—call upon the monsters of legend!",
+                "Each level will test your strategic mind. Choose your troops carefully and master the art of merging!",
+                "Remember: Common troops are weak but numerous. Rare ones are balanced. Epic and Legendary units are powerful but rare!",
+                "The enemy tower grows stronger with each battle. Don't let them reach your base!",
                 "Good luck, summoner! The fate of our world rests in your hands."
             },
             startSpeakerNames = new string[] {
                 "Ancient Spirit", "Ancient Spirit", "Ancient Spirit",
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             },
             endDialogueLines = new string[] {
-                "Well done! You've defended your first outpost.",
-                "The enemy grows stronger, but so do you.",
-                "Prepare for the challenges ahead in the mountain pass."
+                "Well done! You've defended your first outpost. The Shadow King's vanguard has been pushed back!",
+                "But this is only the beginning. His dark corruption spreads through the land like a plague.",
+                "The enemy grows stronger with each passing moment, but so do you. Your mastery of monster merging grows!",
+                "Prepare yourself. The treacherous Mountain Pass awaits—where the enemy has fortified their position.",
+                "Steel yourself, summoner. The true battle has just begun."
             },
             endSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             }
         },
+
+        // ═══════════════════════════════════════════════════════
+        // LEVEL 2: MOUNTAIN PASS - THE TREACHEROUS CLIMB
+        // ═══════════════════════════════════════════════════════
         new LevelDialogue {
             levelNumber = 2,
             startDialogueLines = new string[] {
-                "The treacherous mountain pass awaits.",
-                "Navigate the difficult terrain and face stronger enemies.",
-                "Your strategic skills will be tested here."
+                "The treacherous mountain pass awaits. The Shadow King's forces have dug in here.",
+                "Cold winds howl with whispers of ancient battles. The enemy uses narrow cliffs to their advantage.",
+                "Navigate the difficult terrain and face stronger enemies. Veteran commanders lead the dark forces now.",
+                "Your common troops may no longer suffice. Seek out Epic-tier creatures to turn the tide!",
+                "The mountain holds secrets—rare monsters hide among the rocks. Summon wisely, merge often!"
             },
             startSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             },
             endDialogueLines = new string[] {
-                "Impressive victory in the mountains!",
-                "The desert ruins lie ahead with their own dangers.",
-                "Stay vigilant, summoner."
+                "Impressive victory in the mountains! Your mastery grows rapidly.",
+                "The Ancient Spirits whisper that you may be the one foretold—the Convergence Master!",
+                "But celebration must wait. The Desert Ruins lie ahead—ancient traps, scorching heat, and twisted monsters.",
+                "The Shadow King's grip on that wasteland is strong. Resources grow scarce, but the rewards... are legendary.",
+                "Stay vigilant, summoner. What comes next will test your endurance!"
             },
             endSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             }
         },
+
+        // ═══════════════════════════════════════════════════════
+        // LEVEL 3: DESERT RUINS - WASTELAND TRIAL
+        // ═══════════════════════════════════════════════════════
         new LevelDialogue {
             levelNumber = 3,
             startDialogueLines = new string[] {
-                "The scorching desert ruins test your endurance.",
-                "Resources are scarce here, but opportunities abound.",
-                "Adapt to the harsh conditions and emerge victorious."
+                "The scorching desert ruins stretch before you—remnants of a fallen civilization.",
+                "This land once rivaled the summoners in power. Now, the Shadow King uses their broken towers as fortresses.",
+                "Resources are scarce here, but opportunities abound. Ancient mythic creatures slumber beneath the sands!",
+                "Can you unlock the secrets of mythic fusion? Merge your troops to their absolute limits!",
+                "Adapt to the harsh wasteland and emerge victorious. The enemy grows desperate—expect fierce resistance!"
             },
             startSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             },
             endDialogueLines = new string[] {
-                "You've conquered the desert ruins!",
-                "The wave fortress presents a new challenge.",
-                "Survive the relentless enemy waves."
+                "You've conquered the desert ruins! The Ancient Spirits grant you their blessing!",
+                "You've proven worthy of commanding Mythic-tier monsters—legends like the Vampire Lord and Samurai Champion!",
+                "But the Shadow King's fury grows. He sends his elite forces to the Wave Fortress next.",
+                "An impregnable stronghold where enemies attack in relentless waves, each stronger than the last.",
+                "Survive the endless siege. Beyond it lies... the Final Citadel. The hardest battles are yet to come!"
             },
             endSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             }
         },
+
+        // ═══════════════════════════════════════════════════════
+        // LEVEL 4: WAVE FORTRESS - THE ENDLESS SIEGE
+        // ═══════════════════════════════════════════════════════
         new LevelDialogue {
             levelNumber = 4,
             startDialogueLines = new string[] {
-                "The wave fortress unleashes enemies in relentless waves.",
-                "Your timing and resource management are crucial here.",
-                "Survive the escalating assault!"
+                "The Wave Fortress unleashes enemies in relentless waves. The Shadow King's greatest army awaits!",
+                "Thousands of corrupted monsters pour from the dark gates, wave after wave, testing your endurance.",
+                "Your timing and resource management are crucial. Every coin matters. Every merge must be perfect.",
+                "There is NO room for error here. One mistake could mean the fall of everything you've fought for.",
+                "Survive the escalating assault! First the fodder, then the elites, and finally... his Champions!",
+                "But you are not alone. The Ancient Spirits channel their power through you. Show them your might!"
             },
             startSpeakerNames = new string[] {
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", 
                 "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             },
             endDialogueLines = new string[] {
-                "Outstanding! You've weathered the waves!",
-                "Now face the ultimate challenge in the enemy's stronghold.",
-                "The final citadel awaits your assault."
+                "Outstanding! You've weathered the waves! The fortress crumbles, his army scatters!",
+                "But do not celebrate yet. The Shadow King retreats to his ultimate stronghold for one final stand.",
+                "The Final Citadel stands before you—a massive dark tower radiating malevolent energy.",
+                "This is where it all ends. Prepare every strategy you've learned. Merge your strongest creatures!",
+                "The fate of the world will be decided in one last, epic battle!"
             },
             endSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             }
         },
+
+        // ═══════════════════════════════════════════════════════
+        // LEVEL 5: FINAL CITADEL - THE LAST BATTLE
+        // ═══════════════════════════════════════════════════════
         new LevelDialogue {
             levelNumber = 5,
             startDialogueLines = new string[] {
-                "The final citadel - the enemy's last stronghold.",
-                "Face their most powerful defenses and ultimate champion.",
-                "This battle will decide the fate of our world!"
+                "The final citadel—the Shadow King's last stronghold. You stand before the towering Dark Spire!",
+                "This place was once a summoner academy, before it fell to darkness centuries ago.",
+                "Face the Shadow King himself and his most powerful defenses—boss monsters, dark champions, endless waves!",
+                "Every summoner who came before you fell here. But you have mastered the ancient art of merging!",
+                "This battle will decide the fate of our world! Fight with everything you have, Master Summoner!"
             },
             startSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             },
             endDialogueLines = new string[] {
-                "INCREDIBLE! You've conquered the final citadel!",
-                "Peace returns to our lands thanks to your bravery.",
-                "You are truly the greatest summoner our world has known.",
-                "Thank you for saving us all!"
+                "INCREDIBLE! You've conquered the final citadel! The Shadow King's tower crumbles to dust!",
+                "Light returns to the land! Forests bloom, mountains shine, and the desert springs to life!",
+                "Peace returns to our lands thanks to your bravery. The Ancient Spirits themselves bow in respect.",
+                "You've done what no summoner could—mastered the perfect merge and saved the world!",
+                "You are truly the greatest summoner our world has known. The Master of Convergence. The Myth Forger!",
+                "Thank you for saving us all! But remember... darkness never truly dies. It only sleeps.",
+                "And when it awakens again... the world will need you once more, hero."
             },
             endSpeakerNames = new string[] {
-                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", "Ancient Spirit", 
+                "Ancient Spirit", "Ancient Spirit", "Ancient Spirit"
             }
         }
     };
