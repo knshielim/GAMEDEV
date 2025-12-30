@@ -7,14 +7,11 @@ using TMPro;
 [System.Serializable]
 public class StoredTroopSlot
 {
-    public TroopData troop;
+    public TroopInstance troopInstance;
     public int count;
 
-    public StoredTroopSlot()
-    {
-        troop = null;
-        count = 0;
-    }
+    public TroopData Data => troopInstance != null ? troopInstance.data : null;
+    public bool IsEmpty => troopInstance == null || count <= 0;
 }
 
 public class TroopInventory : MonoBehaviour
@@ -24,62 +21,37 @@ public class TroopInventory : MonoBehaviour
     private Dictionary<int, Coroutine> runningAnimations = new Dictionary<int, Coroutine>();
 
     [Header("UI Inventory Slot Images")]
-    [Tooltip("List of Image components representing the inventory slots.")]
     public List<Image> slotImages;
-
-    [Tooltip("The sprite to display when a slot is empty.")]
     public Sprite emptySlotSprite;
 
     [Header("UI Inventory Slot Count Text")]
-    [Tooltip("Text for displaying how many units are in each slot.")]
     public List<TextMeshProUGUI> slotCountTexts;
 
     [Header("Stored Troops")]
     public List<StoredTroopSlot> storedTroops = new List<StoredTroopSlot>();
-    
+
     [Header("UI Inventory Slot Borders")]
-    [Tooltip("Border Images for each inventory slot (used for selection highlight).")]
     public List<Image> slotBorders;
-    
+
     [Header("Selection Visual Settings")]
-    [Tooltip("Color for selected slot border")]
     public Color selectedBorderColor = Color.yellow;
-    
-    [Tooltip("Width of the selected border")]
     public float selectedBorderWidth = 4f;
-    
+
     [Header("Merge System")]
-    [Tooltip("List of merge buttons (one per slot)")]
     public List<Button> mergeButtons;
-    
-    [Tooltip("Maximum units per slot before merge is available")]
     public int maxUnitsPerSlot = 3;
 
     [Header("Animation Settings")]
-[Tooltip("Duration of the summon animation")]
-public float animationDuration = 0.4f;
+    public float animationDuration = 0.4f;
+    public bool enableSummonAnimation = true;
+    public GameObject summonEffectPrefab;
+    public Vector3 effectOffset = Vector3.zero;
+    public float effectDuration = 1f;
 
-[Tooltip("Enable/disable summon animation")]
-public bool enableSummonAnimation = true;
-
-[Tooltip("Particle/sprite effect to play on SUMMON")]
-public GameObject summonEffectPrefab;  // ← This is for SUMMON only
-
-[Tooltip("Offset position for the effect (relative to slot)")]
-public Vector3 effectOffset = Vector3.zero;
-
-[Tooltip("How long before destroying the effect")]
-public float effectDuration = 1f;
-
-[Header("Merge Animation Settings")]
-[Tooltip("Merge effect prefab (sprite animation or particles)")]
-public GameObject mergeEffectPrefab;  // ← ADD THIS - separate field for MERGE
-
-[Tooltip("Duration of merge animation")]
-public float mergeAnimationDuration = 0.6f;
-
-[Tooltip("How long before destroying merge effect")]
-public float mergeEffectDuration = 1.5f;
+    [Header("Merge Animation Settings")]
+    public GameObject mergeEffectPrefab;
+    public float mergeAnimationDuration = 0.6f;
+    public float mergeEffectDuration = 1.5f;
 
     private void Awake()
     {
@@ -90,15 +62,14 @@ public float mergeEffectDuration = 1.5f;
         }
         Instance = this;
 
-        // Ensure list matches slot count
         while (storedTroops.Count < slotImages.Count)
             storedTroops.Add(new StoredTroopSlot());
 
-        // Add button listeners for selecting troops
         for (int i = 0; i < slotImages.Count; i++)
         {
             int index = i;
-            var btn = slotImages[i].GetComponentInParent<UnityEngine.UI.Button>();
+
+            var btn = slotImages[i].GetComponentInParent<Button>();
             if (btn != null)
             {
                 btn.onClick.AddListener(() =>
@@ -106,34 +77,27 @@ public float mergeEffectDuration = 1.5f;
                     FindObjectOfType<TroopDeployManager>()?.SelectTroop(index);
                 });
             }
-            
-            // Setup merge button listeners
+
             if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
             {
                 mergeButtons[i].onClick.AddListener(() => MergeUnits(index));
                 mergeButtons[i].gameObject.SetActive(false);
             }
-            
-            // Setup borders - ensure they're properly configured
+
             if (slotBorders != null && i < slotBorders.Count && slotBorders[i] != null)
             {
-                // Set border color
                 slotBorders[i].color = selectedBorderColor;
-                
-                // Initially hide all borders
                 slotBorders[i].gameObject.SetActive(false);
-                
-                Debug.Log($"[Inventory] Border {i} configured: {slotBorders[i].name}");
             }
         }
 
         RefreshUI();
-        Debug.Log($"[Inventory] Initialized with {slotImages.Count} slots, {slotCountTexts.Count} count texts, {slotBorders.Count} borders");
     }
 
-    public bool AddTroop(TroopData troop, bool isMerge = false)
+    // ================= ADD TROOP =================
+    public bool AddTroop(TroopInstance instance, bool isMerge = false)
     {
-        if (troop == null)
+        if (instance == null || instance.data == null)
         {
             Debug.LogWarning("[Inventory] Attempted to add null troop!");
             return false;
@@ -141,463 +105,180 @@ public float mergeEffectDuration = 1.5f;
 
         int affectedSlot = -1;
 
-        // 1. Try to stack first
+        // Try stacking
         for (int i = 0; i < storedTroops.Count; i++)
         {
-            if (storedTroops[i].troop == troop && storedTroops[i].count < maxUnitsPerSlot)
+            if (!storedTroops[i].IsEmpty &&
+                storedTroops[i].troopInstance.data.id == instance.data.id &&
+                storedTroops[i].count < maxUnitsPerSlot)
             {
                 storedTroops[i].count++;
                 affectedSlot = i;
-                Debug.Log($"[TroopInventory] Stacked {troop.displayName} in slot {i}, count: {storedTroops[i].count}");
-                
-                TryAutoCombine(); 
                 RefreshUI();
-                
-                if (enableSummonAnimation && affectedSlot >= 0)
-                {
-                    StartSlotAnimation(affectedSlot, isMerge);
-                }
-                
+                if (enableSummonAnimation) StartSlotAnimation(affectedSlot, isMerge);
                 return true;
             }
         }
 
-        // 2. Find empty slot
+        // Find empty slot
         for (int i = 0; i < storedTroops.Count; i++)
         {
-            if (storedTroops[i].troop == null)
+            if (storedTroops[i].IsEmpty)
             {
-                storedTroops[i].troop = troop;
+                storedTroops[i].troopInstance = instance;
                 storedTroops[i].count = 1;
                 affectedSlot = i;
-                Debug.Log($"[TroopInventory] Added {troop.displayName} to new slot {i}");
                 RefreshUI();
-                
-                if (enableSummonAnimation && affectedSlot >= 0)
-                {
-                    StartSlotAnimation(affectedSlot, isMerge);
-                }
-                
+                if (enableSummonAnimation) StartSlotAnimation(affectedSlot, isMerge);
                 return true;
             }
         }
 
-        Debug.Log("[Inventory] FULL! Cannot add more troops.");
+        Debug.Log("[Inventory] FULL!");
         return false;
     }
 
-    private void StartSlotAnimation(int slotIndex, bool isMerge)
-    {
-        // Stop any existing animation on this slot
-        if (runningAnimations.ContainsKey(slotIndex) && runningAnimations[slotIndex] != null)
-        {
-            StopCoroutine(runningAnimations[slotIndex]);
-        }
-        
-        // Reset scale/rotation
-        slotImages[slotIndex].transform.localScale = Vector3.one;
-        slotImages[slotIndex].transform.localRotation = Quaternion.identity;
-        
-        // Start new animation and track it
-        if (isMerge)
-            runningAnimations[slotIndex] = StartCoroutine(SlotMergeAnimation(slotIndex));
-        else
-            runningAnimations[slotIndex] = StartCoroutine(SlotSummonAnimation(slotIndex));
-    }
-
-    // ============ MERGE ANIMATION - NO ROTATION ============
-    // ============ MERGE ANIMATION - FIXED SCALE RESET ============
-    private IEnumerator SlotMergeAnimation(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= slotImages.Count)
-            yield break;
-
-        Transform slotTransform = slotImages[slotIndex].transform;
-        Vector3 originalScale = slotTransform.localScale;
-        
-        // Force ensure we start with correct scale
-        slotTransform.localScale = originalScale;
-        
-        // SPAWN THE MERGE EFFECT
-        if (mergeEffectPrefab != null)
-        {
-            Debug.Log($"[Merge Effect] Spawning merge effect at slot {slotIndex}");
-            
-            GameObject effect = Instantiate(
-                mergeEffectPrefab,
-                slotTransform
-            );
-            
-            RectTransform rt = effect.GetComponent<RectTransform>();
-            if (rt != null)
-            {
-                rt.anchorMin = new Vector2(0.5f, 0.5f);
-                rt.anchorMax = new Vector2(0.5f, 0.5f);
-                rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.localPosition = effectOffset;
-                rt.localScale = Vector3.one * 1.5f;
-                rt.SetAsLastSibling();
-            }
-            
-            Destroy(effect, mergeEffectDuration);
-        }
-        
-        // ANIMATION: Pulse without rotation
-        float elapsed = 0f;
-        
-        while (elapsed < mergeAnimationDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / mergeAnimationDuration;
-            
-            // Pulse: shrink then grow
-            float scale;
-            if (t < 0.5f)
-            {
-                scale = Mathf.Lerp(1f, 0.7f, t * 2f);
-            }
-            else
-            {
-                scale = Mathf.Lerp(0.7f, 1.2f, (t - 0.5f) * 2f);
-            }
-            
-            slotTransform.localScale = originalScale * scale;
-            
-            yield return null;
-        }
-        
-        // Settle back
-        elapsed = 0f;
-        float settleDuration = 0.1f;
-        while (elapsed < settleDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / settleDuration;
-            
-            float scale = Mathf.Lerp(1.2f, 1f, t);
-            slotTransform.localScale = originalScale * scale;
-            
-            yield return null;
-        }
-        
-        // CRITICAL: Force reset to exactly original scale
-        slotTransform.localScale = originalScale;
-        slotTransform.localRotation = Quaternion.identity;
-        
-        Debug.Log($"[Merge Animation] Completed for slot {slotIndex}, scale reset to {slotTransform.localScale}");
-    }
-
-    // ============ SUMMON ANIMATION - POP WITH BOUNCE ============
-    private IEnumerator SlotSummonAnimation(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= slotImages.Count)
-            yield break;
-
-        Transform slotTransform = slotImages[slotIndex].transform;
-        Vector3 originalScale = slotTransform.localScale;
-        
-        // SPAWN THE EFFECT ON TOP
-        if (summonEffectPrefab != null)
-        {
-            Debug.Log($"[Summon Effect] Spawning effect at slot {slotIndex}");
-            
-            GameObject effect = Instantiate(
-                summonEffectPrefab, 
-                slotTransform // Parent directly to the slot
-            );
-            
-            // Set up as UI element
-            RectTransform rt = effect.GetComponent<RectTransform>();
-            if (rt != null)
-            {
-                rt.anchorMin = new Vector2(0.5f, 0.5f);
-                rt.anchorMax = new Vector2(0.5f, 0.5f);
-                rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.localPosition = effectOffset; // Use offset
-                rt.localScale = Vector3.one;
-                rt.SetAsLastSibling(); // Render on top
-            }
-            
-            Destroy(effect, effectDuration);
-        }
-        else
-        {
-            Debug.LogWarning("[Summon Effect] summonEffectPrefab is NULL!");
-        }
-        
-        // Start from zero scale
-        slotTransform.localScale = Vector3.zero;
-        
-        float elapsed = 0f;
-        
-        while (elapsed < animationDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / animationDuration;
-            
-            // Bounce effect using sine wave
-            float bounce = Mathf.Sin(t * Mathf.PI);
-            float scale = t + (bounce * 0.3f);
-            
-            slotTransform.localScale = originalScale * scale;
-            
-            yield return null;
-        }
-        
-        // Ensure final scale is correct
-        slotTransform.localScale = originalScale;
-    }
-
-    
-
+    // ================= GET TROOP =================
+    // Original GetTroop method (returns TroopData)
     public TroopData GetTroop(int index)
     {
         if (index < 0 || index >= storedTroops.Count)
             return null;
-            
-        return storedTroops[index].troop;
+
+        return storedTroops[index].Data;
     }
 
-    public void ClearSlot(int index)
+    // ================= GET INSTANCE =================
+    public TroopInstance GetTroopInstance(int index)
     {
         if (index < 0 || index >= storedTroops.Count)
-            return;
-        
-        // Decrease count instead of clearing entirely
+            return null;
+
+        return storedTroops[index].troopInstance;
+    }
+
+    // ================= CLEAR =================
+    public void ClearSlot(int index)
+    {
+        if (index < 0 || index >= storedTroops.Count) return;
+
         if (storedTroops[index].count > 1)
-        {
             storedTroops[index].count--;
-        }
         else
         {
-            storedTroops[index].troop = null;
+            storedTroops[index].troopInstance = null;
             storedTroops[index].count = 0;
         }
-        
-        TryAutoCombine();
 
         RefreshUI();
     }
-    
+
+    // ================= MERGE =================
     public void MergeUnits(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= storedTroops.Count)
-        {
-            Debug.LogWarning("[Merge] Invalid slot index!");
-            return;
-        }
-        
         var slot = storedTroops[slotIndex];
-        
-        if (slot.troop == null || slot.count < maxUnitsPerSlot)
-        {
-            Debug.LogWarning($"[Merge] Cannot merge: slot has {slot.count} units (need {maxUnitsPerSlot})");
-            return;
-        }
-        
-        TroopRarity currentRarity = slot.troop.rarity;
-        TroopRarity nextRarity = GetNextRarity(currentRarity);
-        
-        if (nextRarity == currentRarity)
-        {
-            Debug.LogWarning($"[Merge] Cannot merge {currentRarity} - already at max rarity!");
-            return;
-        }
-        
-        // Consume the units
+        if (slot.IsEmpty || slot.count < maxUnitsPerSlot) return;
+
+        TroopRarity next = GetNextRarity(slot.Data.rarity);
+        if (next == slot.Data.rarity) return;
+
         slot.count -= maxUnitsPerSlot;
         if (slot.count <= 0)
+            slot.troopInstance = null;
+
+        TroopData upgradedData = GetRandomTroopOfRarity(next);
+        if (upgradedData != null)
         {
-            slot.troop = null;
-            slot.count = 0;
+            AddTroop(new TroopInstance(upgradedData), true);
         }
-        
-        // Get a random troop of the next rarity
-        TroopData upgradedTroop = GetRandomTroopOfRarity(nextRarity);
-        
-        if (upgradedTroop != null)
-        {
-            // FIXED: Add isMerge: true flag
-            bool added = AddTroop(upgradedTroop, isMerge: true);
-            
-            if (added)
-            {
-                Debug.Log($"✨ [Merge] Successfully merged 3x {currentRarity} into 1x {upgradedTroop.displayName} ({nextRarity})!");
-            }
-            else
-            {
-                Debug.LogWarning("[Merge] Inventory full! Could not add merged troop.");
-            }
-        }
-        else
-        {
-            Debug.LogError($"[Merge] No troops found for rarity: {nextRarity}");
-        }
-        
+
         RefreshUI();
     }
 
-    private void TryAutoCombine()
-    {
-        Dictionary<string, List<(int index, StoredTroopSlot slot)>> troopsById =
-            new Dictionary<string, List<(int index, StoredTroopSlot slot)>>();
-
-        for (int i = 0; i < storedTroops.Count; i++)
-        {
-            var slot = storedTroops[i];
-            if (slot.troop != null && slot.count > 0)
-            {
-                string troopId = slot.troop.id; 
-                
-                if (!troopsById.ContainsKey(troopId))
-                {
-                    troopsById[troopId] = new List<(int index, StoredTroopSlot slot)>();
-                }
-                troopsById[troopId].Add((i, slot));
-            }
-        }
-
-        foreach (var kvp in troopsById)
-        {
-            List<(int index, StoredTroopSlot slot)> slotsOfType = kvp.Value;
-            string troopId = kvp.Key;
-
-            if (slotsOfType.Count < 2) continue; 
-
-            slotsOfType.Sort((a, b) => a.slot.count.CompareTo(b.slot.count));
-
-            for (int i = 0; i < slotsOfType.Count; i++)
-            {
-                (int sourceIndex, StoredTroopSlot sourceSlot) = slotsOfType[i];
-                
-                if (sourceSlot.count <= 0 || sourceSlot.count >= maxUnitsPerSlot) continue; 
-
-                List<(int index, StoredTroopSlot slot)> targets = new List<(int, StoredTroopSlot)>();
-                for(int j = 0; j < slotsOfType.Count; j++)
-                {
-                    if (i != j && slotsOfType[j].slot.count < maxUnitsPerSlot && slotsOfType[j].slot.count > 0)
-                    {
-                        targets.Add(slotsOfType[j]);
-                    }
-                }
-                
-                targets.Sort((a, b) => b.slot.count.CompareTo(a.slot.count));
-
-                foreach ((int targetIndex, StoredTroopSlot targetSlot) in targets)
-                {
-                    
-                    int spaceInTarget = maxUnitsPerSlot - targetSlot.count;
-                    int amountToMove = Mathf.Min(spaceInTarget, sourceSlot.count);
-                    
-                    if (amountToMove > 0)
-                    {
-                        targetSlot.count += amountToMove;
-                        sourceSlot.count -= amountToMove;
-                        
-                        Debug.Log($"[AutoCombine] Moved {amountToMove}x {troopId} from slot {sourceIndex} (now {sourceSlot.count}) to slot {targetIndex} (now {targetSlot.count}).");
-                        
-                        if (sourceSlot.count <= 0)
-                        {
-                            sourceSlot.troop = null;
-                            sourceSlot.count = 0;
-                            Debug.Log($"[AutoCombine] Source slot {sourceIndex} is now empty.");
-                        }
-                        
-                        TryAutoCombine();
-                        return; 
-                    }
-                }
-            }
-        }
-    }
-    
     private TroopRarity GetNextRarity(TroopRarity current)
     {
         switch (current)
         {
-            case TroopRarity.Common:
-                return TroopRarity.Rare;
-            case TroopRarity.Rare:
-                return TroopRarity.Epic;
-            case TroopRarity.Epic:
-                return TroopRarity.Legendary;
-            case TroopRarity.Legendary:
-                return TroopRarity.Legendary;
-            case TroopRarity.Mythic:
-                return TroopRarity.Mythic;
-            case TroopRarity.Boss:
-                return TroopRarity.Boss; // Boss units don't upgrade further
-            default:
-                return current;
+            case TroopRarity.Common: return TroopRarity.Rare;
+            case TroopRarity.Rare: return TroopRarity.Epic;
+            case TroopRarity.Epic: return TroopRarity.Legendary;
+            default: return current;
         }
-    }
-    
-    private TroopData GetRandomTroopOfRarity(TroopRarity rarity)
-    {
-        if (GachaManager.Instance == null)
-        {
-            Debug.LogError("[Merge] GachaManager not found!");
-            return null;
-        }
-        
-        return GachaManager.Instance.GetRandomTroopOfRarity(rarity);
     }
 
+    private TroopData GetRandomTroopOfRarity(TroopRarity rarity)
+    {
+        return GachaManager.Instance?.GetRandomTroopOfRarity(rarity);
+    }
+
+    // ================= UI =================
     public void RefreshUI()
     {
         for (int i = 0; i < slotImages.Count; i++)
         {
             var slot = storedTroops[i];
 
-            // Update slot image
-            if (slot.troop == null)
+            if (slot.IsEmpty)
             {
                 slotImages[i].sprite = emptySlotSprite;
-                slotImages[i].color = Color.white;
-                
-                // Clear count text
-                if (i < slotCountTexts.Count && slotCountTexts[i] != null)
-                {
-                    slotCountTexts[i].text = "";
-                }
-                
-                // Hide merge button
-                if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
-                {
-                    mergeButtons[i].gameObject.SetActive(false);
-                }
+                slotCountTexts[i].text = "";
+                mergeButtons[i].gameObject.SetActive(false);
             }
             else
             {
-                // Set troop sprite
-                SpriteRenderer sr = slot.troop.playerPrefab?.GetComponent<SpriteRenderer>();
-                if (sr != null && sr.sprite != null)
-                {
-                    slotImages[i].sprite = sr.sprite;
-                    slotImages[i].color = Color.white;
-                }
-                
-                // Update count text - ALWAYS SHOW COUNT
-                if (i < slotCountTexts.Count && slotCountTexts[i] != null)
-                {
-                    slotCountTexts[i].text = "x" + slot.count;
-                    slotCountTexts[i].gameObject.SetActive(true);
-                    
-                    // Make text more visible
-                    slotCountTexts[i].color = Color.white;
-                    slotCountTexts[i].fontSize = 24;
-                    slotCountTexts[i].fontStyle = FontStyles.Bold;
-                    
-                    Debug.Log($"[Inventory] Slot {i}: {slot.troop.displayName} x{slot.count}");
-                }
-                
-                // Show merge button if applicable
-                if (mergeButtons != null && i < mergeButtons.Count && mergeButtons[i] != null)
-                {
-                    bool canMerge = slot.count >= maxUnitsPerSlot && slot.troop.rarity != TroopRarity.Mythic && slot.troop.rarity != TroopRarity.Boss;
-                    mergeButtons[i].gameObject.SetActive(canMerge);
-                }
+                SpriteRenderer sr = slot.Data.playerPrefab.GetComponent<SpriteRenderer>();
+                slotImages[i].sprite = sr.sprite;
+                slotCountTexts[i].text = "x" + slot.count;
+
+                bool canMerge = slot.count >= maxUnitsPerSlot &&
+                                slot.Data.rarity != TroopRarity.Mythic &&
+                                slot.Data.rarity != TroopRarity.Boss;
+
+                mergeButtons[i].gameObject.SetActive(canMerge);
             }
         }
+    }
+
+    // ================= ANIMATIONS =================
+    private void StartSlotAnimation(int slotIndex, bool isMerge)
+    {
+        if (runningAnimations.ContainsKey(slotIndex))
+            StopCoroutine(runningAnimations[slotIndex]);
+
+        runningAnimations[slotIndex] =
+            StartCoroutine(isMerge ? SlotMergeAnimation(slotIndex) : SlotSummonAnimation(slotIndex));
+    }
+
+    private IEnumerator SlotMergeAnimation(int slotIndex)
+    {
+        Transform t = slotImages[slotIndex].transform;
+        Vector3 original = t.localScale;
+
+        float elapsed = 0f;
+        while (elapsed < mergeAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            t.localScale = original * (1f + Mathf.Sin(elapsed * 10f) * 0.2f);
+            yield return null;
+        }
+
+        t.localScale = original;
+    }
+
+    private IEnumerator SlotSummonAnimation(int slotIndex)
+    {
+        Transform t = slotImages[slotIndex].transform;
+        Vector3 original = t.localScale;
+        t.localScale = Vector3.zero;
+
+        float elapsed = 0f;
+        while (elapsed < animationDuration)
+        {
+            elapsed += Time.deltaTime;
+            t.localScale = Vector3.Lerp(Vector3.zero, original, elapsed / animationDuration);
+            yield return null;
+        }
+
+        t.localScale = original;
     }
 }

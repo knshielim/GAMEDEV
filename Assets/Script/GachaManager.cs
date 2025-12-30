@@ -183,49 +183,48 @@ public class GachaManager : MonoBehaviour
     }
 
     // -------------------- SUMMON FUNCTION --------------------
-    public TroopData SummonTroop(TroopData tutorialTroop = null)
+   public TroopData SummonTroop(TroopData tutorialTroop = null)
+{
+    Debug.Log($"[Gacha] SummonTroop called - tutorialLocked: {tutorialLocked}, Instance exists: {Instance != null}, TroopInventory exists: {TroopInventory.Instance != null}, CoinManager exists: {CoinManager.Instance != null}");
+    
+    if (tutorialLocked)
     {
-        Debug.Log($"[Gacha] SummonTroop called - tutorialLocked: {tutorialLocked}, Instance exists: {Instance != null}, TroopInventory exists: {TroopInventory.Instance != null}, CoinManager exists: {CoinManager.Instance != null}");
-        
-        if (tutorialLocked)
+        Debug.LogWarning("[Gacha] Summoning is locked by tutorial");
+        return null;
+    }
+
+    // -------------------- TUTORIAL OVERRIDE --------------------
+    if (!tutorialFirstSummonDone && tutorialTroop != null)
+    {
+        tutorialFirstSummonDone = true;
+
+        int cost = GetCurrentSummonCost();
+
+        // Spend coins for tutorial summon
+        if (!CoinManager.Instance.TrySpendPlayerCoins(cost))
         {
-            Debug.LogWarning("[Gacha] Summoning is locked by tutorial");
+            Debug.LogWarning("[Tutorial Gacha] Not enough coins for tutorial summon!");
             return null;
         }
 
-        // -------------------- TUTORIAL OVERRIDE --------------------
-        if (!tutorialFirstSummonDone && tutorialTroop != null)
-            {
-            tutorialFirstSummonDone = true;
+        // Escalate cost normally
+        summonsSinceReset++;
 
-            int cost = GetCurrentSummonCost();
-
-            // Spend coins for tutorial summon
-            if (!CoinManager.Instance.TrySpendPlayerCoins(cost))
-            {
-                Debug.LogWarning("[Tutorial Gacha] Not enough coins for tutorial summon!");
-                return null;
-            }
-
-            // Escalate cost normally
-            summonsSinceReset++;
-
-            // Add tutorial troop to inventory
-            if (TroopInventory.Instance != null)
-            {
-                bool added = TroopInventory.Instance.AddTroop(tutorialTroop);
-                if (added)
-                    Debug.Log($"[Tutorial Gacha] Added tutorial troop to inventory: {tutorialTroop.displayName}");
-                else
-                    Debug.LogWarning("[Tutorial Gacha] Failed to add tutorial troop, inventory may be full.");
-            }
-
-            // Update summon cost UI after spending coins
-            UpdateSummonCostUI();
-
-            return tutorialTroop;
+        // Add tutorial troop to inventory as TroopInstance
+        if (TroopInventory.Instance != null)
+        {
+            bool added = TroopInventory.Instance.AddTroop(new TroopInstance(tutorialTroop));
+            if (added)
+                Debug.Log($"[Tutorial Gacha] Added tutorial troop to inventory: {tutorialTroop.displayName}");
+            else
+                Debug.LogWarning("[Tutorial Gacha] Failed to add tutorial troop, inventory may be full.");
         }
 
+        // Update summon cost UI after spending coins
+        UpdateSummonCostUI();
+
+        return tutorialTroop;
+    }
 
         // -------------------- NORMAL SUMMON --------------------
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
@@ -253,6 +252,7 @@ public class GachaManager : MonoBehaviour
             CoinManager.Instance.AddPlayerCoins(currentCost);
             return null;
         }
+
         if (TroopInventory.Instance == null)
         {
             Debug.LogError("[Gacha] TroopInventory.Instance is NULL!");
@@ -260,7 +260,8 @@ public class GachaManager : MonoBehaviour
             return null;
         }
 
-        bool addedToInventory = TroopInventory.Instance.AddTroop(newTroop);
+        // Add normal summon troop as TroopInstance
+        bool addedToInventory = TroopInventory.Instance.AddTroop(new TroopInstance(newTroop));
         if (!addedToInventory)
         {
             Debug.LogWarning("[Gacha] Inventory full, troop not added - refunding coins.");
@@ -275,7 +276,7 @@ public class GachaManager : MonoBehaviour
         // Record spawn for balancing system
         SpawnRateBalancer.Instance.RecordSpawn(newTroop.rarity);
 
-        // Activate reactive boost if player spawns high-rarity unit (vice versa)
+        // Activate reactive boost if player spawns high-rarity unit
         if (newTroop.rarity == TroopRarity.Epic || newTroop.rarity == TroopRarity.Legendary)
         {
             Debug.Log($"[Gacha] 🔔 HIGH-RARITY PLAYER SUMMON DETECTED: {newTroop.displayName} ({newTroop.rarity})");
@@ -288,6 +289,7 @@ public class GachaManager : MonoBehaviour
 
         return newTroop;
     }
+
 
     private TroopRarity DetermineRarity()
     {

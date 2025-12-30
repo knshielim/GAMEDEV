@@ -241,8 +241,12 @@ public class TutorialManager : MonoBehaviour
                 Debug.LogWarning("[Tutorial] Player does not have enough coins for the tutorial summon.");
                 return;
             }
+
             GachaManager.Instance.DebugSummonButton(); 
-            TroopInventory.Instance.AddTroop(tutorialFirstTroop);
+
+            // FIX: Wrap TroopData in TroopInstance
+            TroopInventory.Instance.AddTroop(new TroopInstance(tutorialFirstTroop));
+
             gaveFirstTroop = true;
 
             GachaManager.Instance.IncreaseSummonCost();
@@ -251,6 +255,7 @@ public class TutorialManager : MonoBehaviour
             Debug.Log("[Tutorial] First tutorial troop granted and cost deducted.");
         }
     }
+
 
     private void SetPlayerButtons(bool state)
     {
@@ -454,7 +459,8 @@ public class TutorialManager : MonoBehaviour
                 return;
             }
 
-            TroopInventory.Instance.AddTroop(tutorialSecondTroop);
+            // FIX: Wrap TroopData in TroopInstance
+            TroopInventory.Instance.AddTroop(new TroopInstance(tutorialSecondTroop));
 
             GachaManager.Instance.IncreaseSummonCost();
             GachaManager.Instance.UpdateSummonCostUI();
@@ -479,16 +485,17 @@ public class TutorialManager : MonoBehaviour
             }
         }
 
-        if (!waitingForSummon) return;
+    if (!waitingForSummon) return;
 
-        waitingForSummon = false;
-        ResumeGame();
-        GiveFirstTutorialTroop();
-        waitingForSlotClick = true;
+    waitingForSummon = false;
+    ResumeGame();
+    GiveFirstTutorialTroop();
+    waitingForSlotClick = true;
 
-        EnableOnly("Slot Button");
-        canAdvance = false;
-    }
+    EnableOnly("Slot Button");
+    canAdvance = false;
+}
+
 
     private IEnumerator ShowMergeAfterDelay()
     {

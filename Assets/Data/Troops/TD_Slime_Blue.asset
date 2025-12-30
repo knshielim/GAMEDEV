@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Slime_Blue
   displayName: Blue Slime
   rarity: 0
+  icon: {fileID: -1803147083, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 90
   attack: 6
   moveSpeed: 1.4

@@ -38,6 +38,8 @@ public class TroopDeployManager : MonoBehaviour
         }
     }
 
+    
+
     public void SelectTroop(int index)
     {
         if (selectedTroopIndex == index)
@@ -68,6 +70,7 @@ public class TroopDeployManager : MonoBehaviour
             Debug.Log("[DEPLOY] No troop selected!");
             return;
         }
+        
 
         TroopData troop = TroopInventory.Instance.GetTroop(selectedTroopIndex);
 
@@ -79,6 +82,12 @@ public class TroopDeployManager : MonoBehaviour
 
         GameObject troopObj = Instantiate(troop.playerPrefab, playerTowerSpawnPoint.position, Quaternion.identity);
 
+        Troops troopComponent = troopObj.GetComponent<Troops>();
+        if (troopComponent != null)
+        {
+            troopComponent.instance = TroopInventory.Instance.GetTroopInstance(selectedTroopIndex);
+        }
+        
         if (troop.rarity == TroopRarity.Mythic)
         {
             if (AudioManager.Instance != null && AudioManager.Instance.mythicSFX != null)
@@ -109,6 +118,7 @@ public class TroopDeployManager : MonoBehaviour
 
         StartCoroutine(DeployCooldown());
     }
+    
 
     private void StoredTroopDeployed(int index)
     {

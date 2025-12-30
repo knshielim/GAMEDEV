@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Warrior_2
   displayName: Second Warrior
   rarity: 1
+  icon: {fileID: -366843038, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 110
   attack: 10
   moveSpeed: 1.7

@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Slime_Green
   displayName: Green Slime
   rarity: 0
+  icon: {fileID: 1773011379, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 75
   attack: 7
   moveSpeed: 1.6

@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Vampire
   displayName: Vampire
   rarity: 4
+  icon: {fileID: 1686718634, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 230
   attack: 21
   moveSpeed: 2

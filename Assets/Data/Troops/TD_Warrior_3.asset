@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Warrior_3
   displayName: Third Warrior
   rarity: 1
+  icon: {fileID: -1363113052, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 100
   attack: 11
   moveSpeed: 1.8

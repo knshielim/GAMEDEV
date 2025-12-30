@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Youkai_Onre
   displayName: Onre Youkai
   rarity: 3
+  icon: {fileID: -432882495, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 170
   attack: 22
   moveSpeed: 1.9

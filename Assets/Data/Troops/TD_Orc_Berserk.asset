@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Orc_Berserk
   displayName: Berserk Orc
   rarity: 2
+  icon: {fileID: 1638753895, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 135
   attack: 15
   moveSpeed: 1.7

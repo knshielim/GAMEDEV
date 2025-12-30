@@ -109,6 +109,25 @@ public abstract class Unit : MonoBehaviour
         OnHealthChanged?.Invoke();
     }
 
+    
+
+    public void InitStatsFromInstance(TroopInstance instance)
+    {
+        if (instance == null) return;
+
+        MaxHealth = instance.currentHealth; // or instance.maxHealth if you store it
+        currentHealth = MaxHealth;
+        attackPoints = instance.currentAttack;
+        moveSpeed = instance.currentMoveSpeed;
+
+        OnHealthChanged?.Invoke();
+    }
+    public void SetHealth(float value)
+    {
+        currentHealth = Mathf.Clamp(value, 0, MaxHealth);
+    }
+
+
     protected void SetupFriendlyCollisionIgnore()
     {
         Collider2D[] myColliders = GetComponents<Collider2D>();

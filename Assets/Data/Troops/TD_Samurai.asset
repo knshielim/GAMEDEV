@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Samurai
   displayName: Samurai
   rarity: 4
+  icon: {fileID: 1317916755, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 250
   attack: 26
   moveSpeed: 1.9

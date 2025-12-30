@@ -200,7 +200,7 @@ public class MythicCombinationManager : MonoBehaviour
             Debug.LogWarning($"[MythicCombination] Failed to craft {selectedRecipe.recipeName}: Not enough ingredients.");
             return;
         }
-    
+
         // Consume ingredients
         foreach (var ingredient in selectedRecipe.ingredients)
         {
@@ -209,10 +209,10 @@ public class MythicCombinationManager : MonoBehaviour
                 RemoveTroopFromInventory(ingredient.requiredTroop);
             }
         }
-        
+
         // Add Mythic result
-        bool added = TroopInventory.Instance.AddTroop(selectedRecipe.resultMythicTroop);
-        
+        bool added = TroopInventory.Instance.AddTroop(new TroopInstance(selectedRecipe.resultMythicTroop)); // <-- FIXED
+
         if (added)
         {
             Debug.Log($"[MythicCombination] Successfully crafted {selectedRecipe.resultMythicTroop.displayName}!");
@@ -225,6 +225,7 @@ public class MythicCombinationManager : MonoBehaviour
             // TODO: Return ingredients to player
         }
     }
+
     
     private Dictionary<TroopData, int> GetAvailableTroopsFromInventory()
     {
@@ -235,40 +236,42 @@ public class MythicCombinationManager : MonoBehaviour
         
         foreach (var slot in TroopInventory.Instance.storedTroops)
         {
-            if (slot.troop != null)
+            if (slot.Data != null) // <-- use Data instead of troop
             {
-                if (result.ContainsKey(slot.troop))
-                    result[slot.troop] += slot.count;
+                if (result.ContainsKey(slot.Data)) // <-- fixed typo
+                    result[slot.Data] += slot.count;
                 else
-                    result[slot.troop] = slot.count;
+                    result[slot.Data] = slot.count;
             }
         }
         
         return result;
     }
+
     
     private void RemoveTroopFromInventory(TroopData troop)
+{
+    if (TroopInventory.Instance == null)
+        return;
+
+    // Find first slot with this troop
+    for (int i = 0; i < TroopInventory.Instance.storedTroops.Count; i++)
     {
-        if (TroopInventory.Instance == null)
-            return;
-            
-        // Find first slot with this troop
-        for (int i = 0; i < TroopInventory.Instance.storedTroops.Count; i++)
+        var slot = TroopInventory.Instance.storedTroops[i];
+
+        if (slot.Data == troop && slot.count > 0) // <-- use Data instead of troop
         {
-            var slot = TroopInventory.Instance.storedTroops[i];
-            
-            if (slot.troop == troop && slot.count > 0)
+            slot.count--;
+
+            if (slot.count <= 0)
             {
-                slot.count--;
-                
-                if (slot.count <= 0)
-                {
-                    slot.troop = null;
-                    slot.count = 0;
-                }
-                
-                return;
+                slot.troopInstance = null; // <-- clear the instance
+                slot.count = 0;
             }
+
+            return;
         }
     }
+}
+
 }

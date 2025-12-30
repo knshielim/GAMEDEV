@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Orc_Warrior
   displayName: Warrior Orc
   rarity: 2
+  icon: {fileID: 1241676139, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 150
   attack: 13
   moveSpeed: 1.5

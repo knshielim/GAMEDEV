@@ -22,6 +22,7 @@ public class TroopData : ScriptableObject
     public string id;              
     public string displayName;     
     public TroopRarity rarity;
+    public Sprite icon;
 
     [Header("Stats")]
     public int maxHealth;

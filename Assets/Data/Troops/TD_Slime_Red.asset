@@ -15,6 +15,7 @@ MonoBehaviour:
   id: Slime_Red
   displayName: Red Slime
   rarity: 0
+  icon: {fileID: -1663442313, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
   maxHealth: 65
   attack: 8
   moveSpeed: 1.8
