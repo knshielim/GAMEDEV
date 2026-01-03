@@ -23,6 +23,8 @@ MonoBehaviour:
   level: 1
   isRanged: 1
   attackRange: 7
+  critRate: 0.7
+  critDamage: 2
   projectilePrefab: {fileID: 5981117028045486026, guid: 5909ea465db0476438d820f300615569, type: 3}
   projectileSpeed: 8
   projectileLifetime: 3

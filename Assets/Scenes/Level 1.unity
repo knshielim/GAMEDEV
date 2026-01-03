@@ -10077,9 +10077,8 @@ MonoBehaviour:
   spinSpeed: 500
   roulettePanel: {fileID: 1626374302}
   stopPrompt: {fileID: 0}
-  debugMode: 1
-  debugWeather: 2
-  weatherManager: {fileID: 0}
+  debugMode: 0
+  debugWeather: 1
 --- !u!114 &822185679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20372,6 +20371,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1802931663}
   m_CullTransparentMesh: 1
+--- !u!1 &1817362737
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1817362739}
+  - component: {fileID: 1817362738}
+  m_Layer: 0
+  m_Name: WeatherManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1817362738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817362737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f689b7cbe836d4c7c9876372f1a016ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  acidRainDamagePerSecond: 5
+  fogSlowPercentage: 0.3
+  activeWeatherTime: 90
+  CurrentWeather: 2
+  WeatherEndTime: 0
+--- !u!4 &1817362739
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817362737}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -31.309435, y: 12.120984, z: 0.04207821}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1827596962
 GameObject:
   m_ObjectHideFlags: 0
@@ -24951,3 +24999,4 @@ SceneRoots:
   - {fileID: 259036690}
   - {fileID: 480652796}
   - {fileID: 1197303120}
+  - {fileID: 1817362739}

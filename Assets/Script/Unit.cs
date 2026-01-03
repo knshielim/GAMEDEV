@@ -46,6 +46,9 @@ public abstract class Unit : MonoBehaviour
 
     protected float attackCooldown = 0f;
     protected bool isAttacking = false;
+    protected float critRate;
+    protected float critDamage;
+
 
     [Header("Components")]
     public Animator animator;
@@ -56,8 +59,6 @@ public abstract class Unit : MonoBehaviour
     {
         return troopData;
     }
-
-
 
     protected virtual void Start()
     {
@@ -107,10 +108,7 @@ public abstract class Unit : MonoBehaviour
         if (animator == null) animator = GetComponent<Animator>();
 
         OnHealthChanged?.Invoke();
-    }
-
-    
-
+    }    
     public void InitStatsFromInstance(TroopInstance instance)
     {
         if (instance == null) return;
@@ -119,7 +117,6 @@ public abstract class Unit : MonoBehaviour
         currentHealth = MaxHealth;
         attackPoints = instance.currentAttack;
         moveSpeed = instance.currentMoveSpeed;
-
         OnHealthChanged?.Invoke();
     }
     public void SetHealth(float value)
@@ -261,4 +258,16 @@ public abstract class Unit : MonoBehaviour
     {
         troopData = data;
     }
+        protected int CalculateDamage(int baseDamage)
+    {
+        bool isCrit = UnityEngine.Random.value <= critRate;
+        int finalDamage = baseDamage;
+
+        if (isCrit)
+            finalDamage = Mathf.RoundToInt(baseDamage * critDamage);
+            Debug.Log($"🔥 CRITICAL HIT by {name}!");
+
+        return finalDamage;
+    }
+
 }

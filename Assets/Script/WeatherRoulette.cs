@@ -8,70 +8,62 @@ public enum WeatherType
     AcidRain
 }
 
+
 public class WeatherRoulette : MonoBehaviour
 {
     [Header("Wheel Settings")]
-    public WeatherType[] weathers;      // Array of possible weathers
-    public float spinDuration = 3f;     // Duration of the spin
-    public float spinSpeed = 500f;      // Starting spin speed
+    public WeatherType[] weathers;
+    public float spinDuration = 3f;
+    public float spinSpeed = 500f;
 
     [Header("UI")]
     public GameObject roulettePanel;
     public GameObject stopPrompt;
 
     [Header("Debug/Test")]
-    public bool debugMode = true;                
-    public WeatherType debugWeather = WeatherType.AcidRain;  // Weather to test
+    public bool debugMode = false;
+    public WeatherType debugWeather = WeatherType.AcidRain;
 
     private bool isSpinning = false;
-
-    // Reference to the manager
-    public WeatherManager weatherManager;
-
-    private float weatherDuration = 90f; // 90 seconds for all weather
+    private float weatherDuration = 90f;
 
     private void Start()
     {
-        if (WeatherManager.Instance != null)
-            WeatherManager.Instance.StartWeather(WeatherType.Sunny, weatherDuration);
-
-        if (debugMode && weatherManager != null)
+        // Ensure WeatherManager exists
+        if (WeatherManager.Instance == null)
         {
-            // Apply debug weather after 1 frame to ensure all troops spawned
-            StartCoroutine(ApplyDebugWeatherNextFrame());
+            Debug.LogError("❌ WeatherManager.Instance is NULL!");
+            return;
         }
+
+        // Start with sunny
+        WeatherManager.Instance.StartWeather(WeatherType.Sunny, weatherDuration);
+
+        if (debugMode)
+            StartCoroutine(ApplyDebugWeatherNextFrame());
     }
 
     private IEnumerator ApplyDebugWeatherNextFrame()
     {
-        yield return null; // wait 1 frame
-        Debug.Log("Debug weather: " + debugWeather);
-        weatherManager.StartWeather(debugWeather, weatherDuration);
-        StartCoroutine(DebugStopPrompt());
+        yield return null;
+        Debug.Log(" Debug Weather Applied: " + debugWeather);
+        WeatherManager.Instance.StartWeather(debugWeather, weatherDuration);
     }
 
     private void Update()
     {
-        // Optional hotkeys for testing
-        if (Input.GetKeyDown(KeyCode.Alpha1)) weatherManager.StartWeather(WeatherType.Sunny, weatherDuration);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) weatherManager.StartWeather(WeatherType.Fog, weatherDuration);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) weatherManager.StartWeather(WeatherType.AcidRain, weatherDuration);
+        if (WeatherManager.Instance == null) return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            WeatherManager.Instance.StartWeather(WeatherType.Sunny, weatherDuration);
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+            WeatherManager.Instance.StartWeather(WeatherType.Fog, weatherDuration);
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+            WeatherManager.Instance.StartWeather(WeatherType.AcidRain, weatherDuration);
     }
 
-    private IEnumerator DebugStopPrompt()
-    {
-        yield return new WaitForSeconds(weatherDuration);
-
-        if (stopPrompt != null)
-            stopPrompt.SetActive(true);
-
-        yield return new WaitForSeconds(5f);
-
-        if (stopPrompt != null)
-            stopPrompt.SetActive(false);
-    }
-
-    // Only spins when player triggers
     public void SpinWheel()
     {
         if (!isSpinning)
@@ -92,18 +84,12 @@ public class WeatherRoulette : MonoBehaviour
             yield return null;
         }
 
-        // Pick weather randomly
-        int selectedIndex = Random.Range(0, weathers.Length);
-        WeatherType selectedWeather = weathers[selectedIndex];
-
+        WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
         Debug.Log("Selected Weather: " + selectedWeather);
-
-        if (weatherManager != null)
-            weatherManager.StartWeather(selectedWeather, weatherDuration);
+        WeatherManager.Instance.StartWeather(selectedWeather, weatherDuration);
 
         isSpinning = false;
 
-        // Hide the roulette panel after spin
         if (roulettePanel != null)
             roulettePanel.SetActive(false);
     }

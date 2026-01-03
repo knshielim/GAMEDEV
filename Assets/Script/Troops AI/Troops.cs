@@ -25,8 +25,6 @@ public class Troops : Unit
     [SerializeField] private bool moveRight = true; // Player = true, Enemy = false
 
     public static List<Troops> aliveTroops = new List<Troops>();
-
-    // ← Fixed: add TroopInstance directly here
     public TroopInstance instance;
     public float baseAttackRange;
     public float baseHealth;
@@ -38,16 +36,17 @@ public class Troops : Unit
     base.Start();
     aliveTroops.Add(this);
 
-    baseAttackRange = attackRange;  
-
 
         if (instance != null)
         {
            InitStatsFromInstance(instance);
+           baseAttackRange = instance.data.attackRange; 
             useProjectile = instance.data.isRanged;
             projectilePrefab = instance.data.projectilePrefab;
             projectileSpeed = instance.data.projectileSpeed;
             projectileLifetime = instance.data.projectileLifetime;
+            critRate = troopData.critRate;
+            critDamage = troopData.critDamage;
 
             // Apply level-up stats
             currentHealth = instance.currentHealth;
@@ -57,10 +56,13 @@ public class Troops : Unit
         else if (troopData != null)
         {
             // fallback for base stats
+            baseAttackRange = troopData.attackRange;
             useProjectile = troopData.isRanged;
             projectilePrefab = troopData.projectilePrefab;
             projectileSpeed = troopData.projectileSpeed;
             projectileLifetime = troopData.projectileLifetime;
+            critRate = troopData.critRate;
+            critDamage = troopData.critDamage;
 
             currentHealth = troopData.maxHealth;
             attackPoints = troopData.attack;
@@ -82,8 +84,7 @@ public class Troops : Unit
         else
         {
             Debug.Log($"[{name}] CircleCollider2D not found!");
-        }
-        
+        }        
     }
 
     public void SetTargetTower(Tower tower)
@@ -185,7 +186,6 @@ public class Troops : Unit
         if (isDead) return;
 
         targetsInRange.RemoveAll(t => t == null || t.isDead);
-
         currentTarget = targetsInRange
             .OrderBy(t => Vector2.Distance(transform.position, t.transform.position))
             .FirstOrDefault();
@@ -218,9 +218,13 @@ public class Troops : Unit
         Unit targetUnit = targetCollider.GetComponent<Unit>();
         if (targetUnit != null && !targetUnit.isDead)
         {
-            targetUnit.TakeDamage(attackPoints);
-            Debug.Log($"From troops.cs: [ATTACK] {name} dealt {attackPoints} damage to {targetUnit.name} " +
-                      $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})");
+            int damage = CalculateDamage(Mathf.RoundToInt(attackPoints));
+            targetUnit.TakeDamage(damage);
+
+            Debug.Log(
+                $"[ATTACK] {name} dealt {damage} damage to {targetUnit.name} " +
+                $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})"
+            );
 
             if (targetUnit.CurrentHealth <= 0)
             {
@@ -230,6 +234,7 @@ public class Troops : Unit
             }
         }
     }
+
 
     private void PerformAttackOnTower()
     {
@@ -310,6 +315,7 @@ public class Troops : Unit
         }
 
         aliveTroops.Remove(this);
+        Debug.Log($"🔴 Troop REMOVED from list: {name} | Total troops: {aliveTroops.Count}");
 
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
@@ -362,29 +368,6 @@ public class Troops : Unit
         if (projectile != null)
             projectile.Initialize(direction, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
     }
-    public IEnumerator ApplyFogTemporary(float duration)
-    {
-        attackRange = Mathf.Max(0.1f, attackRange - 1f);
-        Debug.Log($"{name} range reduced to {attackRange} due to Fog");
 
-        yield return new WaitForSeconds(duration);
-
-        attackRange = baseAttackRange;
-        Debug.Log($"{name} range restored to {attackRange}");
-    }
-
-    // Acid Rain deals damage over time
-    public IEnumerator ApplyAcidRainTemporary(float damagePerSecond, float duration)
-    {
-        Debug.Log($"Starting AcidRain on {name}");
-        float elapsed = 0f;
-        while (elapsed < duration && !isDead)
-        {
-            TakeDamage(damagePerSecond * Time.unscaledDeltaTime);
-            elapsed += Time.unscaledDeltaTime;
-            yield return null;
-        }
-    }
-
-
+    
 }

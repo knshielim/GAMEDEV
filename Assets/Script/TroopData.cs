@@ -41,6 +41,15 @@ public class TroopData : ScriptableObject
     [Tooltip("How far this troop can attack (used for both melee and ranged).")]
     public float attackRange = 0.5f;
 
+    [Header("Critical Hit")]
+    [Tooltip("Chance to deal critical damage (0–1). Example: 0.25 = 25%")]
+    [Range(0f, 1f)]
+    public float critRate = 0f;
+
+    [Tooltip("Critical damage multiplier. Example: 2 = double damage")]
+    public float critDamage = 2.0f;
+
+
     [Header("Projectile Settings (for ranged troops)")]
     [Tooltip("Projectile prefab to spawn when this unit attacks at range.")]
     public GameObject projectilePrefab;

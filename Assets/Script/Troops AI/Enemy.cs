@@ -32,6 +32,8 @@ public class Enemy : Unit
 
     [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = false; // Enemy walk to the left
+    public float baseAttackRange;
+
     public static List<Enemy> aliveEnemies = new List<Enemy>();
 
     protected override void Start()
@@ -44,12 +46,13 @@ public class Enemy : Unit
 
         if (troopData != null)
         {
-            attackRange = troopData.attackRange;
-            useProjectile = troopData.isRanged;
-            projectilePrefab = troopData.projectilePrefab;
-            projectileSpeed = troopData.projectileSpeed;
-            projectileLifetime = troopData.projectileLifetime;
+        attackRange = troopData.attackRange;
+        useProjectile = troopData.isRanged;
+        projectilePrefab = troopData.projectilePrefab;
+        projectileSpeed = troopData.projectileSpeed;
+        projectileLifetime = troopData.projectileLifetime;;
         }
+        baseAttackRange = attackRange;
 
         SetupFriendlyCollisionIgnore();
 
@@ -454,4 +457,23 @@ private void ShootProjectileInDirection(Vector2 direction)
             Debug.LogError("[Enemy] CoinManager not found - cannot award coins for enemy kill!");
         }
     }
+    public void ApplyFogRangeReduction(float amount)
+    {
+        float newRange = Mathf.Max(0, baseAttackRange - amount);
+        attackRange = newRange;
+
+        CircleCollider2D cc = GetComponent<CircleCollider2D>();
+        if (cc != null)
+            cc.radius = newRange;
+    }
+
+    public void RestoreRange()
+    {
+        attackRange = baseAttackRange;
+
+        CircleCollider2D cc = GetComponent<CircleCollider2D>();
+        if (cc != null)
+            cc.radius = baseAttackRange;
+    }
+
 }
