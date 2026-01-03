@@ -48,13 +48,10 @@ public class GemManager : MonoBehaviour
         // 1. Tambahkan gem level ke total
         totalGem += levelGem;
         
-        // 2. 🔥 HAPUS PlayerPrefs. Save langsung ke PersistenceManager
+        // 2. Save langsung ke PersistenceManager
         if (PersistenceManager.Instance != null)
         {
-            // Update data di 'Otak' penyimpanan
             PersistenceManager.Instance.GetData().totalGem = totalGem; 
-            
-            // Tulis ke file JSON sekarang juga
             PersistenceManager.Instance.SaveGame();
             
             Debug.Log($"[GemManager] Saved to JSON via PersistenceManager. New Total: {totalGem}");
@@ -67,7 +64,7 @@ public class GemManager : MonoBehaviour
 
     private void LoadTotalGem()
     {
-        // 🔥 GANTI Load dari PlayerPrefs MENJADI Load dari PersistenceManager
+        // Load dari PersistenceManager
         if (PersistenceManager.Instance != null)
         {
             // Ambil data dari JSON yang sudah di-load di awal game

@@ -97,8 +97,11 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // --- NORMAL MODE: Use PlayerPrefs ---
-        bool hasCompletedTutorial = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+        // --- NORMAL MODE: Use PersistenceManager ---
+        bool hasCompletedTutorial = false;
+        if (PersistenceManager.Instance != null)
+            hasCompletedTutorial = PersistenceManager.Instance.IsTutorialCompleted();
+        
         if (hasCompletedTutorial || !tutorialActive)
         {
             tutorialActive = false;
@@ -131,7 +134,10 @@ public class TutorialManager : MonoBehaviour
     {
         if (enemyDeployManager == null) enemyDeployManager = FindObjectOfType<EnemyDeployManager>();
 
-        bool hasCompletedTutorial = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+        bool hasCompletedTutorial = false;
+        if (PersistenceManager.Instance != null)
+            hasCompletedTutorial = PersistenceManager.Instance.IsTutorialCompleted();
+        
         if (hasCompletedTutorial && !TutorialDebug)
         {
             Debug.Log("[TutorialManager] Tutorial already completed. Auto-disabling.");
@@ -337,9 +343,12 @@ public class TutorialManager : MonoBehaviour
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        PlayerPrefs.SetInt("TutorialCompleted", 1);
-        PlayerPrefs.Save();
-        Debug.Log("[Tutorial] Tutorial completed - saved to PlayerPrefs");
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SetTutorialCompleted(true);
+            Debug.Log("[Tutorial] Tutorial completed - saved to PersistenceManager (JSON)");
+        }
+        Debug.Log("[Tutorial] Tutorial completed - saved to Persistance Manager");
 
         // ✅ FIX: Show tutorial completion message in tutorial panel (NOT victory panel)
         dialoguePanel.SetActive(true);
@@ -428,8 +437,12 @@ public class TutorialManager : MonoBehaviour
         if (GachaManager.Instance != null)
             GachaManager.Instance.tutorialLocked = false;
 
-        PlayerPrefs.SetInt("TutorialCompleted", 1);
-        PlayerPrefs.Save();
+
+        // save to json
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SetTutorialCompleted(true);
+        }
 
         // ✅ FIX: Show skip message in tutorial panel (NOT start gameplay immediately)
         dialoguePanel.SetActive(true);
@@ -659,7 +672,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorialAfterDialogue()
     {
-        Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
+        // Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
 
         Debug.Log("[TutorialManager] Starting tutorial after dialogue completion");
 

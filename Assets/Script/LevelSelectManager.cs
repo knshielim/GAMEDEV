@@ -81,12 +81,24 @@ public class LevelSelectManager : MonoBehaviour
 
     private void LoadProgress()
     {
-        // Load max unlocked level from PlayerPrefs
+        // Load max unlocked level from JSON data
         // Starts with level 1 unlocked by default
-        maxUnlockedLevel = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
+        
+        if (PersistenceManager.Instance != null)
+        {
+            maxUnlockedLevel = PersistenceManager.Instance.GetData().maxUnlockedLevel;
+            Debug.Log($"[LevelSelect] Loaded Progress from JSON: MaxLevel {maxUnlockedLevel}");
+        }
+        else
+        {
+            maxUnlockedLevel = 1; // Default kalau belum ada save data
+            Debug.LogWarning("[LevelSelect] PersistenceManager not found, defaulting to Level 1");
+        }
 
         // Always unlock Level 5 for boss testing (no progression required)
-        maxUnlockedLevel = Mathf.Max(maxUnlockedLevel, 5);
+        // maxUnlockedLevel = Mathf.Max(maxUnlockedLevel, 5);
+        // Reason: If this line is active, Level 5 will always be open (Debug Mode),
+        // so you won't know whether the save system was successful or not.
 
         // Clamp to valid range
         maxUnlockedLevel = Mathf.Clamp(maxUnlockedLevel, 1, 5);
@@ -98,8 +110,7 @@ public class LevelSelectManager : MonoBehaviour
         if (levelNumber > maxUnlockedLevel && levelNumber <= 5)
         {
             maxUnlockedLevel = levelNumber;
-            PlayerPrefs.SetInt("MaxUnlockedLevel", maxUnlockedLevel);
-            PlayerPrefs.Save();
+            
             UpdateLevelButtons(); // Refresh the UI
 
             

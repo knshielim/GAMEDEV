@@ -64,8 +64,13 @@ public abstract class Unit : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
 
+        //default value (just in case)
         MaxHealth = baseMaxHealth;
+        moveSpeed = baseMoveSpeed;
+        attackPoints = baseAttackPoints;
+        attackSpeed = baseAttackSpeed;
 
+        /*
         if (troopData != null)
         {
             float baseHp = troopData.maxHealth;
@@ -100,6 +105,72 @@ public abstract class Unit : MonoBehaviour
             moveSpeed = baseMoveSpeed;
             attackSpeed = baseAttackSpeed;
             attackPoints = baseAttackPoints;
+        }
+        */
+        
+        if (troopData != null)
+        {
+            // ====================================================
+            // CASE A: THIS IS A PLAYER'S TROOP (Player Prefab)
+            // Stats are based on the player's Upgrade Level
+            // ====================================================
+            if (UnitTeam == Team.Player)
+            {
+                // 1. Find out what the upgrade level of this troop is now
+                int playerTroopLevel = 1;
+
+                if (PersistenceManager.Instance != null)
+                {
+                    playerTroopLevel = PersistenceManager.Instance.GetTroopLevel(troopData.id);
+                }
+                else
+                {
+                    playerTroopLevel = 1;
+                }
+
+                // 2. Calculate stats using the Central Formula from TroopInstance
+                var stats = TroopInstance.GetStatsForLevel(troopData, playerTroopLevel);
+
+                // 3. Apply Stats
+                MaxHealth = stats.hp;
+                attackPoints = stats.atk;
+                moveSpeed = stats.spd;
+                
+                // Attack Speed 
+                attackSpeed = 1f / Mathf.Max(0.01f, troopData.attackInterval);
+
+                Debug.Log($"[Unit Player] {name} spawned with Level {playerTroopLevel}. HP: {MaxHealth}, Atk: {attackPoints}");
+            }
+
+            // ====================================================
+            // CASE B: THIS IS THE ENEMY FORCE (Prefab Enemy)
+            // Stats are calculated based on Stage Level Difficulty (1-5)
+            // ====================================================
+            else if (UnitTeam == Team.Enemy)
+            {
+                // Take the current stage level 
+                int stageLevel = 1;
+                if (LevelManager.Instance != null)
+                {
+                    stageLevel = LevelManager.Instance.GetCurrentLevel();
+                }
+
+                // Get Multiplier from Array (RarityMult & LevelMult which are above Unit.cs script)
+                int levelIndex = Mathf.Clamp(stageLevel - 1, 0, LevelMult.Length - 1);
+                int rarityIndex = Mathf.Clamp((int)troopData.rarity, 0, RarityHpMult.Length - 1);
+
+                float hpMul = RarityHpMult[rarityIndex] * LevelMult[levelIndex];
+                float atkMul = RarityAtkMult[rarityIndex] * LevelMult[levelIndex];
+                float moveMul = RaritySpdMult[rarityIndex]; 
+
+                MaxHealth = troopData.maxHealth * hpMul;
+                attackPoints = troopData.attack * atkMul;
+                moveSpeed = troopData.moveSpeed * moveMul;
+                
+                attackSpeed = 1f / Mathf.Max(0.01f, troopData.attackInterval);
+
+                Debug.Log($"[Unit Enemy] {name} spawned (Stage {stageLevel}). HP: {MaxHealth}, Atk: {attackPoints}");
+            }
         }
 
         currentHealth = MaxHealth;

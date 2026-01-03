@@ -261,17 +261,28 @@ private IEnumerator GameOverDuckRoutine()
 
     private void SaveAudioSettings()
     {
-        PlayerPrefs.SetFloat("MasterVolume", masterVolume);
-        PlayerPrefs.SetFloat("MusicVolume", musicVolume);
-        PlayerPrefs.SetFloat("SFXVolume", sfxVolume);
-        PlayerPrefs.Save();
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SaveAudioSettings(masterVolume, musicVolume, sfxVolume);
+        }
     }
 
     private void LoadAudioSettings()
     {
-        masterVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
-        musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.7f);
-        sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.8f);
+        if (PersistenceManager.Instance != null)
+        {
+            // Ambil dari JSON
+            masterVolume = PersistenceManager.Instance.GetMasterVolume();
+            musicVolume = PersistenceManager.Instance.GetMusicVolume();
+            sfxVolume = PersistenceManager.Instance.GetSFXVolume();
+        }
+        else
+        {
+            // Default values jika PersistenceManager belum siap/ada
+            masterVolume = 1f;
+            musicVolume = 0.7f;
+            sfxVolume = 0.8f;
+        }
     }
 
     // ==========================

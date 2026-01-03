@@ -92,7 +92,12 @@ public class MainMenu : MonoBehaviour
         }
 
         // DEBUG: Check backstory status
-        bool hasSeenBackstory = PlayerPrefs.GetInt("HasSeenBackstory", 0) == 1;
+        bool hasSeenBackstory = false;
+        if (PersistenceManager.Instance != null)
+        {
+            // Kita anggap "Backstory" sebagai salah satu dialog yang sudah dilihat
+            hasSeenBackstory = PersistenceManager.Instance.HasSeenDialogue("Backstory");
+        }
         Debug.Log($"[MainMenu] 🎬 Backstory Status: HasSeenBackstory = {hasSeenBackstory}, AlwaysShow = {alwaysShowBackstory}");
     }
 
@@ -127,7 +132,11 @@ public class MainMenu : MonoBehaviour
             AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
 
         // Check if this is the first time playing (or testing mode)
-        bool hasSeenBackstory = PlayerPrefs.GetInt("HasSeenBackstory", 0) == 1;
+        bool hasSeenBackstory = false;
+        if (PersistenceManager.Instance != null)
+        {
+            hasSeenBackstory = PersistenceManager.Instance.HasSeenDialogue("Backstory");
+        }
 
         Debug.Log($"[MainMenu] 🎮 PlayGame called - HasSeenBackstory: {hasSeenBackstory}, AlwaysShow: {alwaysShowBackstory}");
 
@@ -213,8 +222,10 @@ public class MainMenu : MonoBehaviour
         // Mark as seen (only if not in testing mode)
         if (!alwaysShowBackstory)
         {
-            PlayerPrefs.SetInt("HasSeenBackstory", 1);
-            PlayerPrefs.Save();
+            if (PersistenceManager.Instance != null)
+            {
+                PersistenceManager.Instance.MarkDialogueSeen("Backstory");
+            }
             Debug.Log("[MainMenu] 💾 Backstory marked as seen");
         }
 
@@ -421,8 +432,10 @@ public class MainMenu : MonoBehaviour
     [ContextMenu("Reset Backstory Only")]
     public void ResetBackstorySeen()
     {
-        PlayerPrefs.SetInt("HasSeenBackstory", 0);
-        PlayerPrefs.Save();
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.ResetDialogueStatus("Backstory");
+        }
         Debug.Log("[MainMenu] 🔄 Backstory flag reset!");
     }
 
@@ -448,24 +461,27 @@ public class MainMenu : MonoBehaviour
     [ContextMenu("Reset ALL Progress")]
     public void ResetAllProgress()
     {
-        // Reset backstory
-        PlayerPrefs.SetInt("HasSeenBackstory", 0);
-        
-        // Reset tutorial
-        PlayerPrefs.SetInt("TutorialCompleted", 0);
-        PlayerPrefs.SetInt("TutorialJustCompleted", 0);
-        
-        // Reset level progress
-        PlayerPrefs.SetInt("MaxUnlockedLevel", 1);
-        
-        // Reset all level dialogues
-        for (int i = 1; i <= 5; i++)
+        if (PersistenceManager.Instance != null)
         {
-            PlayerPrefs.SetInt($"Level{i}_StartDialogueSeen", 0);
-            PlayerPrefs.SetInt($"Level{i}_EndDialogueSeen", 0);
+            // Ambil data langsung untuk dimodifikasi
+            SaveData data = PersistenceManager.Instance.GetData();
+
+            // 1. Reset Level
+            data.maxUnlockedLevel = 1;
+
+            // 2. Reset Tutorial
+            data.isTutorialCompleted = false;
+
+            // 3. Reset Dialogues & Backstory
+            // (Kita clear list-nya, otomatis "Backstory" dan semua dialog level hilang)
+            data.seenDialogues.Clear();
+
+            // 4. Reset Troops Level (Opsional, kalau mau reset level pasukan juga)
+            // data.troopLevels.Clear(); 
+
+            // Simpan perubahan
+            PersistenceManager.Instance.SaveGame();
         }
-        
-        PlayerPrefs.Save();
         Debug.Log("[MainMenu] 🔄 ALL progress reset!");
     }
 

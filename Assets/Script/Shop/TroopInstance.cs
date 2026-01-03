@@ -8,15 +8,21 @@ public class TroopInstance
     public int currentAttack;
     public float currentMoveSpeed;
 
-    // Increment values per level (index = level - 2, since level 1 has no increment)
-    private readonly int[] statIncrements = { 2, 3, 4, 5 }; // For HP & Attack
-    private readonly float moveSpeedIncrementPerLevel = 0.2f; // changed
-
     public TroopInstance(TroopData baseData)
     {
         data = baseData;
         // Load saved level or default to base level
-        level = PlayerPrefs.GetInt("troop_" + data.id, baseData.level);
+
+        if (PersistenceManager.Instance != null)
+        {
+            level = PersistenceManager.Instance.GetTroopLevel(data.id);
+        }
+        else
+        {
+            // Fallback kalau test scene tanpa Manager
+            level = baseData.level; 
+            // Debug.LogWarning("PersistenceManager tidak ditemukan! Menggunakan level default.");
+        }
 
         ApplyLevelStats();
     }
@@ -27,12 +33,10 @@ public class TroopInstance
 
         level++;
 
-        // Save the new level
-        PlayerPrefs.SetInt("troop_" + data.id, level);
-        PlayerPrefs.Save();
-
+        // Update stats in this object
         ApplyLevelStats();
         
+        // Save to JSON
         if (PersistenceManager.Instance != null)
         {
             PersistenceManager.Instance.SetTroopLevel(data.id, level);
@@ -45,14 +49,25 @@ public class TroopInstance
     {
         level = 1;
 
-        PlayerPrefs.SetInt("troop_" + data.id, level);
-        PlayerPrefs.Save();
-
+        // --- UPDATE STATS ---
         ApplyLevelStats();
+
+        // --- Save to JSON ---
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SetTroopLevel(data.id, level);
+            PersistenceManager.Instance.SaveGame();
+            // Debug.Log($"[TroopInstance] Reset {data.id} to Level 1 (Saved to JSON)");
+        }
     }
 
     private void ApplyLevelStats()
     {
+        var stats = GetStatsForLevel(data, level);
+        currentHealth = Mathf.RoundToInt(stats.hp);
+        currentAttack = Mathf.RoundToInt(stats.atk);
+        currentMoveSpeed = stats.spd;
+        /*
         // Start from base stats
         currentHealth = data.maxHealth;
         currentAttack = data.attack;
@@ -71,5 +86,24 @@ public class TroopInstance
             // Movement speed increments per level above 1
             currentMoveSpeed += moveSpeedIncrementPerLevel;
         }
+        */
+    }
+
+    public static (float hp, float atk, float spd) GetStatsForLevel(TroopData data, int lvl)
+    {
+        // Rumus: Base * (1 + (Level - 1) * 20%)
+        // Level 1 = 100% (Base)
+        // Level 2 = 120%
+        // ...
+        // Level 5 = 180%
+        float multiplier = 1.0f + ((lvl - 1) * 0.2f); 
+
+        float finalHp = data.maxHealth * multiplier;
+        float finalAtk = data.attack * multiplier;
+        
+        // Speed dikasih bonus dikit aja (5% per level) biar animasi jalan gak aneh
+        float finalSpd = data.moveSpeed * (1.0f + ((lvl - 1) * 0.05f));
+
+        return (finalHp, finalAtk, finalSpd);
     }
 }

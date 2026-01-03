@@ -287,15 +287,24 @@ public class LevelManager : MonoBehaviour
                 levelSelect.UnlockLevel(nextLevel);
                 Debug.Log($"[LevelManager] 🔓 Unlocked Level {nextLevel} in level select!");
             }
-            else
+            
+            if (PersistenceManager.Instance != null)
             {
-                int currentMax = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
+                // Cek dulu max level yang tersimpan sekarang berapa
+                int currentMax = PersistenceManager.Instance.GetData().maxUnlockedLevel;
+
+                // Hanya simpan jika kita benar-benar membuka level baru yang lebih tinggi
                 if (nextLevel > currentMax)
                 {
-                    PlayerPrefs.SetInt("MaxUnlockedLevel", nextLevel);
-                    PlayerPrefs.Save();
-                    Debug.Log($"[LevelManager] 💾 Saved Level {nextLevel} unlock to PlayerPrefs!");
+                    PersistenceManager.Instance.SetMaxUnlockedLevel(nextLevel);
+                    PersistenceManager.Instance.SaveGame(); // Tulis ke file JSON
+                    
+                    Debug.Log($"[LevelManager] 🔓 Unlocked Level {nextLevel} & Saved to JSON!");
                 }
+            }
+            else
+            {
+                Debug.LogWarning("[LevelManager] Gagal save progress level! PersistenceManager tidak ditemukan.");
             }
         }
     }

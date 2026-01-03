@@ -58,13 +58,20 @@ public static class SaveSystem
         }
     }
 
-    // JsonUtility tidak bisa serialize Dictionary langsung → pakai wrapper
     [Serializable]
     private class SaveDataWrapper
     {
         public int totalGem;
         public int maxUnlockedLevel;
         public int version;
+        
+        public float masterVolume;
+        public float musicVolume;
+        public float sfxVolume;
+        
+        // 🔥 TAMBAHAN BARU: Wrapper Fields
+        public bool isTutorialCompleted;
+        public List<string> seenDialogues = new List<string>();
 
         public List<string> troopIds = new List<string>();
         public List<int> troopLvls = new List<int>();
@@ -74,6 +81,15 @@ public static class SaveSystem
             totalGem = d.totalGem;
             maxUnlockedLevel = d.maxUnlockedLevel;
             version = d.version;
+            
+            masterVolume = d.masterVolume;
+            musicVolume = d.musicVolume;
+            sfxVolume = d.sfxVolume;
+
+            // 🔥 Copy Data ke Wrapper
+            isTutorialCompleted = d.isTutorialCompleted;
+            if (d.seenDialogues != null)
+                seenDialogues = new List<string>(d.seenDialogues);
 
             foreach (var kvp in d.troopLevels)
             {
@@ -88,7 +104,15 @@ public static class SaveSystem
             {
                 totalGem = totalGem,
                 maxUnlockedLevel = maxUnlockedLevel,
-                version = version
+                version = version,
+                
+                masterVolume = masterVolume,
+                musicVolume = musicVolume,
+                sfxVolume = sfxVolume,
+                
+                // 🔥 Copy Wrapper ke Data
+                isTutorialCompleted = isTutorialCompleted,
+                seenDialogues = new List<string>(seenDialogues)
             };
 
             int n = Mathf.Min(troopIds.Count, troopLvls.Count);

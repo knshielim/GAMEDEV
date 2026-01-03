@@ -14,7 +14,7 @@ public class PersistenceManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            data = SaveSystem.LoadFromDisk();
+            data = SaveSystem.LoadFromDisk(); // Load JSON saat game nyala
             Debug.Log("[PersistenceManager] Loaded save data");
         }
         else
@@ -27,61 +27,30 @@ public class PersistenceManager : MonoBehaviour
 
     public void SaveGame()
     {
-        // collect data from managers
-        CollectFromManagers();
+        // Langsung simpan data yang ada di memori ke Disk
+        // Tidak perlu CollectFromManagers() lagi karena data sudah di-update secara real-time
         SaveSystem.SaveToDisk(data);
     }
 
     public void LoadGame()
     {
         data = SaveSystem.LoadFromDisk();
-        ApplyToManagers();
+        // Tidak perlu ApplyToManagers() lagi karena script lain akan mengambil data sendiri via GetData()
     }
 
-    private void CollectFromManagers()
-    {
-        // 1) gems
-        if (GemManager.Instance != null)
-            data.totalGem = GemManager.Instance.totalGem;
+    // ❌ HAPUS method CollectFromManagers() sepenuhnya
+    // ❌ HAPUS method ApplyToManagers() sepenuhnya
 
-        // 2) max unlocked level
-        data.maxUnlockedLevel = PlayerPrefs.GetInt("MaxUnlockedLevel", data.maxUnlockedLevel);
+    // ========================================================================
+    // HELPER METHODS (Memudahkan script lain akses data tanpa pegang SaveData langsung)
+    // ========================================================================
 
-        // 3) troop levels (ambil dari PlayerPrefs yang sudah kamu pakai di TroopInstance)
-        // Kalau kamu punya daftar troopData global, lebih bagus iterate dari situ.
-        // Untuk minimal changes: kita simpan ketika upgrade (lihat bagian "Hook" di bawah)
-    }
-
-    private void ApplyToManagers()
-    {
-        // 1) gems
-        if (GemManager.Instance != null)
-            GemManager.Instance.totalGem = data.totalGem;
-
-        // 2) max unlocked level (biar level select kebaca)
-        PlayerPrefs.SetInt("MaxUnlockedLevel", data.maxUnlockedLevel);
-        PlayerPrefs.Save();
-
-        // 3) troop levels
-        foreach (var kvp in data.troopLevels)
-        {
-            PlayerPrefs.SetInt("troop_" + kvp.Key, kvp.Value);
-        }
-        PlayerPrefs.Save();
-    }
-
-    // helper buat update troop level ke save data
+    // 1. TROOP LEVEL
     public void SetTroopLevel(string troopId, int level)
     {
         data.troopLevels[troopId] = level;
     }
 
-    public void SetMaxUnlockedLevel(int lvl)
-    {
-        data.maxUnlockedLevel = Mathf.Clamp(lvl, 1, 5);
-    }
-
-    // Helper: Ambil level troop dari SaveData (default 1 jika belum ada)
     public int GetTroopLevel(string troopId)
     {
         if (data.troopLevels.ContainsKey(troopId))
@@ -91,11 +60,62 @@ public class PersistenceManager : MonoBehaviour
         return 1; // Level default
     }
 
-    // Helper: Simpan level troop
     public void SaveTroopLevel(string troopId, int newLevel)
     {
-        data.troopLevels[troopId] = newLevel;
-        SaveGame(); // Langsung tulis ke file JSON
+        SetTroopLevel(troopId, newLevel);
+        SaveGame(); // Shortcut: Set lalu Save
         Debug.Log($"[Persistence] Saved Troop {troopId} to Level {newLevel}");
+    }
+
+    // 2. LEVEL PROGRESS
+    public void SetMaxUnlockedLevel(int lvl)
+    {
+        data.maxUnlockedLevel = Mathf.Clamp(lvl, 1, 5);
+    }
+
+    // 3. AUDIO SETTINGS
+    public void SaveAudioSettings(float master, float music, float sfx)
+    {
+        data.masterVolume = master;
+        data.musicVolume = music;
+        data.sfxVolume = sfx;
+        SaveGame();
+    }
+    
+    public float GetMasterVolume() => data.masterVolume;
+    public float GetMusicVolume() => data.musicVolume;
+    public float GetSFXVolume() => data.sfxVolume;
+
+    // 4. TUTORIAL
+    public bool IsTutorialCompleted() => data.isTutorialCompleted;
+
+    public void SetTutorialCompleted(bool completed)
+    {
+        data.isTutorialCompleted = completed;
+        SaveGame();
+    }
+
+    // 5. DIALOGUES (Termasuk Backstory)
+    public bool HasSeenDialogue(string dialogueKey)
+    {
+        return data.seenDialogues.Contains(dialogueKey);
+    }
+
+    public void MarkDialogueSeen(string dialogueKey)
+    {
+        if (!data.seenDialogues.Contains(dialogueKey))
+        {
+            data.seenDialogues.Add(dialogueKey);
+            SaveGame();
+        }
+    }
+
+    public void ResetDialogueStatus(string dialogueKey)
+    {
+        if (data.seenDialogues.Contains(dialogueKey))
+        {
+            data.seenDialogues.Remove(dialogueKey);
+            SaveGame();
+        }
     }
 }

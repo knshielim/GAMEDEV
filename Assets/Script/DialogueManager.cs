@@ -487,12 +487,15 @@ public class DialogueManager : MonoBehaviour
         string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
         bool hasSeenLevelStart = PlayerPrefs.GetInt(levelStartKey, 0) == 1;
 
+        if (PersistenceManager.Instance != null)
+            hasSeenLevelStart = PersistenceManager.Instance.HasSeenDialogue(levelStartKey);
+
         if (hasSeenLevelStart)
         {
             Debug.Log($"[Dialogue] Skipping start dialogue for Level {levelNumber} - already seen");
             yield break;
         }
-        */
+        */ 
 
         // Show start dialogue for debugging
         if (dialogue.startDialogueLines.Length > 0)
@@ -519,6 +522,10 @@ public class DialogueManager : MonoBehaviour
     private IEnumerator HandleLevel1StartSequence(LevelDialogue dialogue)
     {
         Debug.Log("[Dialogue] Handling special Level 1 START sequence");
+        
+        bool seen = false;
+        if (PersistenceManager.Instance != null)
+            seen = PersistenceManager.Instance.HasSeenDialogue("Level1_StartDialogueSeen");
 
         // STEP 1: Show Level 1 start dialogue
         if (dialogue.startDialogueLines.Length > 0)
@@ -531,20 +538,20 @@ public class DialogueManager : MonoBehaviour
             Debug.Log("[Dialogue] Level 1 start dialogue completed");
 
             // Mark start dialogue as seen
-            PlayerPrefs.SetInt("Level1_StartDialogueSeen", 1);
-            PlayerPrefs.Save();
+            if (PersistenceManager.Instance != null)
+                PersistenceManager.Instance.MarkDialogueSeen("Level1_StartDialogueSeen");
         }
 
         // STEP 2: Always start tutorial for Level 1 (reset completion status first)
         Debug.Log("[Dialogue] Resetting tutorial completion status for Level 1");
-        PlayerPrefs.SetInt("TutorialCompleted", 0); // Reset so tutorial can run again
-        PlayerPrefs.Save();
+        if (PersistenceManager.Instance != null)
+            PersistenceManager.Instance.SetTutorialCompleted(false);
 
-        Debug.Log("[Dialogue] Starting tutorial for Level 1");
         StartTutorialIfNeeded();
 
         // Wait for tutorial to complete (it will disable itself when done)
-        yield return new WaitUntil(() => PlayerPrefs.GetInt("TutorialCompleted", 0) == 1);
+        yield return new WaitUntil(() => 
+            PersistenceManager.Instance != null && PersistenceManager.Instance.IsTutorialCompleted());
         Debug.Log("[Dialogue] Tutorial completed - proceeding to real Level 1 gameplay");
 
         // STEP 3: Start actual Level 1 gameplay
@@ -807,10 +814,11 @@ public class DialogueManager : MonoBehaviour
         if (isShowingStartDialogue)
         {
             string levelStartKey = $"Level{currentLevel}_StartDialogueSeen";
-            PlayerPrefs.SetInt(levelStartKey, 1);
-            PlayerPrefs.Save();
+            if (PersistenceManager.Instance != null)
+                PersistenceManager.Instance.MarkDialogueSeen($"Level{currentLevel}_StartDialogueSeen");
 
             Debug.Log($"[Dialogue] Level {currentLevel} start dialogue completed");
+
 
             if (currentLevel == 1)
             {
@@ -822,8 +830,8 @@ public class DialogueManager : MonoBehaviour
             if (!isForcedEndDialogue)
             {
                 string levelEndKey = $"Level{currentLevel}_EndDialogueSeen";
-                PlayerPrefs.SetInt(levelEndKey, 1);
-                PlayerPrefs.Save();
+                if (PersistenceManager.Instance != null)
+                    PersistenceManager.Instance.MarkDialogueSeen($"Level{currentLevel}_EndDialogueSeen");
             }
 
             Debug.Log($"[Dialogue] Level {currentLevel} end dialogue completed (forced: {isForcedEndDialogue})");
@@ -871,7 +879,9 @@ public class DialogueManager : MonoBehaviour
 
     private void StartTutorialIfNeeded()
     {
-        bool hasCompletedTutorial = PlayerPrefs.GetInt("TutorialCompleted", 0) == 1;
+        bool hasCompletedTutorial = false;
+        if (PersistenceManager.Instance != null)
+            hasCompletedTutorial = PersistenceManager.Instance.IsTutorialCompleted();
         int currentBuildIndex = SceneManager.GetActiveScene().buildIndex;
         string currentSceneName = SceneManager.GetActiveScene().name;
 
@@ -967,7 +977,9 @@ public class DialogueManager : MonoBehaviour
     public void ShowLevelEndDialogue(int levelNumber)
     {
         string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
-        bool hasSeenLevelEnd = PlayerPrefs.GetInt(levelEndKey, 0) == 1;
+        bool hasSeenLevelEnd = false;
+        if (PersistenceManager.Instance != null)
+            hasSeenLevelEnd = PersistenceManager.Instance.HasSeenDialogue(levelEndKey);
 
         if (!hasSeenLevelEnd)
         {
@@ -1031,8 +1043,10 @@ public class DialogueManager : MonoBehaviour
 
         // Mark end dialogue as seen
         string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
-        PlayerPrefs.SetInt(levelEndKey, 1);
-        PlayerPrefs.Save();
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.MarkDialogueSeen(levelEndKey);
+        }
         Debug.Log($"[Dialogue] Marked Level {levelNumber} end dialogue as seen");
     }
 
@@ -1046,7 +1060,9 @@ public class DialogueManager : MonoBehaviour
     public void PlayIntro()
     {
         string levelStartKey = $"Level{1}_StartDialogueSeen";
-        PlayerPrefs.SetInt(levelStartKey, 0);
+        if (PersistenceManager.Instance != null)
+            PersistenceManager.Instance.ResetDialogueStatus(levelStartKey);
+            
         StartCoroutine(ShowLevelStartDialogue(1));
     }
 
@@ -1057,9 +1073,11 @@ public class DialogueManager : MonoBehaviour
     {
         string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
         string levelEndKey = $"Level{levelNumber}_EndDialogueSeen";
-        PlayerPrefs.SetInt(levelStartKey, 0);
-        PlayerPrefs.SetInt(levelEndKey, 0);
-        PlayerPrefs.Save();
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.ResetDialogueStatus(levelStartKey);
+            PersistenceManager.Instance.ResetDialogueStatus(levelEndKey);
+        }
         Debug.Log($"[Dialogue] Reset dialogue status for Level {levelNumber}");
     }
 
