@@ -126,6 +126,9 @@ MonoBehaviour:
   towerRangedDistance: 3
   towerStopDistance: 4
   moveRight: 0
+  baseAttackRange: 0
+  gemDropChance: 100
+  gemDropAmount: 5
 --- !u!50 &1617525894107536228
 Rigidbody2D:
   serializedVersion: 4

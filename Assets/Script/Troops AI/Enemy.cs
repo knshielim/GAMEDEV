@@ -33,8 +33,15 @@ public class Enemy : Unit
     [SerializeField] private float towerStopDistance = 4f;
     [SerializeField] private bool moveRight = false; // Enemy walk to the left
     public float baseAttackRange;
-
+    
     public static List<Enemy> aliveEnemies = new List<Enemy>();
+
+    [Header("Gem Reward Settings")]
+    [Tooltip("Percentage chance to drop a gem (0-100).")]
+    [SerializeField] private float gemDropChance = 100f; 
+
+    [Tooltip("Amount of gems dropped on success.")]
+    [SerializeField] private int gemDropAmount = 1;
 
     protected override void Start()
     {
@@ -372,13 +379,15 @@ private void ShootProjectileInDirection(Vector2 direction)
     // ----------------- DEATH HANDLING -----------------
     public override void Die()
     {
+        Debug.Log($"[Enemy.Die for gem] {name} died. isDead={isDead}");
+
         if (isDead) return;
 
         isDead = true;
         isAttacking = false;
 
         // Play death animation
-        SetAnimationState(false, false, true); // 3rd param triggers death anim
+        SetAnimationState(false, false, true); 
 
         // Stop physics
         if (rb != null)
@@ -392,7 +401,9 @@ private void ShootProjectileInDirection(Vector2 direction)
 
         // Award coins to player based on enemy rarity
         AwardCoinsForKill();
-
+        
+        HandleGemDrop(); 
+        
         // Disable all colliders
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
@@ -401,6 +412,45 @@ private void ShootProjectileInDirection(Vector2 direction)
         StartCoroutine(DestroyAfterDeath());
     }
 
+    private void HandleGemDrop()
+    {
+        // Ensure ShopManager exists to avoid errors
+        // if (ShopManager.Instance == null) return;
+        
+        // ensure GemManager exists
+        if (GemManager.Instance == null)
+        {
+            Debug.LogWarning($"[GemDrop] FAIL: GemManager.Instance NULL on {name}");
+            return;
+        }
+        // Check if this unit is a BOSS (using the inherited troopData from Unit class)
+        // troopData is 'protected' in Unit.cs, so we can access it directly here
+        bool isBoss = (troopData != null && troopData.rarity == TroopRarity.Boss);
+
+        // Generate a random roll between 0 and 100
+        float roll = Random.Range(0f, 100f);
+        
+        Debug.Log($"[GemDropCheck] {name} gemDropChance={gemDropChance} gemDropAmount={gemDropAmount}");
+
+        // Logic: Bosses ALWAYS drop gems, regular enemies drop based on chance
+        if (isBoss || roll <= gemDropChance)
+        {
+            // Bosses drop 50 gems, regular enemies drop 'gemDropAmount' (default 1)
+            int amount = isBoss ? 50 : gemDropAmount; 
+            
+            GemManager.Instance.AddLevelGem(amount);
+            // Add gems to the persistent storage via ShopManager
+            
+            Debug.Log($"[Enemy] Dropped {amount} Gems! (IsBoss: {isBoss})");
+
+            // Optional: Spawn Visual Feedback (using DamagePopup to show gem amount)
+            // We pass 'true' for isCrit to make the text appear large/red (indicating a special drop)
+            if (DamagePopupSpawner.Instance != null)
+            {
+                DamagePopupSpawner.Instance.Spawn(amount, true, transform.position + Vector3.up);
+            }
+        }
+    }
     private IEnumerator DestroyAfterDeath()
     {
         if (animator != null)

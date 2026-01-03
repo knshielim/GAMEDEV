@@ -53,6 +53,12 @@ public class LevelManager : MonoBehaviour
         currentLevel = DetermineCurrentLevel();
 
         Debug.Log($"[LevelManager] ✅ Started Level {currentLevel}/{totalLevels} (Scene: {SceneManager.GetActiveScene().name}, BuildIndex: {SceneManager.GetActiveScene().buildIndex})");
+        
+        if (GemManager.Instance != null)
+        {
+            GemManager.Instance.ResetLevelGem();
+            Debug.Log($"[LevelManager] Reset levelGem at start of Level {currentLevel}");
+        }
 
         // Ensure time scale is normal
         Time.timeScale = 1f;
@@ -107,6 +113,25 @@ public class LevelManager : MonoBehaviour
 
         Debug.Log($"[LevelManager] 🏆 LevelCompleted called - Current: {currentLevel}, Total: {totalLevels}, IsLastLevel: {IsLastLevel()}");
         Debug.Log($"[LevelManager] 🏆 Condition check: currentLevel({currentLevel}) < totalLevels({totalLevels}) = {currentLevel < totalLevels}");
+
+        if (GemManager.Instance != null)
+        {
+            int reward = 0;
+            switch (currentLevel)
+            {
+                case 1: reward = 10; break;
+                case 2: reward = 20; break;
+                case 3: reward = 30; break;
+                case 4: reward = 50; break;
+                case 5: reward = 100; break; // Boss Level = Jackpot
+                default: reward = 10; break;
+            }
+
+            GemManager.Instance.AddLevelGem(reward);
+            GemManager.Instance.SaveLevelGemToTotal();
+            Debug.Log($"[LevelReward] Player dapat {reward} Gems!");
+        }
+
 
         ShowLevelEndDialogue();
         UnlockNextLevel();

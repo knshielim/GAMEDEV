@@ -2,11 +2,23 @@ using UnityEngine;
 
 public class DamagePopupSpawner : MonoBehaviour
 {
+    public static DamagePopupSpawner Instance { get; private set; }
+
     [SerializeField] private DamagePopup popupPrefab;
     [SerializeField] private Camera mainCamera;
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (!mainCamera) mainCamera = Camera.main;
     }
 

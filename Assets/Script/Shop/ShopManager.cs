@@ -7,6 +7,8 @@ using System.Collections.Generic; // for Dictionary
 
 public class ShopManager : MonoBehaviour
 {
+    public static ShopManager Instance { get; private set; }
+
     [Header("Left Panel")]
     public TroopSlot[] troopSlots;        // Slots
     public TroopData[] shopTroops;        // Available troops
@@ -20,6 +22,19 @@ public class ShopManager : MonoBehaviour
     private TroopInstance selectedTroopInstance;
     private Dictionary<string, TroopInstance> troopInstances = new Dictionary<string, TroopInstance>();
 
+        private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            // Optional: If the ShopManager needs to move between scenes (e.g. save Gems)
+        }
+        else
+        {
+            Destroy(gameObject);
+            return; 
+        }
+    }
 
     void Start()
     {
