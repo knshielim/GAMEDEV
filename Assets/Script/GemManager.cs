@@ -1,3 +1,6 @@
+using UnityEngine;
+using TMPro;
+
 public class GemManager : MonoBehaviour
 {
     public static GemManager Instance;
@@ -39,19 +42,43 @@ public class GemManager : MonoBehaviour
         UpdateUI();
     }
 
-    // ===== TOTAL GEM =====
+    // ===== TOTAL GEM (permanent)=====
     public void SaveLevelGemToTotal()
     {
+        // 1. Tambahkan gem level ke total
         totalGem += levelGem;
-        PlayerPrefs.SetInt("TotalGem", totalGem);
-        PlayerPrefs.Save();
-
-        Debug.Log($"[GemManager] Saved {levelGem} → TotalGem = {totalGem}");
+        
+        // 2. 🔥 HAPUS PlayerPrefs. Save langsung ke PersistenceManager
+        if (PersistenceManager.Instance != null)
+        {
+            // Update data di 'Otak' penyimpanan
+            PersistenceManager.Instance.GetData().totalGem = totalGem; 
+            
+            // Tulis ke file JSON sekarang juga
+            PersistenceManager.Instance.SaveGame();
+            
+            Debug.Log($"[GemManager] Saved to JSON via PersistenceManager. New Total: {totalGem}");
+        }
+        else
+        {
+            Debug.LogError("[GemManager] Gagal save! PersistenceManager tidak ditemukan.");
+        }
     }
 
     private void LoadTotalGem()
     {
-        totalGem = PlayerPrefs.GetInt("TotalGem", 0);
+        // 🔥 GANTI Load dari PlayerPrefs MENJADI Load dari PersistenceManager
+        if (PersistenceManager.Instance != null)
+        {
+            // Ambil data dari JSON yang sudah di-load di awal game
+            totalGem = PersistenceManager.Instance.GetData().totalGem;
+            Debug.Log($"[GemManager] Loaded from JSON. Total Gem: {totalGem}");
+        }
+        else
+        {
+            totalGem = 0;
+            Debug.LogWarning("[GemManager] PersistenceManager belum siap, set totalGem = 0");
+        }
     }
 
     // ===== UI =====

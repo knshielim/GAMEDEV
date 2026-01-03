@@ -32,6 +32,13 @@ public class TroopInstance
         PlayerPrefs.Save();
 
         ApplyLevelStats();
+        
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SetTroopLevel(data.id, level);
+            PersistenceManager.Instance.SaveGame();
+        }
+
     }
 
     public void ResetLevel()

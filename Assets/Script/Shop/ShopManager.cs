@@ -79,21 +79,6 @@ public class ShopManager : MonoBehaviour
         ClearSelectedTroop();
     }
     
-    public void SelectTroop(TroopSlot slot, TroopData data)
-    {
-        // Check if we already have an instance for this troop
-        if (!troopInstances.ContainsKey(data.id))
-        {
-            troopInstances[data.id] = new TroopInstance(data);
-        }
-
-        selectedTroopInstance = troopInstances[data.id];
-
-        UpdateRightPanelUI();
-
-        foreach (var s in troopSlots)
-            s.SetSelected(s == slot);
-    }
 
     private void UpdateRightPanelUI()
     {
@@ -118,12 +103,58 @@ public class ShopManager : MonoBehaviour
         upgradeButton.interactable = false;
     }
 
+    public void SelectTroop(TroopSlot slot, TroopData data)
+    {
+        // 1. Cek apakah troop ini sudah ada di memory
+        if (!troopInstances.ContainsKey(data.id))
+        {
+            // Buat instance baru
+            TroopInstance newInstance = new TroopInstance(data);
+
+            // 2. 🔥 LOAD: Cek ke Save System, level berapa troop ini sebenernya?
+            if (PersistenceManager.Instance != null)
+            {
+                int savedLevel = PersistenceManager.Instance.GetTroopLevel(data.id);
+                
+                // Naikkan level instance ini sampai sama dengan yang disimpan
+                while (newInstance.level < savedLevel)
+                {
+                    newInstance.LevelUp(); 
+                }
+            }
+
+            troopInstances[data.id] = newInstance;
+        }
+
+        selectedTroopInstance = troopInstances[data.id];
+
+        UpdateRightPanelUI();
+
+        foreach (var s in troopSlots)
+            s.SetSelected(s == slot);
+    }
+
     public void OnUpgradeButtonClicked()
     {
-    if (selectedTroopInstance == null) return;
+        if (selectedTroopInstance == null) return;
 
-    selectedTroopInstance.LevelUp();
-    UpdateRightPanelUI();
+        // 1. Naikkan level di Memory (RAM)
+        selectedTroopInstance.LevelUp();
+        
+        // 2. Simpan permanen ke Disk (JSON)
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SaveTroopLevel(
+                selectedTroopInstance.data.id, 
+                selectedTroopInstance.level
+            );
+        }
+        else
+        {
+            Debug.LogWarning("PersistenceManager belum ada di scene! Level tidak akan tersimpan.");
+        }
+
+        UpdateRightPanelUI();
     }
 
     public void ResetAllTroops()

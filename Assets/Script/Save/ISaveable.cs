@@ -1,18 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using System;
 
-public class ISaveable : MonoBehaviour
+public interface ISaveable
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    // Unique key untuk object ini di SaveData
+    string SaveId { get; }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Tulis data object -> SaveData
+    void Save(SaveData data);
+
+    // Baca data -> apply ke object
+    void Load(SaveData data);
 }

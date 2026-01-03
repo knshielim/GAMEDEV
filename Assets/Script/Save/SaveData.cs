@@ -1,18 +1,15 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class SaveData : MonoBehaviour
+[Serializable]
+public class SaveData
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public int totalGem = 0;
+    public int maxUnlockedLevel = 1;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // key: troopId, value: level (1-5)
+    public Dictionary<string, int> troopLevels = new Dictionary<string, int>();
+
+    // versioning (optional tapi bagus)
+    public int version = 1;
 }

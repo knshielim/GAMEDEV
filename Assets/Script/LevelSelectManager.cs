@@ -101,7 +101,16 @@ public class LevelSelectManager : MonoBehaviour
             PlayerPrefs.SetInt("MaxUnlockedLevel", maxUnlockedLevel);
             PlayerPrefs.Save();
             UpdateLevelButtons(); // Refresh the UI
+
+            
+            if (PersistenceManager.Instance != null)
+            {
+                PersistenceManager.Instance.SetMaxUnlockedLevel(maxUnlockedLevel);
+                PersistenceManager.Instance.SaveGame();
+            }
         }
+
+
     }
 
 
