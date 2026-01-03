@@ -10079,6 +10079,7 @@ MonoBehaviour:
   stopPrompt: {fileID: 0}
   debugMode: 0
   debugWeather: 1
+  locked: 1
 --- !u!114 &822185679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17848,7 +17849,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1626374303
 RectTransform:
   m_ObjectHideFlags: 0

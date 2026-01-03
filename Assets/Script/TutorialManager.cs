@@ -411,7 +411,6 @@ public class TutorialManager : MonoBehaviour
         Debug.Log($"[Tutorial] ✅ Destroyed {tutorialEnemies.Length} tutorial enemies");
     }
 
-    // ✅ FIX: Separate method for button click
     public void OnSkipButtonPressed()
     {
         Debug.Log("[Tutorial] ⏭️ SKIP BUTTON PRESSED!");
@@ -607,6 +606,16 @@ public class TutorialManager : MonoBehaviour
 
         SetPlayerButtons(true);
         Time.timeScale = 1f;
+        // 🎡 START WEATHER ROULETTE NOW (REAL GAMEPLAY)
+        if (WeatherRoulette.Instance != null)
+        {
+            WeatherRoulette.Instance.EnableRoulette();
+        }
+        else
+        {
+            Debug.LogWarning("[Tutorial] WeatherRoulette not found!");
+        }
+
 
         StartCoroutine(StartActualLevelplay());
     }

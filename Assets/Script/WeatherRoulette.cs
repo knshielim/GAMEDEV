@@ -23,13 +23,30 @@ public class WeatherRoulette : MonoBehaviour
     [Header("Debug/Test")]
     public bool debugMode = false;
     public WeatherType debugWeather = WeatherType.AcidRain;
+    public static WeatherRoulette Instance { get; private set; }
 
     private bool isSpinning = false;
     private float weatherDuration = 90f;
+    public bool locked = true;
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     private void Start()
     {
-        // Ensure WeatherManager exists
+        if (roulettePanel != null) {
+        roulettePanel.SetActive(false); 
+
+        locked = true;
+        }
+        
         if (WeatherManager.Instance == null)
         {
             Debug.LogError("❌ WeatherManager.Instance is NULL!");
@@ -92,5 +109,14 @@ public class WeatherRoulette : MonoBehaviour
 
         if (roulettePanel != null)
             roulettePanel.SetActive(false);
+    }
+        public void EnableRoulette()
+    {
+        locked = false;
+
+        if (roulettePanel != null)
+            roulettePanel.SetActive(true);
+
+        Debug.Log("[WeatherRoulette] ✅ Roulette enabled");
     }
 }
