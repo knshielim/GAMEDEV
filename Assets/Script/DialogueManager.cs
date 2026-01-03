@@ -554,22 +554,25 @@ public class DialogueManager : MonoBehaviour
     private IEnumerator StartGameplayAfterDialogue()
     {
         Debug.Log("[Dialogue] Starting gameplay after dialogue");
-        yield return new WaitForSecondsRealtime(0.5f);
 
-        // Ensure game is running
+        // Ensure game resumes first
         Time.timeScale = 1f;
 
-        // Find TutorialManager and start gameplay if it exists
+        // Check for tutorial
         TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
         if (tutorialManager != null)
         {
             tutorialManager.StartActualGameplayDirectly();
+            yield break;
         }
-        else
-        {
-            Debug.Log("[Dialogue] No TutorialManager found, gameplay should start normally");
-        }
+
+        // ✅ WAIT until WeatherRoulette exists (NO TIME DELAY)
+        yield return new WaitUntil(() => WeatherRoulette.Instance != null);
+
+        Debug.Log("[Dialogue] 🎡 Enabling Weather Roulette");
+        StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
     }
+
 
     private int GetCurrentLevel()
     {
@@ -899,6 +902,7 @@ public class DialogueManager : MonoBehaviour
         }
         else
         {
+            StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
             Debug.LogError("[Dialogue] TutorialManager not found to start actual gameplay!");
         }
     }

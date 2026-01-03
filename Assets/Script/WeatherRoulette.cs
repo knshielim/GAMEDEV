@@ -37,6 +37,8 @@ public class WeatherRoulette : MonoBehaviour
         }
 
         Instance = this;
+
+        locked = true;
     }
 
     private void Start()
@@ -83,6 +85,12 @@ public class WeatherRoulette : MonoBehaviour
 
     public void SpinWheel()
     {
+        if (locked)
+        {
+            Debug.Log("[WeatherRoulette] 🚫 Spin blocked (locked)");
+            return;
+        }
+
         if (!isSpinning)
             StartCoroutine(Spin());
     }
@@ -95,9 +103,9 @@ public class WeatherRoulette : MonoBehaviour
 
         while (time < spinDuration)
         {
-            transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
+            transform.Rotate(0, 0, currentSpeed * Time.unscaledDeltaTime);
             currentSpeed = Mathf.Lerp(spinSpeed, 0, time / spinDuration);
-            time += Time.deltaTime;
+            time += Time.unscaledDeltaTime;
             yield return null;
         }
 
@@ -109,14 +117,25 @@ public class WeatherRoulette : MonoBehaviour
 
         if (roulettePanel != null)
             roulettePanel.SetActive(false);
+
+        GameManager.Instance?.ReleasePause("WeatherRoulette");
     }
-        public void EnableRoulette()
+    public IEnumerator EnableRoulette()
     {
         locked = false;
+        GameManager.Instance?.RequestPause("WeatherRoulette");
+
+        if (DialogueManager.Instance != null)
+        {
+            yield return new WaitUntil(() =>
+                !DialogueManager.Instance.ShouldGameBePaused()
+            );
+        }
 
         if (roulettePanel != null)
             roulettePanel.SetActive(true);
 
         Debug.Log("[WeatherRoulette] ✅ Roulette enabled");
     }
+
 }

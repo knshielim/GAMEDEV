@@ -606,10 +606,10 @@ public class TutorialManager : MonoBehaviour
 
         SetPlayerButtons(true);
         Time.timeScale = 1f;
-        // 🎡 START WEATHER ROULETTE NOW (REAL GAMEPLAY)
+  
         if (WeatherRoulette.Instance != null)
         {
-            WeatherRoulette.Instance.EnableRoulette();
+            StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
         }
         else
         {

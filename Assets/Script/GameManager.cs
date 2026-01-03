@@ -157,11 +157,21 @@ public class GameManager : MonoBehaviour
 
             // Always fix button references when loading a game scene, regardless of whether we transferred references
             FixButtonReferences(scene);
-        }
+            
+            if ((int)currentLevel > 1)
+            {
+                StartCoroutine(EnableRouletteAfterDialogue());
+            }
+            else
+            {
+                Debug.Log("[GameManager] ❄️ Level 1 detected - roulette waits for tutorial");
+            }
+            }
 
         ResetGameState();
         //Debug.Log($"[GameManager] Scene '{scene.name}' loaded, game state reset. Final Instance: {Instance}");
     }
+    
 
     private void FixButtonReferences(Scene scene)
     {
@@ -340,5 +350,55 @@ public void TowerDestroyed(Tower destroyedTower)
             Debug.LogError("[GameManager] GachaManager instance not found. Make sure the GachaManager script is active in the scene.");
         }
     }
+    private int pauseRequests = 0;
+
+    public void RequestPause(string source)
+    {
+        pauseRequests++;
+        Time.timeScale = 0f;
+        Debug.Log($"[GameManager] ⏸️ Pause requested by {source}");
+    }
+
+    public void ReleasePause(string source)
+    {
+        pauseRequests = Mathf.Max(0, pauseRequests - 1);
+
+        if (pauseRequests == 0)
+        {
+            Time.timeScale = 1f;
+            Debug.Log($"[GameManager] ▶️ Resume requested by {source}");
+        }
+    }
+
+    private IEnumerator EnableRouletteAfterDialogue()
+    {
+        // Wait 1 frame so everything initializes
+        yield return null;
+
+        // If dialogue exists, wait until it finishes OR is skipped
+        if (DialogueManager.Instance != null)
+        {
+            yield return new WaitUntil(() =>
+                !DialogueManager.Instance.ShouldGameBePaused()
+            );
+        }
+
+        if (WeatherRoulette.Instance != null)
+        {
+            // GameManager.EnableRouletteAfterDialogue()
+        if (WeatherRoulette.Instance != null)
+        {
+            StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
+        }   
+
+            Debug.Log("[GameManager] 🎡 Roulette enabled after dialogue (Level 2+)");
+        }
+        else
+        {
+            Debug.LogError("[GameManager] ❌ WeatherRoulette.Instance is NULL");
+        }
+    }
+
+
 }
 
