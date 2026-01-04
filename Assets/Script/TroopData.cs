@@ -49,6 +49,11 @@ public class TroopData : ScriptableObject
     [Tooltip("Critical damage multiplier. Example: 2 = double damage")]
     public float critDamage = 2.0f;
 
+    [Header("Economy")]
+    [Tooltip("Base cost to upgrade this troop from Level 1 → 2 before multipliers")]
+    public int baseUpgradeCost = 100;
+
+
 
     [Header("Projectile Settings (for ranged troops)")]
     [Tooltip("Projectile prefab to spawn when this unit attacks at range.")]

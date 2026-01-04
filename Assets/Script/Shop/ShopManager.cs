@@ -18,6 +18,9 @@ public class ShopManager : MonoBehaviour
     public Image troopImageBig;
     public TextMeshProUGUI statsText;
     public Button upgradeButton;
+    [Header("Right Panel")]
+    public TextMeshProUGUI priceText;
+
 
     private TroopInstance selectedTroopInstance;
     private Dictionary<string, TroopInstance> troopInstances = new Dictionary<string, TroopInstance>();
@@ -91,9 +94,21 @@ public class ShopManager : MonoBehaviour
                         $"Attack: {selectedTroopInstance.currentAttack}\n" +
                         $"Speed: {selectedTroopInstance.currentMoveSpeed}";
 
-        upgradeButton.interactable = selectedTroopInstance.level < 5;
-    }
+        // Get the upgrade cost
+        int cost = selectedTroopInstance.GetUpgradeCost();
 
+        if (cost < 0) // Max level or Boss
+        {
+            upgradeButton.interactable = false;
+            priceText.text = "MAX"; // show MAX if cannot upgrade
+        }
+        else
+        {
+            priceText.text = cost.ToString(); // show cost in gems
+            // Enable upgrade button only if player has enough gems
+            upgradeButton.interactable = GemManager.Instance.HasEnoughTotalGem(cost);
+        }
+    }
 
     public void ClearSelectedTroop()
     {
@@ -138,22 +153,17 @@ public class ShopManager : MonoBehaviour
     {
         if (selectedTroopInstance == null) return;
 
-        // 1. Naikkan level di Memory (RAM)
-        selectedTroopInstance.LevelUp();
-        
-        // 2. Simpan permanen ke Disk (JSON)
-        if (PersistenceManager.Instance != null)
+        // Try to upgrade using gems
+        bool upgraded = selectedTroopInstance.TryUpgradeWithGems();
+
+        if (!upgraded)
         {
-            PersistenceManager.Instance.SaveTroopLevel(
-                selectedTroopInstance.data.id, 
-                selectedTroopInstance.level
-            );
-        }
-        else
-        {
-            Debug.LogWarning("PersistenceManager belum ada di scene! Level tidak akan tersimpan.");
+            // Optional: show a popup "Not enough gems" or play sound
+            Debug.Log("Cannot upgrade: not enough gems or max level reached");
+            return;
         }
 
+        // Successfully upgraded → update UI
         UpdateRightPanelUI();
     }
 
@@ -167,6 +177,27 @@ public class ShopManager : MonoBehaviour
         // If you want, also update the UI for the selected troop
         UpdateRightPanelUI();
     }
+    public TroopInstance GetOrCreateInstance(TroopData data)
+    {
+        if (!troopInstances.ContainsKey(data.id))
+        {
+            TroopInstance newInstance = new TroopInstance(data);
+
+            // Load saved level
+            if (PersistenceManager.Instance != null)
+            {
+                int savedLevel = PersistenceManager.Instance.GetTroopLevel(data.id);
+                while (newInstance.level < savedLevel)
+                    newInstance.LevelUp();
+            }
+
+            troopInstances[data.id] = newInstance;
+        }
+
+        return troopInstances[data.id];
+    }
+
+    
 
 
 }

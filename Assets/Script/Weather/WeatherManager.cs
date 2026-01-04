@@ -89,12 +89,14 @@ public class WeatherManager : MonoBehaviour
     Debug.Log("Fog STARTED");
     Debug.Log("All battlefield troops will have range reduced");
 
+    FogEffect.Instance?.FadeIn();
+
     // Troops 
     foreach (Troops troop in Troops.aliveTroops.ToList())
     {
         if (troop == null || troop.isDead) continue;
 
-        float newRange = Mathf.Max(0, troop.baseAttackRange - 1f);
+        float newRange = Mathf.Max(0, troop.baseAttackRange - 1.5f);
         troop.attackRange = newRange;
 
         CircleCollider2D cc = troop.GetComponent<CircleCollider2D>();
@@ -105,7 +107,7 @@ public class WeatherManager : MonoBehaviour
     foreach (Enemy enemy in Enemy.aliveEnemies.ToList())
     {
         if (enemy == null || enemy.isDead) continue;
-        enemy.ApplyFogRangeReduction(1f);
+        enemy.ApplyFogRangeReduction(1.5f);
     }
 
     float elapsed = 0f;
@@ -135,6 +137,7 @@ public class WeatherManager : MonoBehaviour
     }
 
     CurrentWeather = WeatherType.Sunny;
+    FogEffect.Instance?.FadeOut();
     Debug.Log("Fog ENDED");
     }
 

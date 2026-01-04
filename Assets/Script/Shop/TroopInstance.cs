@@ -1,4 +1,6 @@
 using UnityEngine;
+using TMPro;
+
 
 public class TroopInstance
 {
@@ -106,4 +108,64 @@ public class TroopInstance
 
         return (finalHp, finalAtk, finalSpd);
     }
+    public int GetUpgradeCost()
+    {
+        // Boss or max level cannot be upgraded
+        if (data.rarity == TroopRarity.Boss || level >= 5)
+            return -1;
+
+        // Cost table per rarity (rows = rarity, columns = level 1→2, 2→3, etc.)
+        int[,] costTable = new int[5,4]
+        {
+            // Common
+            {1, 5, 10, 20},
+            // Rare
+            {2, 10, 15, 20},
+            // Epic
+            {5, 10, 15, 20},
+            // Legendary
+            {10, 15, 20, 20},
+            // Mythic
+            {20, 20, 20, 20}
+        };
+
+        // Map rarity to row index
+        int rarityIndex = data.rarity switch
+        {
+            TroopRarity.Common => 0,
+            TroopRarity.Rare => 1,
+            TroopRarity.Epic => 2,
+            TroopRarity.Legendary => 3,
+            TroopRarity.Mythic => 4,
+            _ => 0
+        };
+
+        // Current level is 1-4 for upgrade (level 5 = max)
+        int cost = costTable[rarityIndex, level - 1]; // level-1 because array starts at index 0
+        return cost;
+    }
+
+
+    public bool TryUpgradeWithGems()
+    {
+        int cost = GetUpgradeCost();
+
+        if (cost < 0)
+            return false;
+
+        if (GemManager.Instance == null)
+            return false;
+
+        if (!GemManager.Instance.HasEnoughTotalGem(cost))
+            return false;
+
+        // Spend gems
+        if (!GemManager.Instance.SpendTotalGem(cost))
+            return false;
+
+        // Upgrade troop
+        LevelUp();
+        return true;
+    }
+
 }

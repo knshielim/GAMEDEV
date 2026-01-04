@@ -5,13 +5,38 @@ public class GemManager : MonoBehaviour
 {
     public static GemManager Instance;
 
-    public int levelGem;  
-    public int totalGem;   // gem permanent (shop)
+    // ===== BACKING FIELDS =====
+    [SerializeField] private int _levelGem;
+    [SerializeField] private int _totalGem;
 
+    [Header("UI")]
     [SerializeField] private TextMeshProUGUI gemText;
+    [SerializeField] private bool showTotalGem = true;
+
+    // ===== PROPERTIES =====
+    public int levelGem
+    {
+        get => _levelGem;
+        set
+        {
+            _levelGem = value;
+            UpdateUI();
+        }
+    }
+
+    public int totalGem
+    {
+        get => _totalGem;
+        set
+        {
+            _totalGem = value;
+            UpdateUI();
+        }
+    }
 
     private void Awake()
     {
+        // Singleton setup
         if (Instance == null)
         {
             Instance = this;
@@ -32,56 +57,86 @@ public class GemManager : MonoBehaviour
     // ===== LEVEL GEM =====
     public void ResetLevelGem()
     {
-        levelGem = 0;
-        UpdateUI();
+        levelGem = 0; // UI updates automatically via property
     }
 
     public void AddLevelGem(int amount)
     {
-        levelGem += amount;
-        UpdateUI();
+        levelGem += amount; // UI updates automatically via property
     }
 
-    // ===== TOTAL GEM (permanent)=====
+    // ===== TOTAL GEM (permanent) =====
     public void SaveLevelGemToTotal()
     {
-        // 1. Tambahkan gem level ke total
-        totalGem += levelGem;
-        
-        // 2. Save langsung ke PersistenceManager
+        totalGem += levelGem; // UI updates automatically
+
         if (PersistenceManager.Instance != null)
         {
-            PersistenceManager.Instance.GetData().totalGem = totalGem; 
+            PersistenceManager.Instance.GetData().totalGem = totalGem;
             PersistenceManager.Instance.SaveGame();
-            
             Debug.Log($"[GemManager] Saved to JSON via PersistenceManager. New Total: {totalGem}");
         }
         else
         {
-            Debug.LogError("[GemManager] Gagal save! PersistenceManager tidak ditemukan.");
+            Debug.LogError("[GemManager] PersistenceManager not found! Could not save gems.");
         }
+
+        ResetLevelGem(); // optional: clear level gems after adding to total
     }
 
     private void LoadTotalGem()
     {
-        // Load dari PersistenceManager
         if (PersistenceManager.Instance != null)
         {
-            // Ambil data dari JSON yang sudah di-load di awal game
-            totalGem = PersistenceManager.Instance.GetData().totalGem;
+            totalGem = PersistenceManager.Instance.GetData().totalGem; // property updates UI
             Debug.Log($"[GemManager] Loaded from JSON. Total Gem: {totalGem}");
         }
         else
         {
-            totalGem = 0;
-            Debug.LogWarning("[GemManager] PersistenceManager belum siap, set totalGem = 0");
+            totalGem = 0; // property updates UI
+            Debug.LogWarning("[GemManager] PersistenceManager not ready, set totalGem = 0");
         }
     }
 
     // ===== UI =====
     private void UpdateUI()
     {
-        if (gemText != null)
-            gemText.text = levelGem.ToString(); 
+        if (gemText == null) return;
+        gemText.text = showTotalGem ? totalGem.ToString() : levelGem.ToString();
+    }
+
+    // ===== SPENDING =====
+    public bool HasEnoughTotalGem(int amount)
+    {
+        return totalGem >= amount;
+    }
+
+    public bool SpendTotalGem(int amount)
+    {
+        if (!HasEnoughTotalGem(amount))
+            return false;
+
+        totalGem -= amount; // property updates UI
+
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.GetData().totalGem = totalGem;
+            PersistenceManager.Instance.SaveGame();
+        }
+
+        return true;
+    }
+
+    // ===== HELPER: Add Gems Directly =====
+    public void AddTotalGem(int amount)
+    {
+        totalGem += amount; // property updates UI and auto-refresh
+    }
+
+    // Optional: toggle which gem to show in UI
+    public void SetShowTotalGem(bool showTotal)
+    {
+        showTotalGem = showTotal;
+        UpdateUI();
     }
 }
