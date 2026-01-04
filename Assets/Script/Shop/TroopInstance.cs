@@ -122,11 +122,11 @@ public class TroopInstance
             // Rare
             {2, 10, 15, 20},
             // Epic
-            {5, 10, 15, 20},
+            {5, 15, 30, 50},
             // Legendary
-            {10, 15, 20, 20},
+            {10, 30, 50, 75},
             // Mythic
-            {20, 20, 20, 20}
+            {20, 35, 75, 100}
         };
 
         // Map rarity to row index

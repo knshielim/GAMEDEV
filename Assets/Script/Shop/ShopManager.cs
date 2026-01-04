@@ -165,6 +165,11 @@ public class ShopManager : MonoBehaviour
 
         // Successfully upgraded → update UI
         UpdateRightPanelUI();
+        foreach (var slot in troopSlots)
+        {
+            if (slot.gameObject.activeSelf)
+                slot.Refresh();
+        }
     }
 
     public void ResetAllTroops()
@@ -176,6 +181,11 @@ public class ShopManager : MonoBehaviour
 
         // If you want, also update the UI for the selected troop
         UpdateRightPanelUI();
+        foreach (var slot in troopSlots)
+        {
+            if (slot.gameObject.activeSelf)
+                slot.Refresh();
+        }
     }
     public TroopInstance GetOrCreateInstance(TroopData data)
     {

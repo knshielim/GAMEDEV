@@ -47,5 +47,14 @@ public class TroopSlot : MonoBehaviour
         else
             priceText.text = cost.ToString();
     }
+    public void Refresh()
+    {
+        if (troopData == null || shopManager == null)
+            return;
+
+        TroopInstance instance = shopManager.GetOrCreateInstance(troopData);
+        UpdatePriceText(instance);
+    }
+
 
 }

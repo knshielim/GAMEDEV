@@ -9,12 +9,13 @@ public enum WeatherType
 }
 
 
+
+
 public class WeatherRoulette : MonoBehaviour
 {
     [Header("Wheel Settings")]
     public WeatherType[] weathers;
     public float spinDuration = 3f;
-    public float spinSpeed = 500f;
 
     [Header("UI")]
     public GameObject roulettePanel;
@@ -98,28 +99,46 @@ public class WeatherRoulette : MonoBehaviour
     private IEnumerator Spin()
     {
         isSpinning = true;
-        float time = 0f;
-        float currentSpeed = spinSpeed;
 
-        while (time < spinDuration)
+        // 1️⃣ Decide result FIRST
+        WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
+        int index = System.Array.IndexOf(weathers, selectedWeather);
+
+        // 2️⃣ Slice math
+        float segmentAngle = 360f / weathers.Length; // 120°
+        float targetAngle = index * segmentAngle + segmentAngle / 2f;
+
+        // 3️⃣ Rotation setup
+        float startZ = transform.eulerAngles.z;
+        float finalZ = startZ + (360f * 4) - targetAngle; // 4 spins
+
+        float elapsed = 0f;
+
+        // 4️⃣ Smooth spin
+        while (elapsed < spinDuration)
         {
-            transform.Rotate(0, 0, currentSpeed * Time.unscaledDeltaTime);
-            currentSpeed = Mathf.Lerp(spinSpeed, 0, time / spinDuration);
-            time += Time.unscaledDeltaTime;
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / spinDuration;
+            float eased = Mathf.SmoothStep(0f, 1f, t);
+
+            float z = Mathf.Lerp(startZ, finalZ, eased);
+            transform.eulerAngles = new Vector3(0, 0, z);
+
             yield return null;
         }
 
-        WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
-        Debug.Log("Selected Weather: " + selectedWeather);
+        // 5️⃣ Snap exactly to target
+        transform.eulerAngles = new Vector3(0, 0, finalZ);
+
+        Debug.Log("🎯 Selected Weather: " + selectedWeather);
         WeatherManager.Instance.StartWeather(selectedWeather, weatherDuration);
 
-        isSpinning = false;
-
-        if (roulettePanel != null)
-            roulettePanel.SetActive(false);
-
+        roulettePanel?.SetActive(false);
         GameManager.Instance?.ReleasePause("WeatherRoulette");
+
+        isSpinning = false;
     }
+
     public IEnumerator EnableRoulette()
     {
         locked = false;
