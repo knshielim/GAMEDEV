@@ -14045,53 +14045,6 @@ RectTransform:
   m_AnchoredPosition: {x: 2.5000076, y: 0}
   m_SizeDelta: {x: 4.9999847, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &431794045
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 431794047}
-  - component: {fileID: 431794046}
-  m_Layer: 0
-  m_Name: GemManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &431794046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 431794045}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6f147db05295ce4ab4b7fdba1ad24c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  levelGem: 0
-  totalGem: 0
-  gemText: {fileID: 0}
---- !u!4 &431794047
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 431794045}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -26.215094, y: 428.74478, z: -1.7092048}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &475010265
 GameObject:
   m_ObjectHideFlags: 0
@@ -17418,7 +17371,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -28824,6 +28777,7 @@ GameObject:
   - component: {fileID: 1666142482}
   - component: {fileID: 1666142481}
   - component: {fileID: 1666142483}
+  - component: {fileID: 1666142484}
   m_Layer: 5
   m_Name: GemBorder
   m_TagString: Untagged
@@ -28906,6 +28860,20 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!114 &1666142484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666142479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac87c256ce26d9040be3a7c7d9eca8a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gemText: {fileID: 690806053}
+  showTotalGem: 0
 --- !u!1 &1670065230
 GameObject:
   m_ObjectHideFlags: 0
@@ -34677,4 +34645,3 @@ SceneRoots:
   - {fileID: 685102699}
   - {fileID: 1899852703}
   - {fileID: 1253532404}
-  - {fileID: 431794047}

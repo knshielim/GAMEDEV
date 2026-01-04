@@ -672,7 +672,22 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorialAfterDialogue()
     {
-        // Debug.Log($"[TutorialManager] StartTutorialAfterDialogue called. tutorialActive={tutorialActive}, TutorialCompleted={PlayerPrefs.GetInt("TutorialCompleted", 0)}");
+        // =========================================================
+        // 🔧 DEBUG CHECK: SKIP TUTORIAL?
+        // =========================================================
+        if (GameDebugConfig.Instance != null && GameDebugConfig.Instance.ShouldSkipTutorial())
+        {
+            Debug.Log("[DEBUG] ⏩ Skipping Tutorial via Debug Config");
+            
+            // Mark the tutorial as complete in save data so it doesn't appear again.
+            if (PersistenceManager.Instance != null)
+                PersistenceManager.Instance.SetTutorialCompleted(true);
+            
+            // Jump straight to normal gameplay (activate enemies, towers, etc.)
+            StartCoroutine(StartActualLevelplay());
+            return;
+        }
+        // =========================================================
 
         Debug.Log("[TutorialManager] Starting tutorial after dialogue completion");
 

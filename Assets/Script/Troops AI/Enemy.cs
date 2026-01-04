@@ -301,23 +301,67 @@ private void ShootProjectileInDirection(Vector2 direction)
 
     protected override void PerformAttack(Collider2D targetCollider)
     {
+        // 1. Cek validitas
         if (isDead || targetCollider == null) return;
 
         Unit targetUnit = targetCollider.GetComponent<Unit>();
+        
+        // Pastikan target ada dan belum mati
         if (targetUnit != null && !targetUnit.isDead)
         {
-            targetUnit.TakeDamage(attackPoints);
-            Debug.Log($"From enemy.cs: [ATTACK] {name} dealt {attackPoints} damage to {targetUnit.name} " +
-                      $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})");
+            // 2. Cek Tipe Serangan: Pukul Langsung atau Tembak?
+            if (useProjectile)
+            {
+                // Kalau Ranged/Pemanah: Tembak peluru
+                ShootProjectile(targetUnit);
+            }
+            else
+            {
+                // Kalau Melee/Pukul Dekat: Hitung damage & pukul
+                
+                // Ambil damage dari fungsi Unit.cs (sudah termasuk Critical)
+                int finalDamage = CalculateDamage((int)attackPoints); 
+                
+                // Deal Damage ke Troops player
+                targetUnit.TakeDamage(finalDamage);
 
+                // Debug Log biar enak ngeceknya
+                /*
+                Debug.Log(
+                    $"[ENEMY ATTACK] {name} dealt {finalDamage} damage to {targetUnit.name} " +
+                    $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})"
+                );
+                */
+            }
+
+            // 3. Reset jika target mati
             if (targetUnit.CurrentHealth <= 0)
             {
-                currentTarget = null;
-                isAttacking = false;
-                SetAnimationState(true, false);
+                // currentTarget = null; // Aktifkan jika kamu punya variabel ini
+                // isAttacking = false;  // Aktifkan jika logic attack kamu butuh ini
+                SetAnimationState(true, false); // Jalan lagi (Moving=true, Attacking=false)
             }
         }
     }
+
+    private void ShootProjectile(Unit target)
+    {
+        if (projectilePrefab == null) 
+        { 
+            Debug.LogWarning($"[{name}] No projectile prefab assigned!"); 
+            return; 
+        }
+
+        Vector3 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
+        GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+        
+        Vector2 dir = (target.transform.position - spawnPos).normalized;
+        Projectile projectile = proj.GetComponent<Projectile>();
+        
+        if (projectile != null)
+            projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+    }
+
 
     private void PerformAttackOnTower()
     {
@@ -379,17 +423,19 @@ private void ShootProjectileInDirection(Vector2 direction)
     // ----------------- DEATH HANDLING -----------------
     public override void Die()
     {
-        Debug.Log($"[Enemy.Die for gem] {name} died. isDead={isDead}");
-
         if (isDead) return;
 
         isDead = true;
         isAttacking = false;
 
-        // Play death animation
-        SetAnimationState(false, false, true); 
+        // pastikan anim death tetap jalan walau Time.timeScale = 0
+        if (animator != null)
+            animator.updateMode = AnimatorUpdateMode.UnscaledTime;
 
-        // Stop physics
+        SetAnimationState(false, false, true);
+
+        StopAllCoroutines();
+
         if (rb != null)
         {
             rb.velocity = Vector2.zero;
@@ -397,20 +443,19 @@ private void ShootProjectileInDirection(Vector2 direction)
             rb.gravityScale = 0;
         }
 
+        // ✅ Enemy list yang benar
         aliveEnemies.Remove(this);
 
-        // Award coins to player based on enemy rarity
-        AwardCoinsForKill();
-        
-        HandleGemDrop(); 
-        
-        // Disable all colliders
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
 
-        // Destroy after animation finishes
-        StartCoroutine(DestroyAfterDeath());
+        // kalau kamu mau drop gem/coin saat mati, panggil di sini (opsional)
+        // HandleGemDrop();
+        // AwardCoinsForKill();
+
+        StartCoroutine(DestroyAfterDeathRealtime());
     }
+
 
     private void HandleGemDrop()
     {
@@ -451,15 +496,25 @@ private void ShootProjectileInDirection(Vector2 direction)
             }
         }
     }
-    private IEnumerator DestroyAfterDeath()
+
+    private IEnumerator DestroyAfterDeathRealtime()
     {
+        yield return null;
+
+        float fallback = 0.8f;
+
         if (animator != null)
         {
-            float deathAnimLength = animator.GetCurrentAnimatorStateInfo(0).length;
-            yield return new WaitForSeconds(deathAnimLength);
+            var clips = animator.GetCurrentAnimatorClipInfo(0);
+            if (clips != null && clips.Length > 0 && clips[0].clip != null)
+                fallback = clips[0].clip.length;
         }
+
+        yield return new WaitForSecondsRealtime(fallback);
         Destroy(gameObject);
     }
+
+
 
     private void AwardCoinsForKill()
     {

@@ -39,7 +39,7 @@ public abstract class Unit : MonoBehaviour
 
     [Header("State")]
     public float currentHealth;
-    public bool isDead = false;
+    public bool isDead { get; protected set; } = false;
     public float CurrentHealth => currentHealth;
 
     public Team UnitTeam { get; protected set; }
@@ -48,6 +48,7 @@ public abstract class Unit : MonoBehaviour
     protected bool isAttacking = false;
     protected float critRate;
     protected float critDamage;
+    private bool statsInitialized = false;
 
 
     [Header("Components")]
@@ -63,6 +64,13 @@ public abstract class Unit : MonoBehaviour
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        if (statsInitialized) 
+        {
+            unitCollider = GetComponent<Collider2D>();
+            if (animator == null) animator = GetComponent<Animator>();
+            return; 
+        }
 
         //default value (just in case)
         MaxHealth = baseMaxHealth;
@@ -188,6 +196,7 @@ public abstract class Unit : MonoBehaviour
         currentHealth = MaxHealth;
         attackPoints = instance.currentAttack;
         moveSpeed = instance.currentMoveSpeed;
+        statsInitialized = true;
         OnHealthChanged?.Invoke();
     }
     public void SetHealth(float value)

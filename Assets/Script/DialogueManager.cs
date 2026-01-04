@@ -465,40 +465,65 @@ public class DialogueManager : MonoBehaviour
 
     private IEnumerator ShowLevelStartDialogueSequence(int levelNumber)
     {
-        Debug.Log($"[Dialogue] Starting START dialogue sequence for Level {levelNumber}");
-
-        LevelDialogue dialogue = GetLevelDialogue(levelNumber);
-        if (dialogue == null)
+        // =========================================================
+        // 🔧 DEBUG CHECK: SKIP DIALOGUE?
+        // =========================================================
+        if (GameDebugConfig.Instance != null && GameDebugConfig.Instance.ShouldSkipDialogue())
         {
-            Debug.LogError($"[Dialogue] No dialogue data found for Level {levelNumber}!");
-            yield break;
-        }
+            Debug.Log($"[DEBUG] ⏩ Skipping Dialogue for Level {levelNumber} via Debug Config");
 
-        // SPECIAL HANDLING FOR LEVEL 1
-        if (levelNumber == 1)
-        {
-            yield return StartCoroutine(HandleLevel1StartSequence(dialogue));
-            yield break;
+            // SPECIAL HANDLING FOR LEVEL 1
+            if (levelNumber == 1)
+            {
+                StartTutorialIfNeeded();
+                
+                // Please wait a moment until the tutorial status is clear.
+                yield return null; 
+                
+                // Check if the tutorial manager is still active (if the tutorial is running, don't start gameplay yet)
+                TutorialManager tm = FindObjectOfType<TutorialManager>();
+                if (tm != null && tm.enabled)
+                {
+                    yield return new WaitUntil(() => PersistenceManager.Instance.IsTutorialCompleted());
+                }
+            }
+
+            // Start gameplay after intro dialogue
+            StartCoroutine(StartGameplayAfterDialogue());
+            yield break; // out from this function
         }
 
         // NORMAL HANDLING FOR OTHER LEVELS
         // TEMPORARILY DISABLE seen check for debugging - show dialogue every time
-        /*
         string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
-        bool hasSeenLevelStart = PlayerPrefs.GetInt(levelStartKey, 0) == 1;
+        bool hasSeenLevelStart = false; // Default false
 
         if (PersistenceManager.Instance != null)
             hasSeenLevelStart = PersistenceManager.Instance.HasSeenDialogue(levelStartKey);
 
+        // If you have seen the dialogue, JUST EXIT and start gameplay
         if (hasSeenLevelStart)
         {
             Debug.Log($"[Dialogue] Skipping start dialogue for Level {levelNumber} - already seen");
+            
+            // If the dialog is skipped, make sure we still check the tutorial or just play directly.
+            if (levelNumber == 1)
+            {
+                StartTutorialIfNeeded(); // Check tutorial without reset
+                // Wait for the tutorial to finish or play straight away
+                yield return new WaitUntil(() => 
+                    PersistenceManager.Instance != null && (PersistenceManager.Instance.IsTutorialCompleted() || !FindObjectOfType<TutorialManager>()));
+            }
+            
+            StartCoroutine(StartGameplayAfterDialogue());
             yield break;
         }
-        */ 
 
         // Show start dialogue for debugging
-        if (dialogue.startDialogueLines.Length > 0)
+        LevelDialogue dialogue = GetLevelDialogue(levelNumber); 
+
+        // Show start dialogue for debugging
+        if (dialogue != null && dialogue.startDialogueLines.Length > 0) 
         {
             Debug.Log($"[Dialogue] 🔧 DEBUG: Showing start dialogue ({dialogue.startDialogueLines.Length} lines) for Level {levelNumber}");
             StartDialogue(dialogue.startDialogueLines, dialogue.startSpeakerNames, dialogue.startPortraits, true);
@@ -506,11 +531,6 @@ public class DialogueManager : MonoBehaviour
             // Wait for start dialogue to complete
             yield return new WaitUntil(() => !isShowingDialogue);
             Debug.Log("[Dialogue] Start dialogue completed");
-
-            // Mark start dialogue as seen
-            // string levelStartKey = $"Level{levelNumber}_StartDialogueSeen";
-            // PlayerPrefs.SetInt(levelStartKey, 1);
-            // PlayerPrefs.Save();
         }
 
         Debug.Log($"[Dialogue] Start dialogue sequence completed for Level {levelNumber} - gameplay will begin");
@@ -543,10 +563,11 @@ public class DialogueManager : MonoBehaviour
         }
 
         // STEP 2: Always start tutorial for Level 1 (reset completion status first)
+        /*
         Debug.Log("[Dialogue] Resetting tutorial completion status for Level 1");
         if (PersistenceManager.Instance != null)
             PersistenceManager.Instance.SetTutorialCompleted(false);
-
+        */
         StartTutorialIfNeeded();
 
         // Wait for tutorial to complete (it will disable itself when done)

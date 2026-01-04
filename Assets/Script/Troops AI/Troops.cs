@@ -213,24 +213,42 @@ public class Troops : Unit
 
     protected override void PerformAttack(Collider2D targetCollider)
     {
+        // 1. Cek validitas
         if (isDead || targetCollider == null) return;
 
         Unit targetUnit = targetCollider.GetComponent<Unit>();
         if (targetUnit != null && !targetUnit.isDead)
         {
-            int damage = CalculateDamage(Mathf.RoundToInt(attackPoints));
-            targetUnit.TakeDamage(damage);
+            // 2. Cek Tipe Serangan: Pukul Langsung atau Tembak?
+            // (Troops.cs kamu punya variabel 'useProjectile', kita pakai itu)
+            if (useProjectile)
+            {
+                // Kalau Ranged, jangan deal damage langsung, tapi tembak peluru
+                ShootProjectile(targetUnit);
+            }
+            else
+            {
+                // Kalau Melee (Jarak Dekat), baru hitung damage & pukul
+                
+                // Hitung damage (termasuk Critical dari Unit.cs)
+                int finalDamage = CalculateDamage((int)attackPoints); 
+                
+                // Deal Damage ke musuh
+                targetUnit.TakeDamage(finalDamage);
 
-            Debug.Log(
-                $"[ATTACK] {name} dealt {damage} damage to {targetUnit.name} " +
-                $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})"
-            );
+                // Debug Log (Pakai finalDamage, bukan damage)
+                Debug.Log(
+                    $"[ATTACK] {name} dealt {finalDamage} damage to {targetUnit.name} " +
+                    $"(HP: {targetUnit.CurrentHealth}/{targetUnit.MaxHealth})"
+                );
+            }
 
+            // 3. Reset jika target mati
             if (targetUnit.CurrentHealth <= 0)
             {
                 currentTarget = null;
                 isAttacking = false;
-                SetAnimationState(true, false);
+                SetAnimationState(true, false); // Kembali jalan (Moving=true, Attacking=false)
             }
         }
     }
@@ -301,11 +319,15 @@ public class Troops : Unit
 
         isDead = true;
         isAttacking = false;
+
+        // pastikan anim death tetap jalan walau Time.timeScale = 0
+        if (animator != null)
+            animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+
         SetAnimationState(false, false, true);
 
         isUnderAcidRain = false;
         StopAllCoroutines();
-
 
         if (rb != null)
         {
@@ -315,23 +337,30 @@ public class Troops : Unit
         }
 
         aliveTroops.Remove(this);
-        Debug.Log($"🔴 Troop REMOVED from list: {name} | Total troops: {aliveTroops.Count}");
 
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
 
-        StartCoroutine(DestroyAfterDeath());
+        StartCoroutine(DestroyAfterDeathRealtime());
     }
 
-    private IEnumerator DestroyAfterDeath()
+    private IEnumerator DestroyAfterDeathRealtime()
     {
+        yield return null;
+
+        float fallback = 0.8f;
+
         if (animator != null)
         {
-            float deathAnimLength = animator.GetCurrentAnimatorStateInfo(0).length;
-            yield return new WaitForSeconds(deathAnimLength);
+            var clips = animator.GetCurrentAnimatorClipInfo(0);
+            if (clips != null && clips.Length > 0 && clips[0].clip != null)
+                fallback = clips[0].clip.length;
         }
+
+        yield return new WaitForSecondsRealtime(fallback);
         Destroy(gameObject);
     }
+
 
     public void FireProjectile()
     {

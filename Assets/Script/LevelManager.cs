@@ -128,7 +128,7 @@ public class LevelManager : MonoBehaviour
             }
 
             GemManager.Instance.AddLevelGem(reward);
-            GemManager.Instance.SaveLevelGemToTotal();
+            GemManager.Instance.ConvertLevelGemToTotal();
             Debug.Log($"[LevelReward] Player dapat {reward} Gems!");
         }
 
