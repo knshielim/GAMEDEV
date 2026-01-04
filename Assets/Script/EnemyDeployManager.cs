@@ -89,6 +89,7 @@ public class EnemyDeployManager : MonoBehaviour
     private bool _bossSpawned = false;
     private bool _bossBattleActive = false; // Pause enemy deployment during boss battles
     private bool _levelSettingsApplied = false;
+    private bool _lastFrameWasActive = false; // Track wave active state for screen shake trigger
     
     // Level-specific configurations
     private struct LevelConfig
@@ -636,24 +637,6 @@ public class EnemyDeployManager : MonoBehaviour
         // Keep spawn interval constant (use level 4 base rate)
         float baseInterval = levelConfigs[4].spawnIntervalMultiplier * baseSpawnInterval;
         currentSpawnInterval = baseInterval; // No changes to spawn rate
-
-        // Log wave transitions
-        int newWaveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
-        if (newWaveNumber != _currentWave && newWaveNumber > 1)
-        {
-            Debug.Log($"[EnemyDeploy] 🌊 WAVE {newWaveNumber} STARTED! at {elapsedTime:F1}s");
-            Debug.Log($"[EnemyDeploy] ⚡ Spawn rate remains constant: Every {currentSpawnInterval:F1} seconds");
-
-            // Shake screen for wave transition
-            StartCoroutine(ScreenShake(0.5f, 0.2f)); // Short, subtle shake
-            Debug.Log($"[EnemyDeploy] 🌋 Screen shake triggered for Wave {newWaveNumber}");
-
-            // Optional: Show wave transition UI or play sound
-            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
-            {
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
-            }
-        }
     }
 
     /// <summary>
@@ -668,30 +651,55 @@ public class EnemyDeployManager : MonoBehaviour
         int waveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
         float progressInCurrentWave = (elapsedTime % waveTransitionInterval) / waveTransitionInterval;
 
-        // Determine if we're waiting for next wave transition
-        bool isWaitingForWave = progressInCurrentWave < 1f;
+        // Calculate time in current wave for display
+        float timeInCurrentWave = elapsedTime % waveTransitionInterval;
+        
+        // ✅ NEW LOGIC: Show countdown (50 seconds) then wave active (10 seconds)
+        // Each 60-second cycle: 0-50s = countdown, 50-60s = wave active
+        bool isWaveActive = timeInCurrentWave >= 50f;
+
+        // ✅ FIX: TRIGGER SCREEN SHAKE when transitioning from countdown to active
+        if (isWaveActive && !_lastFrameWasActive)
+        {
+            _lastFrameWasActive = true; // Mark as triggered
+            
+            Debug.Log($"[EnemyDeploy] 🌊 WAVE {waveNumber} ACTIVE! at {elapsedTime:F1}s");
+            
+            // Shake screen for wave activation
+            StartCoroutine(ScreenShake(0.5f, 0.2f));
+            Debug.Log($"[EnemyDeploy] 🌋 Screen shake triggered for Wave {waveNumber}");
+            
+            // Optional: Play sound
+            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
+            {
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
+            }
+        }
+        // Reset flag when wave ends
+        else if (!isWaveActive && _lastFrameWasActive)
+        {
+            _lastFrameWasActive = false;
+        }
 
         // Update text based on state
-        if (isWaitingForWave)
+        if (isWaveActive)
         {
-            // Show time remaining until next wave
-            float timeInCurrentWave = elapsedTime % waveTransitionInterval;
-            float timeRemaining = waveTransitionInterval - timeInCurrentWave;
+            // Show current wave number (last 10 seconds of cycle)
+            currentWaveText.text = $"Wave {waveNumber}";
 
-            currentWaveText.text = $"Time to next wave: {Mathf.CeilToInt(timeRemaining)}s";
+            // Set progress bar color to red (active wave)
+            if (waveProgressFill != null)
+                waveProgressFill.color = Color.red;
+        }
+        else
+        {
+            // ✅ Countdown to when wave becomes active (50 seconds from now)
+            float timeUntilWaveActive = 50f - timeInCurrentWave;
+            currentWaveText.text = $"Time to next wave: {Mathf.CeilToInt(timeUntilWaveActive)}s";
 
             // Set progress bar color to yellow (waiting)
             if (waveProgressFill != null)
                 waveProgressFill.color = Color.yellow;
-        }
-        else
-        {
-            // Show current wave number
-            currentWaveText.text = $"Wave {waveNumber}";
-
-            // Set progress bar color to red (active)
-            if (waveProgressFill != null)
-                waveProgressFill.color = Color.red;
         }
 
         // Update progress bar value (shows progress within current wave)
