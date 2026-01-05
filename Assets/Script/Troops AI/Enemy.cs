@@ -451,11 +451,23 @@ private void ShootProjectileInDirection(Vector2 direction)
         foreach (Collider2D col in GetComponents<Collider2D>())
             col.enabled = false;
 
-        // kalau kamu mau drop gem/coin saat mati, panggil di sini (opsional)
-        HandleGemDrop();
-        // AwardCoinsForKill();
-
         StartCoroutine(DestroyAfterDeathRealtime());
+        // =========================================================
+        // ✅ PERBAIKAN: Jalankan Destroy DULUAN sebelum logic lain
+        // =========================================================
+        StartCoroutine(DestroyAfterDeathRealtime());
+
+        // Baru jalankan logic drop item (Gem/Coin)
+        // Jika ini error, setidaknya musuh sudah proses menghilang
+        try 
+        {
+            HandleGemDrop();
+            // AwardCoinsForKill();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[Enemy] Error giving rewards: {e.Message}");
+        }
     }
 
 
@@ -497,7 +509,7 @@ private void ShootProjectileInDirection(Vector2 direction)
                 // ATAU gunakan ini jika fungsi helper belum dibuat:
                 // AudioManager.Instance.PlaySFX(AudioManager.Instance.gemDropSFX);
             }
-            
+
             Debug.Log($"[Enemy] 💎 Dropped {amount} Gems! (Boss:{isBoss}, Force:{forceDrop})");
 
             if (DamagePopupSpawner.Instance != null)
