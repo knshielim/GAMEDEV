@@ -14251,6 +14251,9 @@ MonoBehaviour:
   debugMode: 0
   debugWeather: 1
   locked: 1
+  bgmDuckMul: 0.35
+  ambientDuckMul: 0.7
+  bgmReturnDelay: 0.1
 --- !u!114 &822185679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18993,8 +18996,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ddcbc4102edbc468ac6be9dfb3a8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  popupPrefab: {fileID: 0}
-  mainCamera: {fileID: 0}
+  popupPrefab: {fileID: 7642141261051111306, guid: dd821630a84a3e04fbf6989883e81144, type: 3}
+  mainCamera: {fileID: 519420031}
 --- !u!1 &1203511233
 GameObject:
   m_ObjectHideFlags: 0

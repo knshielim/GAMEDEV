@@ -29,7 +29,7 @@ public class TroopData : ScriptableObject
 
     [Header("Stats")]
     public int maxHealth;
-    public int attack;
+    public float attack;
     public float moveSpeed;        // jalan ke depan seberapa cepat
     public float attackInterval;   // waktu antar serangan (detik)
 

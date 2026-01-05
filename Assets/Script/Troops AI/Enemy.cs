@@ -208,61 +208,69 @@ public class Enemy : Unit
         isAttacking = false;
     }
 
-// This method should be called from Animation Event
-public void FireProjectile()
-{
-    if (isDead || !useProjectile) return;
-    
-    if (currentTarget != null)
+    // This method should be called from Animation Event
+    public void FireProjectile()
     {
-        ShootProjectileAtTarget(currentTarget);
-    }
-    else if (targetTower != null)
-    {
-        // Shoot left towards tower
-        ShootProjectileInDirection(Vector2.left);
-    }
-}
-
-private void ShootProjectileAtTarget(Unit target)
-{
-    if (projectilePrefab == null)
-    {
-        Debug.LogWarning($"[{name}] No projectile prefab assigned!");
-        return;
+        if (isDead || !useProjectile) return;
+        
+        if (currentTarget != null)
+        {
+            ShootProjectileAtTarget(currentTarget);
+        }
+        else if (targetTower != null)
+        {
+            // Shoot left towards tower
+            ShootProjectileInDirection(Vector2.left);
+        }
     }
 
-    Vector3 spawnPos = projectileSpawnPoint != null 
-        ? projectileSpawnPoint.position 
-        : transform.position;
-
-    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
-    
-    Vector2 dir = (target.transform.position - spawnPos).normalized;
-    
-    Projectile projectile = proj.GetComponent<Projectile>();
-    if (projectile != null)
+    private void ShootProjectileAtTarget(Unit target)
     {
-        projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+        if (projectilePrefab == null)
+        {
+            Debug.LogWarning($"[{name}] No projectile prefab assigned!");
+            return;
+        }
+
+        Vector3 spawnPos = projectileSpawnPoint != null 
+            ? projectileSpawnPoint.position 
+            : transform.position;
+
+        GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+        
+        Vector2 dir = (target.transform.position - spawnPos).normalized;
+        
+        Projectile projectile = proj.GetComponent<Projectile>();
+        if (projectile != null)
+        {
+            // ✅ 1. Hitung Damage (Float) & Crit pakai fungsi baru
+            float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+
+            // ✅ 2. Masukkan 'isCrit' ke parameter ke-3
+            projectile.Initialize(dir, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
+        }
     }
-}
 
-private void ShootProjectileInDirection(Vector2 direction)
-{
-    if (projectilePrefab == null) return;
-
-    Vector3 spawnPos = projectileSpawnPoint != null 
-        ? projectileSpawnPoint.position 
-        : transform.position;
-
-    GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
-    
-    Projectile projectile = proj.GetComponent<Projectile>();
-    if (projectile != null)
+    private void ShootProjectileInDirection(Vector2 direction)
     {
-        projectile.Initialize(direction, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+        if (projectilePrefab == null) return;
+
+        Vector3 spawnPos = projectileSpawnPoint != null 
+            ? projectileSpawnPoint.position 
+            : transform.position;
+
+        GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+        
+        Projectile projectile = proj.GetComponent<Projectile>();
+        if (projectile != null)
+        {
+            // ✅ 1. Hitung Damage (Float) & Crit
+            float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+
+            // ✅ 2. Masukkan 'isCrit' ke parameter ke-3
+            projectile.Initialize(direction, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
+        }
     }
-}
 
     protected override void FindAndPerformAttack()
     {
@@ -322,10 +330,10 @@ private void ShootProjectileInDirection(Vector2 direction)
                 // Kalau Melee/Pukul Dekat: Hitung damage & pukul
                 
                 // Ambil damage dari fungsi Unit.cs (sudah termasuk Critical)
-                int finalDamage = CalculateDamage((int)attackPoints); 
-                
+                float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+
                 // Deal Damage ke Troops player
-                targetUnit.TakeDamage(finalDamage);
+                targetUnit.TakeDamage(finalDamage, isCrit);
 
                 // Debug Log biar enak ngeceknya
                 /*
@@ -348,20 +356,23 @@ private void ShootProjectileInDirection(Vector2 direction)
 
     private void ShootProjectile(Unit target)
     {
-        if (projectilePrefab == null) 
-        { 
-            Debug.LogWarning($"[{name}] No projectile prefab assigned!"); 
-            return; 
-        }
+        if (projectilePrefab == null) return;
 
         Vector3 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
         GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
         
-        Vector2 dir = (target.transform.position - spawnPos).normalized;
         Projectile projectile = proj.GetComponent<Projectile>();
-        
         if (projectile != null)
-            projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+        {
+            // 1. Hitung Damage & Crit menggunakan fungsi baru di Unit.cs
+            float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+
+            // 2. Arah tembakan
+            Vector2 dir = (target.transform.position - spawnPos).normalized;
+
+            // 3. Panggil Initialize dengan parameter isCrit yang baru
+            projectile.Initialize(dir, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
+        }
     }
 
 

@@ -231,10 +231,10 @@ public class Troops : Unit
                 // Kalau Melee (Jarak Dekat), baru hitung damage & pukul
                 
                 // Hitung damage (termasuk Critical dari Unit.cs)
-                int finalDamage = CalculateDamage((int)attackPoints); 
-                
+                float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+
                 // Deal Damage ke musuh
-                targetUnit.TakeDamage(finalDamage);
+                targetUnit.TakeDamage(finalDamage, isCrit);
 
                 // Debug Log (Pakai finalDamage, bukan damage)
                 Debug.Log(
@@ -377,15 +377,24 @@ public class Troops : Unit
 
     private void ShootProjectile(Unit target)
     {
-        if (projectilePrefab == null) { Debug.LogWarning($"[{name}] No projectile prefab assigned!"); return; }
+        if (projectilePrefab == null) return;
 
-        Vector3 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
+        Vector3 spawnPos = projectileSpawnPoint != null
+            ? projectileSpawnPoint.position
+            : transform.position;
+
         GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+
         Vector2 dir = (target.transform.position - spawnPos).normalized;
+
         Projectile projectile = proj.GetComponent<Projectile>();
         if (projectile != null)
-            projectile.Initialize(dir, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+        {
+            float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+            projectile.Initialize(dir, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
+        }
     }
+
 
     private void ShootProjectileInDirection(Vector2 direction)
     {
@@ -393,9 +402,15 @@ public class Troops : Unit
 
         Vector3 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
         GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+        
         Projectile projectile = proj.GetComponent<Projectile>();
         if (projectile != null)
-            projectile.Initialize(direction, attackPoints, UnitTeam, projectileSpeed, projectileLifetime);
+        {
+            float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
+            
+            // Masukkan isCrit ke parameter ke-3
+            projectile.Initialize(direction, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
+        }
     }
 
     

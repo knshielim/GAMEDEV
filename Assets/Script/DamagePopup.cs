@@ -27,23 +27,29 @@ public class DamagePopup : MonoBehaviour
         if (canvasGroup) canvasGroup.alpha = 1f;
     }
 
-    public void Setup(int damage, bool isCrit)
+    public void Setup(float damage, bool isCrit)
     {
-        if (!text) return;
+        // Pastikan selalu positif untuk tampilan
+        float value = Mathf.Abs(damage);
 
-        text.text = damage.ToString();
+        // Format float:
+        // - tanpa .0
+        // - maksimal 1 angka desimal
+        string textValue = value % 1f == 0
+            ? value.ToString("0")
+            : value.ToString("0.#");
 
-        if (isCrit)
-        {
-            text.color = critColor;
-            transform.localScale *= critScale;
-        }
-        else
-        {
-            text.color = normalColor;
-            transform.localScale *= normalScale;
-        }
+        // Selalu tampilkan tanda minus
+        text.text = "-" + textValue;
+
+        // Style crit / normal
+        text.color = isCrit ? critColor : normalColor;
+        transform.localScale = isCrit ? Vector3.one * critScale : Vector3.one * normalScale;
+
+        // Reset alpha (penting!)
+        canvasGroup.alpha = 1f;
     }
+
 
     private void Update()
     {

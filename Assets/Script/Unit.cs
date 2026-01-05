@@ -282,12 +282,30 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float dmg)
+    public void TakeDamage(float dmg, bool isCrit = false)
     {
         if (isDead) return;
 
         currentHealth -= dmg;
         OnHealthChanged?.Invoke();
+
+        if (DamagePopupSpawner.Instance != null)
+        {
+            Vector3 pos = transform.position + Vector3.up;
+
+            // 1️⃣ offset utama (menjauh dari badan)
+            float xOffset = (UnitTeam == Team.Enemy) ? 0.6f : -0.6f;
+
+            // 2️⃣ random kecil (biar tidak numpuk)
+            float randX = UnityEngine.Random.Range(-0.1f, 0.1f);
+            float randY = UnityEngine.Random.Range(0.0f, 0.15f);
+
+            // 3️⃣ gabungkan
+            pos += new Vector3(xOffset + randX, randY, 0f);
+
+            DamagePopupSpawner.Instance.Spawn(dmg, isCrit, pos);
+
+        }
 
         if (currentHealth <= 0) Die();
     }
@@ -338,18 +356,22 @@ public abstract class Unit : MonoBehaviour
     {
         troopData = data;
     }
-        protected int CalculateDamage(int baseDamage)
+    
+    protected float CalculateDamage(float baseDamage, out bool isCrit)
     {
-        bool isCrit = UnityEngine.Random.value <= critRate;
-        int finalDamage = baseDamage;
+        // Random value 0.0 sampai 1.0
+        isCrit = UnityEngine.Random.value <= critRate;
+        
+        // Gunakan float, jangan int
+        float finalDamage = baseDamage;
 
         if (isCrit)
         {
-            finalDamage = Mathf.RoundToInt(baseDamage * critDamage);
-            Debug.Log($"🔥 CRITICAL HIT by {name}!");
+            // Jangan pakai Mathf.RoundToInt agar desimal tetap ada
+            finalDamage = baseDamage * critDamage;
+            // Debug.Log($"🔥 CRITICAL HIT by {name}!");
         }
 
         return finalDamage;
     }
-
 }

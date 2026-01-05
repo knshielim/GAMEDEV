@@ -12,20 +12,23 @@ public class Projectile : MonoBehaviour
     private Team ownerTeam;
     private float spawnTime;
     private float lifetime;
+    private bool isCrit;
 
     [SerializeField] private Rigidbody2D rb;
 
     /// <summary>
     /// Initialize the projectile with all necessary data
     /// </summary>
-    public void Initialize(Vector2 dir, float dmg, Team team, float spd, float life)
+    public void Initialize(Vector2 dir, float dmg, bool isCritical, Team team, float spd, float life)
     {
         direction = dir.normalized;
         damage = dmg;
+        isCrit = isCritical;
         ownerTeam = team;
         speed = spd;
         lifetime = life;
         spawnTime = Time.time;
+        
 
         // Get Rigidbody2D if not assigned
         if (rb == null)
@@ -62,8 +65,10 @@ public class Projectile : MonoBehaviour
             if (unit.UnitTeam == ownerTeam || unit.isDead)
                 return;
 
-            // Deal damage
-            unit.TakeDamage(damage);
+            // ✅ KIRIM DAMAGE (FLOAT) DAN STATUS CRIT (BOOL)
+            // Ini akan memicu DamagePopup merah jika isCrit = true
+            unit.TakeDamage(damage, isCrit);
+
             Debug.Log($"[Projectile] Hit {unit.name} for {damage} damage");
 
             // Destroy projectile on hit

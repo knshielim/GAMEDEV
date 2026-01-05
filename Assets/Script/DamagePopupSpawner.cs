@@ -22,13 +22,18 @@ public class DamagePopupSpawner : MonoBehaviour
         if (!mainCamera) mainCamera = Camera.main;
     }
 
-    public void Spawn(int damage, bool isCrit, Vector3 worldPos)
+    public void Spawn(float damage, bool isCrit, Vector3 worldPos)
     {
         var popup = Instantiate(popupPrefab, worldPos, Quaternion.identity);
 
         // optional: hadap kamera (kalau kamu belum pakai billboard script)
+        /*
         if (mainCamera)
             popup.transform.rotation = Quaternion.LookRotation(popup.transform.position - mainCamera.transform.position);
+        */
+
+
+        popup.transform.rotation = Quaternion.identity;
 
         popup.Setup(damage, isCrit);
     }
