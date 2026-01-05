@@ -2095,7 +2095,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 42, y: -403.71}
+  m_AnchoredPosition: {x: 0.30872, y: -403.71}
   m_SizeDelta: {x: 1919.3826, y: 377.1046}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &160549388
@@ -9316,7 +9316,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &367331911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9339,7 +9339,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -1.3898926, y: -392.16406}
+  m_AnchoredPosition: {x: -1.3896484, y: -392.16406}
   m_SizeDelta: {x: -2.78, y: -699.0111}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &367331912
@@ -9866,7 +9866,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.9997559, y: -104.00012}
+  m_AnchoredPosition: {x: 2, y: -104.000244}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &407175764
@@ -10448,7 +10448,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 817, y: -291.46503}
+  m_AnchoredPosition: {x: 770, y: -291.46503}
   m_SizeDelta: {x: 251.8726, y: 83.9599}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &460093041
@@ -10607,7 +10607,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -570.69, y: -289.49}
+  m_AnchoredPosition: {x: -617.69, y: -289.49}
   m_SizeDelta: {x: 560, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &466302372
@@ -12355,7 +12355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 8.915283, y: -260.3792}
+  m_AnchoredPosition: {x: 8.915039, y: -260.37915}
   m_SizeDelta: {x: -335.48, y: -591.4583}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &627894621
@@ -16675,7 +16675,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -644.1, y: -124.5}
+  m_AnchoredPosition: {x: -687, y: -116}
   m_SizeDelta: {x: -1621.7, y: -930.2621}
   m_Pivot: {x: 0.4999999, y: 0.50000006}
 --- !u!1 &1026962947
@@ -17817,7 +17817,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 97.327, y: 65.17}
+  m_AnchoredPosition: {x: 97.32715, y: 65.16992}
   m_SizeDelta: {x: -986.3032, y: -446.72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1079061367
@@ -20958,7 +20958,7 @@ MonoBehaviour:
   tutorialManager: {fileID: 0}
   upgradeButtonText: {fileID: 1701505968}
   upgradeButtonImage: {fileID: 1607317672}
-  affordableSprite: {fileID: 21300000, guid: f66021282a6507b4fae84f6581c876b3, type: 3}
+  affordableSprite: {fileID: 21300000, guid: 99c35b08182c7a5489fdfc199b885553, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: f7641c701f4cb734e844995120c810bd, type: 3}
   gameOverPanel: {fileID: 415222792}
   victoryPanel: {fileID: 204946241}
@@ -22080,7 +22080,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1585362918
 RectTransform:
   m_ObjectHideFlags: 0
@@ -22589,7 +22589,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 36.338, y: -291.46503}
+  m_AnchoredPosition: {x: -10.661999, y: -291.46503}
   m_SizeDelta: {x: 480, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1607317671
@@ -22833,7 +22833,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 467.69, y: -291.47}
+  m_AnchoredPosition: {x: 420.69, y: -291.47}
   m_SizeDelta: {x: 251.8726, y: 83.9599}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1617622525
@@ -22986,7 +22986,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -47, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1626374302
@@ -25653,7 +25653,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -80.7, y: -133.6}
+  m_AnchoredPosition: {x: -80.700195, y: -133.6001}
   m_SizeDelta: {x: 84.5367, y: 84.5367}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1799966071
@@ -26236,7 +26236,7 @@ MonoBehaviour:
   playerSpawnPoint: {fileID: 1980779897}
   upgradeButtonText: {fileID: 1334206216}
   upgradeButtonImage: {fileID: 466302373}
-  affordableSprite: {fileID: 21300000, guid: cd5a200c93195ce45b991e52e4bd6a33, type: 3}
+  affordableSprite: {fileID: 21300000, guid: 1bf11c34735e77745995d05204fce1f3, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: a095ebab78f3847419359abbd6809141, type: 3}
   summonCostText: {fileID: 76811260}
   summonRateTooltip: {fileID: 1023259673}
@@ -26426,7 +26426,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.9997559, y: -281}
+  m_AnchoredPosition: {x: 2, y: -281}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1873875218
@@ -28831,8 +28831,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -299, y: -0.000046462}
-  m_SizeDelta: {x: 272, y: 144}
+  m_AnchoredPosition: {x: -197.41, y: 0.000014573}
+  m_SizeDelta: {x: 432, y: 144}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2008639916
 MonoBehaviour:
@@ -28854,7 +28854,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9d545049beee81345b7c3ff9cc3e12a3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 130b8173c4d302349beeb158cd22458e, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
