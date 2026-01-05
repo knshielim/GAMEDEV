@@ -1,46 +1,36 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections;
-
 
 public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance;
 
-
-    [Header("Rarity Label Sprites")]
-    public Sprite commonLabelSprite;
-    public Sprite rareLabelSprite;
-    public Sprite epicLabelSprite;
-    public Sprite legendaryLabelSprite;
-    public Sprite mythicLabelSprite;
-    public Sprite bossLabelSprite;
-
-
+    // ==================== MAIN SETTINGS ====================
     [Header("Main Settings Panel")]
-    public GameObject settingsPanel; // Main panel with tabs
+    public GameObject settingsPanel;
     public Button settingsButton;
     public Button closeSettingsButton;
 
+    // ==================== TABS ====================
     [Header("Settings Tabs")]
     public Button volumeTabButton;
     public Button troopDirectoryTabButton;
     public Button helpTabButton;
 
+    // ==================== CONTENT PANELS ====================
     [Header("Settings Content Panels")]
     public GameObject volumePanel;
     public GameObject troopDirectoryPanel;
     public GameObject helpPanel;
 
+    // ==================== BACK BUTTONS ====================
     [Header("Back Buttons")]
     public Button volumeBackButton;
     public Button troopDirectoryBackButton;
     public Button helpBackButton;
 
+    // ==================== VOLUME ====================
     [Header("Volume Sliders")]
     public Slider masterVolumeSlider;
     public Slider musicVolumeSlider;
@@ -51,926 +41,223 @@ public class SettingsManager : MonoBehaviour
     public TextMeshProUGUI musicVolumeText;
     public TextMeshProUGUI sfxVolumeText;
 
-    [Header("Font Settings")]
-    public TMP_FontAsset upheavttFont;
+    // ==================== TROOP DIRECTORY ====================
+    [Header("Troop Directory Buttons")]
+    public Button commonButton;
+    public Button rareButton;
+    public Button epicButton;
+    public Button legendaryButton;
+    public Button mythicButton;
+
+    [Header("Troop Display")]
+    public GameObject troopDisplayPanel;
+
+    [Header("Troop Sprites")]
+    public Sprite commonTroopSprite;
+    public Sprite rareTroopSprite;
+    public Sprite epicTroopSprite;
+    public Sprite legendaryTroopSprite;
+    public Sprite mythicTroopSprite;
+
+    private Image troopDisplayImage;
+
+    // ==================== UNITY LIFECYCLE ====================
 
     private void Awake()
     {
-        // Allow one SettingsManager per scene, not persistent
         if (Instance == null)
-        {
             Instance = this;
-        }
         else
-        {
             Destroy(gameObject);
-            return;
-        }
-    }
-
-    // Tab button click handlers
-    private void OnVolumeTabClicked()
-    {
-        ShowVolumePanel();
-    }
-
-    private void OnTroopDirectoryTabClicked()
-    {
-        ShowTroopDirectoryPanel();
-    }
-
-    private void OnHelpTabClicked()
-    {
-        ShowHelpPanel();
-    }
-
-    // Back button click handlers
-    private void OnVolumeBackClicked()
-    {
-        ShowMainSettingsPanel();
-    }
-
-    private void OnTroopDirectoryBackClicked()
-    {
-        ShowMainSettingsPanel();
-    }
-
-    private void OnHelpBackClicked()
-    {
-        ShowMainSettingsPanel();
-    }
-
-    private void OnDestroy()
-    {
-        // Clean up instance
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
-
-    private void SetupButtonListeners()
-    {
-        if (settingsButton != null)
-        {
-            settingsButton.onClick.RemoveAllListeners();
-            settingsButton.onClick.AddListener(ToggleSettings);
-            Debug.Log("[SettingsManager] Settings button listener added");
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] SettingsButton not found!");
-        }
-
-        if (closeSettingsButton != null)
-        {
-            closeSettingsButton.onClick.RemoveAllListeners();
-            closeSettingsButton.onClick.AddListener(CloseSettings);
-            Debug.Log("[SettingsManager] Close button listener added");
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] CloseButton not found!");
-        }
-
-        // Setup tab buttons
-        if (volumeTabButton != null)
-        {
-            volumeTabButton.onClick.RemoveAllListeners();
-            volumeTabButton.onClick.AddListener(OnVolumeTabClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] VolumeTabButton not found!");
-        }
-
-        if (troopDirectoryTabButton != null)
-        {
-            troopDirectoryTabButton.onClick.RemoveAllListeners();
-            troopDirectoryTabButton.onClick.AddListener(OnTroopDirectoryTabClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] TroopDirectoryTabButton not found!");
-        }
-
-        if (helpTabButton != null)
-        {
-            helpTabButton.onClick.RemoveAllListeners();
-            helpTabButton.onClick.AddListener(OnHelpTabClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] HelpTabButton not found!");
-        }
-
-        // Setup back buttons - all go back to main settings panel
-        if (volumeBackButton != null)
-        {
-            volumeBackButton.onClick.RemoveAllListeners();
-            volumeBackButton.onClick.AddListener(OnVolumeBackClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] VolumeBackButton not found!");
-        }
-
-        if (troopDirectoryBackButton != null)
-        {
-            troopDirectoryBackButton.onClick.RemoveAllListeners();
-            troopDirectoryBackButton.onClick.AddListener(OnTroopDirectoryBackClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] TroopDirectoryBackButton not found!");
-        }
-
-        if (helpBackButton != null)
-        {
-            helpBackButton.onClick.RemoveAllListeners();
-            helpBackButton.onClick.AddListener(OnHelpBackClicked);
-        }
-        else
-        {
-            Debug.LogWarning("[SettingsManager] HelpBackButton not found!");
-        }
-    }
-
-    private void SetupSliderListeners()
-    {
-        if (masterVolumeSlider != null)
-        {
-            masterVolumeSlider.onValueChanged.RemoveAllListeners();
-            masterVolumeSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
-        }
-
-        if (musicVolumeSlider != null)
-        {
-            musicVolumeSlider.onValueChanged.RemoveAllListeners();
-            musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
-        }
-
-        if (sfxVolumeSlider != null)
-        {
-            sfxVolumeSlider.onValueChanged.RemoveAllListeners();
-            sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
-        }
     }
 
     private void Start()
     {
-        // Setup all UI connections - references should be assigned in Inspector
-        SetupButtonListeners();
-        SetupSliderListeners();
-        UpdateUI();
+        if (troopDisplayPanel != null)
+            troopDisplayImage = troopDisplayPanel.GetComponent<Image>();
 
-        if (settingsPanel != null)
-        {
-            settingsPanel.SetActive(false);
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] Settings panel is NULL in Start! Make sure to assign it in Inspector!");
-        }
+        SetupButtons();
+        SetupSliders();
+        UpdateVolumeUI();
+
+        settingsPanel.SetActive(false);
+        HideAllPanels();
+        HideAllBackButtons();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && settingsPanel != null && settingsPanel.activeSelf)
-        {
+        if (Input.GetKeyDown(KeyCode.Escape) && settingsPanel.activeSelf)
             CloseSettings();
-        }
     }
 
-    public void ToggleSettings()
+    // ==================== BUTTON SETUP ====================
+
+    private void SetupButtons()
     {
-        if (settingsPanel != null)
-        {
-            bool newState = !settingsPanel.activeSelf;
-            settingsPanel.SetActive(newState);
+        settingsButton?.onClick.AddListener(ToggleSettings);
+        closeSettingsButton?.onClick.AddListener(CloseSettings);
 
-            // Pause/resume game when settings panel opens/closes
-            Time.timeScale = newState ? 0f : 1f;
+        volumeTabButton?.onClick.AddListener(ShowVolumePanel);
+        troopDirectoryTabButton?.onClick.AddListener(ShowTroopDirectoryPanel);
+        helpTabButton?.onClick.AddListener(ShowHelpPanel);
 
-            if (newState)
-            {
-                UpdateUI();
-                // Don't show any panel by default - just show the tabs
-                HideAllContentPanels();
-                // Hide all back buttons initially
-                if (volumeBackButton != null) volumeBackButton.gameObject.SetActive(false);
-                if (troopDirectoryBackButton != null) troopDirectoryBackButton.gameObject.SetActive(false);
-                if (helpBackButton != null) helpBackButton.gameObject.SetActive(false);
-                // Reset tab button states (no tab selected)
-                if (volumeTabButton != null) UpdateTabButtonVisual(volumeTabButton, false);
-                if (troopDirectoryTabButton != null) UpdateTabButtonVisual(troopDirectoryTabButton, false);
-                if (helpTabButton != null) UpdateTabButtonVisual(helpTabButton, false);
-            }
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] Cannot toggle - settingsPanel is NULL! Assign it in Inspector!");
-        }
+        volumeBackButton?.onClick.AddListener(ShowMainSettings);
+        troopDirectoryBackButton?.onClick.AddListener(ShowMainSettings);
+        helpBackButton?.onClick.AddListener(ShowMainSettings);
+
+        commonButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Common));
+        rareButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Rare));
+        epicButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Epic));
+        legendaryButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Legendary));
+        mythicButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Mythic));
     }
 
-    public void CloseSettings()
+    private void SetupSliders()
     {
-        if (settingsPanel != null)
-        {
-            settingsPanel.SetActive(false);
-            // Resume game when closing settings
-            Time.timeScale = 1f;
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] Cannot close - settingsPanel is NULL!");
-        }
-
-        // Hide all back buttons when closing settings
-        if (volumeBackButton != null)
-            volumeBackButton.gameObject.SetActive(false);
-        if (troopDirectoryBackButton != null)
-            troopDirectoryBackButton.gameObject.SetActive(false);
-        if (helpBackButton != null)
-            helpBackButton.gameObject.SetActive(false);
+        masterVolumeSlider?.onValueChanged.AddListener(OnMasterVolumeChanged);
+        musicVolumeSlider?.onValueChanged.AddListener(OnMusicVolumeChanged);
+        sfxVolumeSlider?.onValueChanged.AddListener(OnSFXVolumeChanged);
     }
 
-    public void ShowVolumePanel()
+    // ==================== SETTINGS NAVIGATION ====================
+
+    private void ToggleSettings()
     {
-        // Hide main settings panel and show only volume panel
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        HideAllContentPanels();
+        bool isOpen = !settingsPanel.activeSelf;
+        settingsPanel.SetActive(isOpen);
+        Time.timeScale = isOpen ? 0f : 1f;
 
-        if (volumePanel != null)
+        if (isOpen)
         {
-            volumePanel.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] volumePanel is NULL! Assign it in Inspector!");
-        }
-
-        // Show volume back button
-        if (volumeBackButton != null)
-        {
-            volumeBackButton.gameObject.SetActive(true);
+            HideAllPanels();
+            HideAllBackButtons();
+            UpdateVolumeUI();
         }
     }
 
-    public void ShowTroopDirectoryPanel()
+    private void CloseSettings()
     {
-        // Hide main settings panel and show only troop directory panel
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        HideAllContentPanels();
-
-        if (troopDirectoryPanel != null)
-        {
-            troopDirectoryPanel.SetActive(true);
-            PopulateTroopDirectory();
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] troopDirectoryPanel is NULL! Assign it in Inspector!");
-        }
-
-        // Show troop directory back button
-        if (troopDirectoryBackButton != null)
-        {
-            troopDirectoryBackButton.gameObject.SetActive(true);
-        }
+        settingsPanel.SetActive(false);
+        Time.timeScale = 1f;
+        HideAllPanels();
+        HideAllBackButtons();
     }
 
-    public void ShowHelpPanel()
+    private void ShowVolumePanel()
     {
-        // Hide main settings panel and show only help panel
-        if (settingsPanel != null) settingsPanel.SetActive(false);
-        HideAllContentPanels();
+        settingsPanel.SetActive(false);
+        HideAllPanels();
+        HideAllBackButtons();
 
-        if (helpPanel != null)
-        {
-            helpPanel.SetActive(true);
-            PopulateHelpPanel();
-        }
-        else
-        {
-            Debug.LogError("[SettingsManager] helpPanel is NULL! Assign it in Inspector!");
-        }
-
-        // Show help back button
-        if (helpBackButton != null)
-        {
-            helpBackButton.gameObject.SetActive(true);
-        }
+        volumePanel.SetActive(true);
+        volumeBackButton.gameObject.SetActive(true);
     }
 
-    private void HideAllContentPanels()
+    private void ShowTroopDirectoryPanel()
     {
-        if (volumePanel != null) volumePanel.SetActive(false);
-        if (troopDirectoryPanel != null) troopDirectoryPanel.SetActive(false);
-        if (helpPanel != null) helpPanel.SetActive(false);
+        settingsPanel.SetActive(false);
+        HideAllPanels();
+        HideAllBackButtons();
+
+        troopDirectoryPanel.SetActive(true);
+        troopDirectoryBackButton.gameObject.SetActive(true);
     }
 
-    private void UpdateTabButtonStates(Button activeButton)
+    private void ShowHelpPanel()
     {
-        // Reset all tab button colors/styles
-        if (volumeTabButton != null) UpdateTabButtonVisual(volumeTabButton, false);
-        if (troopDirectoryTabButton != null) UpdateTabButtonVisual(troopDirectoryTabButton, false);
-        if (helpTabButton != null) UpdateTabButtonVisual(helpTabButton, false);
+        settingsPanel.SetActive(false);
+        HideAllPanels();
+        HideAllBackButtons();
 
-        // Highlight active tab
-        if (activeButton != null) UpdateTabButtonVisual(activeButton, true);
+        helpPanel.SetActive(true);
+        helpBackButton.gameObject.SetActive(true);
     }
 
-    private void UpdateTabButtonVisual(Button button, bool isActive)
+    private void ShowMainSettings()
     {
-        // This is a placeholder - you'll need to implement the visual styling
-        // For example, change button color, add/remove highlight, etc.
-        ColorBlock colors = button.colors;
-        if (isActive)
-        {
-            colors.normalColor = new Color(0.8f, 0.8f, 0.8f, 1f); // Light gray for active
-        }
-        else
-        {
-            colors.normalColor = new Color(0.5f, 0.5f, 0.5f, 1f); // Dark gray for inactive
-        }
-        button.colors = colors;
+        settingsPanel.SetActive(true);
+        HideAllPanels();
+        HideAllBackButtons();
     }
 
-    public void ShowMainSettingsPanel()
+    private void HideAllPanels()
     {
-        // Show main settings panel with tabs
-        if (settingsPanel != null) settingsPanel.SetActive(true);
-        // Hide all content panels
-        HideAllContentPanels();
-        // Hide all back buttons
-        if (volumeBackButton != null) volumeBackButton.gameObject.SetActive(false);
-        if (troopDirectoryBackButton != null) troopDirectoryBackButton.gameObject.SetActive(false);
-        if (helpBackButton != null) helpBackButton.gameObject.SetActive(false);
-        // Reset tab button states (no tab selected)
-        if (volumeTabButton != null) UpdateTabButtonVisual(volumeTabButton, false);
-        if (troopDirectoryTabButton != null) UpdateTabButtonVisual(troopDirectoryTabButton, false);
-        if (helpTabButton != null) UpdateTabButtonVisual(helpTabButton, false);
+        volumePanel.SetActive(false);
+        troopDirectoryPanel.SetActive(false);
+        helpPanel.SetActive(false);
     }
 
-    // STEP 1: Update ClearTroopDirectory
-    private void ClearTroopDirectory()
+    private void HideAllBackButtons()
     {
-        if (troopDirectoryPanel != null)
-        {
-            // Only destroy the scroll view content
-            Transform scrollView = troopDirectoryPanel.transform.Find("TroopScrollView");
-            if (scrollView != null)
-            {
-                Destroy(scrollView.gameObject);
-            }
-        }
+        volumeBackButton.gameObject.SetActive(false);
+        troopDirectoryBackButton.gameObject.SetActive(false);
+        helpBackButton.gameObject.SetActive(false);
     }
 
-    // STEP 2: Rewrite PopulateTroopDirectory to create scrollable horizontal rows
-    private void PopulateTroopDirectory()
-    {
-        Debug.Log("[SettingsManager] PopulateTroopDirectory called");
-        
-        ClearTroopDirectory();
+    // ==================== TROOP DISPLAY LOGIC ====================
 
-        if (GachaManager.Instance == null)
+    private void ShowTroop(TroopRarity rarity)
+    {
+        if (troopDisplayImage == null) return;
+
+        switch (rarity)
         {
-            Debug.LogError("[SettingsManager] GachaManager.Instance is NULL!");
-            return;
-        }
-        
-        if (troopDirectoryPanel == null)
-        {
-            Debug.LogError("[SettingsManager] troopDirectoryPanel is NULL!");
-            return;
+            case TroopRarity.Common:
+                troopDisplayImage.sprite = commonTroopSprite;
+                break;
+            case TroopRarity.Rare:
+                troopDisplayImage.sprite = rareTroopSprite;
+                break;
+            case TroopRarity.Epic:
+                troopDisplayImage.sprite = epicTroopSprite;
+                break;
+            case TroopRarity.Legendary:
+                troopDisplayImage.sprite = legendaryTroopSprite;
+                break;
+            case TroopRarity.Mythic:
+                troopDisplayImage.sprite = mythicTroopSprite;
+                break;
         }
 
-        var allTroops = GachaManager.Instance.GetAllTroopData();
-        if (allTroops == null || allTroops.Count == 0)
-        {
-            Debug.LogWarning("[SettingsManager] No troops found!");
-            CreateSimpleTroopDirectoryDisplay();
-            return;
-        }
-
-        Debug.Log($"[SettingsManager] Found {allTroops.Count} troops, creating scroll view...");
-        foreach (var troop in allTroops)
-        {
-            Debug.Log($"[SettingsManager] Troop: {troop.displayName}, Rarity: {troop.rarity}, HasPrefab: {(troop.playerPrefab != null ? "YES" : "NO")}");
-        }
-
-        // Create ScrollView container - centered horizontally and moved down
-        GameObject scrollView = new GameObject("TroopScrollView");
-        RectTransform scrollRect = scrollView.AddComponent<RectTransform>();
-        scrollRect.SetParent(troopDirectoryPanel.transform);
-        scrollRect.anchorMin = new Vector2(0.5f, 0.5f);
-        scrollRect.anchorMax = new Vector2(0.5f, 0.5f);
-        scrollRect.pivot = new Vector2(0.5f, 0.5f);
-        scrollRect.anchoredPosition = new Vector2(0, -100); // Position more bottom center
-        scrollRect.sizeDelta = new Vector2(1100, 550); // A bit bigger scroll view
-        scrollRect.SetAsFirstSibling(); // Put it behind title and back button
-
-        Debug.Log("[SettingsManager] ScrollView created");
-
-        // Add ScrollRect component
-        UnityEngine.UI.ScrollRect scrollComponent = scrollView.AddComponent<UnityEngine.UI.ScrollRect>();
-        scrollComponent.horizontal = false;
-        scrollComponent.vertical = true;
-        scrollComponent.movementType = UnityEngine.UI.ScrollRect.MovementType.Elastic;
-        scrollComponent.scrollSensitivity = 20f;
-
-        // Create Viewport - add a visible background for debugging
-        GameObject viewport = new GameObject("Viewport");
-        RectTransform viewportRect = viewport.AddComponent<RectTransform>();
-        viewportRect.SetParent(scrollRect);
-        viewportRect.anchorMin = Vector2.zero;
-        viewportRect.anchorMax = Vector2.one;
-        viewportRect.pivot = new Vector2(0.5f, 0.5f);
-        viewportRect.anchoredPosition = Vector2.zero;
-        viewportRect.sizeDelta = Vector2.zero;
-        
-        UnityEngine.UI.Mask viewportMask = viewport.AddComponent<UnityEngine.UI.Mask>();
-        viewportMask.showMaskGraphic = false; // Changed to true to see the viewport
-        UnityEngine.UI.Image viewportImage = viewport.AddComponent<UnityEngine.UI.Image>();
-        viewportImage.color = new Color(0.05f, 0.05f, 0.05f, 0);
-        Destroy(viewportImage);
-
-
-        Debug.Log("[SettingsManager] Viewport created");
-
-        // Create Content container
-        GameObject content = new GameObject("Content");
-        RectTransform contentRect = content.AddComponent<RectTransform>();
-        contentRect.SetParent(viewportRect);
-        contentRect.anchorMin = new Vector2(0, 1);
-        contentRect.anchorMax = new Vector2(1, 1);
-        contentRect.pivot = new Vector2(0.5f, 1);
-        contentRect.anchoredPosition = Vector2.zero;
-        contentRect.sizeDelta = new Vector2(0, 0);
-
-        // Add VerticalLayoutGroup to stack rarity rows - with separators
-        UnityEngine.UI.VerticalLayoutGroup layoutGroup = content.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
-        layoutGroup.padding = new RectOffset(5, 5, 0, 40);
-        layoutGroup.spacing = 15f; // Much closer spacing between sections
-        layoutGroup.childAlignment = TextAnchor.UpperLeft;
-        layoutGroup.childControlHeight = false;
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childForceExpandHeight = false;
-        layoutGroup.childForceExpandWidth = true;
-
-        // Add ContentSizeFitter for auto height
-        UnityEngine.UI.ContentSizeFitter sizeFitter = content.AddComponent<UnityEngine.UI.ContentSizeFitter>();
-        sizeFitter.verticalFit = UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
-
-        // Connect ScrollRect
-        scrollComponent.viewport = viewportRect;
-        scrollComponent.content = contentRect;
-
-        Debug.Log("[SettingsManager] Content container created");
-
-        // Group troops by rarity
-        var troopsByRarity = allTroops.GroupBy(t => t.rarity)
-                                    .OrderBy(g => g.Key)
-                                    .ToDictionary(g => g.Key, g => g.ToList());
-
-        Debug.Log($"[SettingsManager] Creating {troopsByRarity.Count} rarity rows...");
-
-        int rarityIndex = 0;
-        int totalRarities = troopsByRarity.Count;
-
-        foreach (var rarityGroup in troopsByRarity)
-        {
-            Debug.Log($"[SettingsManager] Creating row for {rarityGroup.Key} with {rarityGroup.Value.Count} troops");
-            CreateRarityRowWithSprites(contentRect, rarityGroup.Key, rarityGroup.Value);
-
-            // Add separator line after each rarity section (except the last one)
-            rarityIndex++;
-            if (rarityIndex < totalRarities)
-            {
-                CreateRaritySeparator(contentRect);
-            }
-        }
-        
-        var fitter = content.AddComponent<ContentSizeFitter>();
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        Debug.Log("[SettingsManager] Troop directory populated successfully!");
-
-        Canvas.ForceUpdateCanvases();
-        StartCoroutine(SetScrollToTop(scrollComponent));
-
-
+        troopDisplayImage.enabled = troopDisplayImage.sprite != null;
     }
 
-    // Create a separator line between rarity sections
-    private void CreateRaritySeparator(RectTransform parent)
-    {
-        GameObject separatorObj = new GameObject("RaritySeparator");
-        RectTransform separatorRect = separatorObj.AddComponent<RectTransform>();
-        separatorRect.SetParent(parent);
-        separatorRect.anchorMin = new Vector2(0.5f, 0.5f);
-        separatorRect.anchorMax = new Vector2(0.5f, 0.5f);
-        separatorRect.pivot = new Vector2(0.5f, 0.5f);
-        separatorRect.anchoredPosition = new Vector2(0, -10); // Position closer to troop names
-        separatorRect.sizeDelta = new Vector2(200, 3); // Thin horizontal line, fixed width
+    // ==================== VOLUME ====================
 
-        // Create the line using an Image component (transparent to hide it)
-        UnityEngine.UI.Image separatorImage = separatorObj.AddComponent<UnityEngine.UI.Image>();
-        separatorImage.color = new Color(0.7f, 0.7f, 0.7f, 0.0f); // Completely transparent to hide the line
-    }
-
-    // STEP 3: Create a row with rarity label and horizontal troop sprites
-    private void CreateRarityRowWithSprites(
-    RectTransform parent,
-    TroopRarity rarity,
-    List<TroopData> troops)
-{
-    float headerHeight = 90f;
-
-    // ---------- RARITY ROW ----------
-    GameObject rowContainer = new GameObject($"RarityRow_{rarity}");
-    RectTransform rowRect = rowContainer.AddComponent<RectTransform>();
-    rowRect.SetParent(parent, false);
-    rowRect.sizeDelta = new Vector2(0, 600);
-
-    LayoutElement rowLayout = rowContainer.AddComponent<LayoutElement>();
-    rowLayout.preferredHeight = 360;
-    rowLayout.flexibleWidth = 1;
-
-    // ---------- HEADER ----------
-    GameObject headerObj = new GameObject("RarityHeader");
-    RectTransform headerRect = headerObj.AddComponent<RectTransform>();
-    headerRect.SetParent(rowRect, false);
-    headerRect.anchorMin = new Vector2(0, 1);
-    headerRect.anchorMax = new Vector2(1, 1);
-    headerRect.pivot = new Vector2(0.5f, 1);
-    headerRect.anchoredPosition = Vector2.zero;
-    headerRect.sizeDelta = new Vector2(0, headerHeight);
-
-    Image headerImage = headerObj.AddComponent<Image>();
-    headerImage.preserveAspect = true;
-
-    Shadow shadow = headerObj.AddComponent<Shadow>();
-    shadow.effectDistance = new Vector2(0, -6);
-    shadow.effectColor = new Color(0, 0, 0, 0.4f);
-
-    switch (rarity)
-    {
-        case TroopRarity.Common: headerImage.sprite = commonLabelSprite; break;
-        case TroopRarity.Rare: headerImage.sprite = rareLabelSprite; break;
-        case TroopRarity.Epic: headerImage.sprite = epicLabelSprite; break;
-        case TroopRarity.Legendary: headerImage.sprite = legendaryLabelSprite; break;
-        case TroopRarity.Mythic: headerImage.sprite = mythicLabelSprite; break;
-        case TroopRarity.Boss: headerImage.sprite = bossLabelSprite; break;
-    }
-
-    // ---------- TROOP CONTAINER ----------
-    GameObject troopContainer = new GameObject("TroopContainer");
-    RectTransform troopContainerRect = troopContainer.AddComponent<RectTransform>();
-    troopContainerRect.SetParent(rowRect, false);
-
-    troopContainerRect.anchorMin = new Vector2(0, 0);
-    troopContainerRect.anchorMax = new Vector2(1, 1);
-    troopContainerRect.pivot = new Vector2(0.5f, 1);
-    troopContainerRect.anchoredPosition = new Vector2(0, -headerHeight);
-    troopContainerRect.sizeDelta = new Vector2(0, -40);
-
-    HorizontalLayoutGroup layout = troopContainer.AddComponent<HorizontalLayoutGroup>();
-    layout.spacing = 20f;
-    layout.padding = new RectOffset(20, 20, 0, 0);
-
-    layout.childAlignment = TextAnchor.UpperCenter;
-    layout.childControlWidth = false;
-    layout.childControlHeight = false;
-    layout.childForceExpandWidth = false;
-    layout.childForceExpandHeight = false;
-
-    foreach (var troop in troops)
-    {
-        CreateTroopItemWithSprite(troopContainer.transform, troop);
-    }
-}
-
-
-
-    // STEP 4: Create individual troop item (sprite + name) - even larger
-    private void CreateTroopItemWithSprite(Transform parent, TroopData troop)
-    {
-        GameObject itemContainer = new GameObject($"Troop_{troop.displayName}");
-        RectTransform itemRect = itemContainer.AddComponent<RectTransform>();
-        itemRect.SetParent(parent, false);
-        itemRect.sizeDelta = new Vector2(260, 320);
-        itemRect.pivot = new Vector2(0.5f, 1);
-
-        // ✅ Layout control (VERY important)
-        LayoutElement layout = itemContainer.AddComponent<LayoutElement>();
-        layout.preferredWidth = 260;
-        layout.preferredHeight = 320;
-        layout.flexibleWidth = 0;
-        layout.flexibleHeight = 0;
-
-        // ---------- SPRITE ----------
-        GameObject spriteObj = new GameObject("Sprite");
-        RectTransform spriteRect = spriteObj.AddComponent<RectTransform>();
-        spriteRect.SetParent(itemRect, false);
-        spriteRect.anchorMin = new Vector2(0.5f, 1);
-        spriteRect.anchorMax = new Vector2(0.5f, 1);
-        spriteRect.pivot = new Vector2(0.5f, 1);
-        spriteRect.anchoredPosition = new Vector2(0, -10); // small padding
-        spriteRect.sizeDelta = new Vector2(220, 220);
-
-
-        Image spriteImage = spriteObj.AddComponent<Image>();
-        spriteImage.preserveAspect = true;
-
-        if (troop.playerPrefab != null)
-        {
-            SpriteRenderer sr = troop.playerPrefab.GetComponent<SpriteRenderer>();
-            if (sr != null && sr.sprite != null)
-            {
-                spriteImage.sprite = sr.sprite;
-            }
-            else
-            {
-                spriteImage.color = Color.gray;
-            }
-        }
-
-        // ---------- NAME IMAGE ----------
-    GameObject nameObj = new GameObject("NameImage");
-    RectTransform nameRect = nameObj.AddComponent<RectTransform>();
-    nameRect.SetParent(itemRect, false);
-    nameRect.anchorMin = new Vector2(0.5f, 0);
-    nameRect.anchorMax = new Vector2(0.5f, 0);
-    nameRect.pivot = new Vector2(0.5f, 0);
-    nameRect.anchoredPosition = new Vector2(0, 35);
-    nameRect.sizeDelta = new Vector2(260, 60); // adjust to your art
-
-    Image nameImage = nameObj.AddComponent<Image>();
-    nameImage.preserveAspect = true;
-
-    if (troop.nameSprite != null)
-    {
-        nameImage.sprite = troop.nameSprite;
-    }
-    else
-    {
-        Debug.LogWarning($"[SettingsManager] {troop.displayName} has no nameSprite!");
-    }
-    Outline outline = nameObj.AddComponent<Outline>();
-    outline.effectColor = new Color(0f, 0f, 0f, 0.6f);
-    outline.effectDistance = new Vector2(1, -1);
-
-    }
-
-
-    private void CreateSimpleTroopDirectoryDisplay()
-    {
-        Debug.Log("[SettingsManager] Creating fallback simple troop directory display");
-
-        // Create a simple text display as fallback
-        GameObject textObj = new GameObject("TroopDirectoryText");
-        textObj.transform.SetParent(troopDirectoryPanel.transform);
-
-        TextMeshProUGUI textComponent = textObj.AddComponent<TextMeshProUGUI>();
-         if (upheavttFont != null)
-        {
-            textComponent.font = upheavttFont;
-        }
-        textComponent.fontSize = 18;
-        textComponent.color = Color.white;
-        textComponent.alignment = TextAlignmentOptions.TopLeft;
-        textComponent.text = "<b>TROOP DIRECTORY</b>\n\nTroop data not available.\nPlease ensure GachaManager is properly set up.";
-
-        // Set up the RectTransform
-        RectTransform rectTransform = textObj.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0, 1);
-        rectTransform.anchorMax = new Vector2(1, 1);
-        rectTransform.pivot = new Vector2(0.5f, 1);
-        rectTransform.anchoredPosition = new Vector2(0, -20);
-        rectTransform.sizeDelta = new Vector2(-40, 400);
-    }
-
-    private void PopulateHelpPanel()
-    {
-        Debug.Log("[SettingsManager] Creating help panel with scroll view...");
-
-        // Remove old scroll views if they exist
-        Transform existing = helpPanel.transform.Find("HelpScrollView");
-        if (existing != null)
-            Destroy(existing.gameObject);
-
-        // ------------------------
-        // CREATE SCROLL VIEW
-        // ------------------------
-        GameObject scrollView = new GameObject("HelpScrollView");
-        RectTransform scrollRect = scrollView.AddComponent<RectTransform>();
-        scrollRect.SetParent(helpPanel.transform);
-        scrollRect.anchorMin = new Vector2(0.5f, 0.5f);
-        scrollRect.anchorMax = new Vector2(0.5f, 0.5f);
-        scrollRect.pivot = new Vector2(0.5f, 0.5f);
-        scrollRect.anchorMin = new Vector2(0.5f, 1f);
-        scrollRect.anchorMax = new Vector2(0.5f, 1f);
-        scrollRect.pivot = new Vector2(0.5f, 1f);
-
-        // Move it just BELOW the "TROOPS" label
-        scrollRect.anchoredPosition = new Vector2(0, -140);
-
-        // Height reaches almost to bottom frame
-        scrollRect.sizeDelta = new Vector2(1100, 640);
-
-
-        ScrollRect scrollComponent = scrollView.AddComponent<ScrollRect>();
-        scrollComponent.horizontal = false;
-        scrollComponent.vertical = true;
-        scrollComponent.movementType = ScrollRect.MovementType.Clamped;
-        scrollComponent.scrollSensitivity = 20f;
-
-        // ------------------------
-        // CREATE VIEWPORT
-        // ------------------------
-        GameObject viewport = new GameObject("Viewport");
-        RectTransform viewportRect = viewport.AddComponent<RectTransform>();
-        viewportRect.SetParent(scrollRect);
-        viewportRect.anchorMin = Vector2.zero;
-        viewportRect.anchorMax = Vector2.one;
-        viewportRect.pivot = new Vector2(0.5f, 0.5f);
-        viewportRect.anchoredPosition = Vector2.zero;
-        viewportRect.sizeDelta = Vector2.zero;
-
-        // Mask + Image
-        Mask viewportMask = viewport.AddComponent<Mask>();
-        viewportMask.showMaskGraphic = false;
-
-        scrollComponent.viewport = viewportRect;
-
-        // ------------------------
-        // CREATE CONTENT
-        // ------------------------
-        GameObject content = new GameObject("Content");
-        RectTransform contentRect = content.AddComponent<RectTransform>();
-        contentRect.SetParent(viewportRect);
-        contentRect.anchorMin = new Vector2(0, 1);
-        contentRect.anchorMax = new Vector2(1, 1);
-        contentRect.pivot = new Vector2(0.5f, 1);
-        contentRect.anchoredPosition = Vector2.zero;
-        contentRect.sizeDelta = new Vector2(0, 0);
-
-        // Content auto-size
-        ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
-        contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-
-        VerticalLayoutGroup layoutGroup = content.AddComponent<VerticalLayoutGroup>();
-        layoutGroup.childControlHeight = true;
-        layoutGroup.childControlWidth = true;
-        layoutGroup.childForceExpandHeight = false;
-        layoutGroup.childForceExpandWidth = true;
-        layoutGroup.spacing = 20;
-        layoutGroup.padding = new RectOffset(100, 0, -120, 40);
-
-        scrollComponent.content = contentRect;
-
-        // ------------------------
-        // CREATE HELP TEXT
-        // ------------------------
-        GameObject textObj = new GameObject("HelpText");
-        RectTransform textRect = textObj.AddComponent<RectTransform>();
-        textRect.SetParent(contentRect);
-        textRect.anchorMin = new Vector2(0, 1);
-        textRect.anchorMax = new Vector2(1, 1);
-        textRect.pivot = new Vector2(0.5f, 1);
-        textRect.anchoredPosition = Vector2.zero;
-        textRect.sizeDelta = new Vector2(-80, 0);
-
-        TextMeshProUGUI textComponent = textObj.AddComponent<TextMeshProUGUI>();
-        textComponent.fontSize = 32;
-        textComponent.color = Color.white;
-        textComponent.alignment = TextAlignmentOptions.TopLeft;
-        textComponent.enableWordWrapping = true;
-        textComponent.overflowMode = TextOverflowModes.Overflow;
-
-        // Automatically resize height to fit text
-        ContentSizeFitter textFitter = textObj.AddComponent<ContentSizeFitter>();
-        textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        textFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-
-        LayoutElement layoutElement = textObj.AddComponent<LayoutElement>();
-        layoutElement.preferredWidth = 1020; // ✅ ScrollView width (1100) - padding (40+40)
-        layoutElement.flexibleWidth = 0;
-
-        // ------------------------
-        // HELP TEXT CONTENT
-        // ------------------------
-        string helpText = "<b>GAME HELP & CONTROLS</b>\n\n";
-
-        helpText += "<b>Basic Gameplay:</b>\n";
-        helpText += "• Build your tower by upgrading it with earned coins\n";
-        helpText += "• Summon troops to defend against enemy attacks\n";
-        helpText += "• Destroy the enemy tower to win the level\n\n";
-
-        helpText += "<b>Controls:</b>\n";
-        helpText += "• <b>P</b> - Summon random troop\n";
-        helpText += "• <b>O</b> - Deploy troops to slots\n";
-        helpText += "• <b>I</b> - Upgrade tower\n";
-        helpText += "• <b>U</b> - Upgrade summon rate\n";
-        helpText += "• <b>1–0/-/=</b> - Select slot\n";
-        helpText += "• <b>M</b> - Merge troops when 3+ in same slot\n";
-        helpText += "• <b>Mouse</b> - Interact with UI\n";
-        helpText += "• <b>ESC</b> - Close settings\n\n";
-
-        helpText += "<b>Troop System:</b>\n";
-        helpText += "• Troops have rarities: Common → Rare → Epic → Mythic\n";
-        helpText += "• Merge 3 troops of the same type to increase their rarity\n";
-        helpText += "• Mythics require special combinations\n";
-        helpText += "• Each troop has unique stats and abilities\n\n";
-
-        helpText += "<b>Strategy Tips:</b>\n";
-        helpText += "• Balance your upgrades between tower and troops\n";
-        helpText += "• Save coins for clutch moments\n";
-        helpText += "• Experiment with different team compositions\n";
-
-        textComponent.text = helpText;
-
-        Debug.Log("[SettingsManager] Help panel successfully populated!");
-    }
-
-
-    private void UpdateUI()
+    private void UpdateVolumeUI()
     {
         if (AudioManager.Instance == null) return;
 
-        if (masterVolumeSlider != null && AudioManager.Instance != null)
-        {
-            masterVolumeSlider.value = AudioManager.Instance.GetMasterVolume();
-        }
+        masterVolumeSlider.value = AudioManager.Instance.GetMasterVolume();
+        musicVolumeSlider.value = AudioManager.Instance.GetMusicVolume();
+        sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
 
-        if (musicVolumeSlider != null && AudioManager.Instance != null)
-        {
-            musicVolumeSlider.value = AudioManager.Instance.GetMusicVolume();
-        }
-
-        if (sfxVolumeSlider != null && AudioManager.Instance != null)
-        {
-            sfxVolumeSlider.value = AudioManager.Instance.GetSFXVolume();
-        }
-
-        UpdateVolumeTexts();
+        UpdateVolumeText();
     }
 
-    private void UpdateVolumeTexts()
+    private void UpdateVolumeText()
     {
-        if (AudioManager.Instance == null) return;
-
-        if (masterVolumeText != null)
-        {
-            masterVolumeText.text = $"{Mathf.RoundToInt(AudioManager.Instance.GetMasterVolume() * 100)}%";
-        }
-
-        if (musicVolumeText != null)
-        {
-            musicVolumeText.text = $"{Mathf.RoundToInt(AudioManager.Instance.GetMusicVolume() * 100)}%";
-        }
-
-        if (sfxVolumeText != null)
-        {
-            sfxVolumeText.text = $"{Mathf.RoundToInt(AudioManager.Instance.GetSFXVolume() * 100)}%";
-        }
+        masterVolumeText.text = $"{Mathf.RoundToInt(masterVolumeSlider.value * 100)}%";
+        musicVolumeText.text = $"{Mathf.RoundToInt(musicVolumeSlider.value * 100)}%";
+        sfxVolumeText.text = $"{Mathf.RoundToInt(sfxVolumeSlider.value * 100)}%";
     }
 
     private void OnMasterVolumeChanged(float value)
     {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetMasterVolume(value);
-            UpdateVolumeTexts();
-        }
+        AudioManager.Instance?.SetMasterVolume(value);
+        UpdateVolumeText();
     }
 
     private void OnMusicVolumeChanged(float value)
     {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetMusicVolume(value);
-            UpdateVolumeTexts();
-        }
+        AudioManager.Instance?.SetMusicVolume(value);
+        UpdateVolumeText();
     }
 
     private void OnSFXVolumeChanged(float value)
     {
-        if (AudioManager.Instance != null)
-        {
-            AudioManager.Instance.SetSFXVolume(value);
-            UpdateVolumeTexts();
-        }
+        AudioManager.Instance?.SetSFXVolume(value);
+        UpdateVolumeText();
     }
-
-    private IEnumerator SetScrollToTop(ScrollRect scroll)
-{
-    yield return null;
-    yield return null;
-    scroll.verticalNormalizedPosition = 1f;
-}
-
 }
