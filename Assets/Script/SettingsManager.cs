@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections;
+
 
 public class SettingsManager : MonoBehaviour
 {
@@ -489,9 +491,11 @@ public class SettingsManager : MonoBehaviour
         viewportRect.sizeDelta = Vector2.zero;
         
         UnityEngine.UI.Mask viewportMask = viewport.AddComponent<UnityEngine.UI.Mask>();
-        viewportMask.showMaskGraphic = true; // Changed to true to see the viewport
+        viewportMask.showMaskGraphic = false; // Changed to true to see the viewport
         UnityEngine.UI.Image viewportImage = viewport.AddComponent<UnityEngine.UI.Image>();
-        viewportImage.color = new Color(0.05f, 0.05f, 0.05f, 0.63f); // 0D0D0D with 180 alpha
+        viewportImage.color = new Color(0.05f, 0.05f, 0.05f, 0);
+        Destroy(viewportImage);
+
 
         Debug.Log("[SettingsManager] Viewport created");
 
@@ -507,8 +511,8 @@ public class SettingsManager : MonoBehaviour
 
         // Add VerticalLayoutGroup to stack rarity rows - with separators
         UnityEngine.UI.VerticalLayoutGroup layoutGroup = content.AddComponent<UnityEngine.UI.VerticalLayoutGroup>();
+        layoutGroup.padding = new RectOffset(5, 5, 0, 40);
         layoutGroup.spacing = 15f; // Much closer spacing between sections
-        layoutGroup.padding = new RectOffset(5, 5, 40, 40); // Smaller left/right margins, keep top/bottom
         layoutGroup.childAlignment = TextAnchor.UpperLeft;
         layoutGroup.childControlHeight = false;
         layoutGroup.childControlWidth = true;
@@ -552,6 +556,11 @@ public class SettingsManager : MonoBehaviour
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         Debug.Log("[SettingsManager] Troop directory populated successfully!");
+
+        Canvas.ForceUpdateCanvases();
+        StartCoroutine(SetScrollToTop(scrollComponent));
+
+
     }
 
     // Create a separator line between rarity sections
@@ -572,101 +581,77 @@ public class SettingsManager : MonoBehaviour
     }
 
     // STEP 3: Create a row with rarity label and horizontal troop sprites
-    private void CreateRarityRowWithSprites(RectTransform parent, TroopRarity rarity, List<TroopData> troops)
+    private void CreateRarityRowWithSprites(
+    RectTransform parent,
+    TroopRarity rarity,
+    List<TroopData> troops)
+{
+    float headerHeight = 90f;
+
+    // ---------- RARITY ROW ----------
+    GameObject rowContainer = new GameObject($"RarityRow_{rarity}");
+    RectTransform rowRect = rowContainer.AddComponent<RectTransform>();
+    rowRect.SetParent(parent, false);
+    rowRect.sizeDelta = new Vector2(0, 600);
+
+    LayoutElement rowLayout = rowContainer.AddComponent<LayoutElement>();
+    rowLayout.preferredHeight = 360;
+    rowLayout.flexibleWidth = 1;
+
+    // ---------- HEADER ----------
+    GameObject headerObj = new GameObject("RarityHeader");
+    RectTransform headerRect = headerObj.AddComponent<RectTransform>();
+    headerRect.SetParent(rowRect, false);
+    headerRect.anchorMin = new Vector2(0, 1);
+    headerRect.anchorMax = new Vector2(1, 1);
+    headerRect.pivot = new Vector2(0.5f, 1);
+    headerRect.anchoredPosition = Vector2.zero;
+    headerRect.sizeDelta = new Vector2(0, headerHeight);
+
+    Image headerImage = headerObj.AddComponent<Image>();
+    headerImage.preserveAspect = true;
+
+    Shadow shadow = headerObj.AddComponent<Shadow>();
+    shadow.effectDistance = new Vector2(0, -6);
+    shadow.effectColor = new Color(0, 0, 0, 0.4f);
+
+    switch (rarity)
     {
-        // Create row container
-        float headerHeight = 120f;
-
-        // Header
-        headerRect.anchorMin = new Vector2(0, 1);
-        headerRect.anchorMax = new Vector2(1, 1);
-        headerRect.pivot = new Vector2(0.5f, 1);
-        headerRect.anchoredPosition = Vector2.zero;
-        headerRect.sizeDelta = new Vector2(0, headerHeight);
-
-        // Troop container
-        troopContainerRect.anchorMin = new Vector2(0, 0);
-        troopContainerRect.anchorMax = new Vector2(1, 1);
-        troopContainerRect.pivot = new Vector2(0.5f, 1);
-        troopContainerRect.anchoredPosition = new Vector2(0, -headerHeight);
-        troopContainerRect.sizeDelta = new Vector2(0, -40);
-
-        // ---------- RARITY ROW ----------
-        GameObject rowContainer = new GameObject($"RarityRow_{rarity}");
-        RectTransform rowRect = rowContainer.AddComponent<RectTransform>();
-        rowRect.SetParent(parent);
-        rowRect.sizeDelta = new Vector2(0, 600);
-
-        LayoutElement rowLayoutElement = rowContainer.AddComponent<LayoutElement>();
-        rowLayoutElement.preferredHeight = 260;
-        rowLayoutElement.flexibleWidth = 1;
-
-        // ---------- RARITY HEADER IMAGE ----------
-        GameObject headerObj = new GameObject("RarityHeader");
-        RectTransform headerRect = headerObj.AddComponent<RectTransform>();
-        headerRect.SetParent(rowRect);
-        headerRect.anchorMin = new Vector2(0, 1);   // stretch horizontally
-        headerRect.anchorMax = new Vector2(1, 1);
-        headerRect.pivot = new Vector2(0.5f, 1);
-        headerRect.anchoredPosition = Vector2.zero;
-        headerRect.sizeDelta = new Vector2(0, 120); // height only
-
-        Image headerImage = headerObj.AddComponent<Image>();
-        headerImage.type = Image.Type.Simple;
-        headerImage.preserveAspect = true;
-
-        // Shadow for depth
-        Shadow shadow = headerObj.AddComponent<Shadow>();
-        shadow.effectDistance = new Vector2(0, -6);
-        shadow.effectColor = new Color(0, 0, 0, 0.4f);
-
-        // Assign sprite
-        switch (rarity)
-        {
-            case TroopRarity.Common:
-                headerImage.sprite = commonLabelSprite;
-                break;
-            case TroopRarity.Rare:
-                headerImage.sprite = rareLabelSprite;
-                break;
-            case TroopRarity.Epic:
-                headerImage.sprite = epicLabelSprite;
-                break;
-            case TroopRarity.Legendary:
-                headerImage.sprite = legendaryLabelSprite;
-                break;
-            case TroopRarity.Mythic:
-                headerImage.sprite = mythicLabelSprite;
-                break;
-            case TroopRarity.Boss:
-                headerImage.sprite = bossLabelSprite;
-                break;
-        }
-
-        // ---------- TROOP CONTAINER ----------
-        GameObject troopContainer = new GameObject("TroopContainer");
-        RectTransform troopContainerRect = troopContainer.AddComponent<RectTransform>();
-        troopContainerRect.SetParent(rowRect);
-        troopContainerRect.anchorMin = new Vector2(0, 0);
-        troopContainerRect.anchorMax = new Vector2(1, 1);
-        troopContainerRect.pivot = new Vector2(0.5f, 1);
-        troopContainerRect.anchoredPosition = new Vector2(0, -110);
-        troopContainerRect.sizeDelta = new Vector2(0, -40);
-
-
-        HorizontalLayoutGroup troopLayout = troopContainer.AddComponent<HorizontalLayoutGroup>();
-        troopLayout.spacing = -50f;
-        troopLayout.childAlignment = TextAnchor.UpperCenter;
-        troopLayout.childControlHeight = false;
-        troopLayout.childControlWidth = false;
-        troopLayout.childForceExpandHeight = false;
-        troopLayout.childForceExpandWidth = false;
-
-        foreach (TroopData troop in troops)
-        {
-            CreateTroopItemWithSprite(troopContainer.transform, troop);
-        }
+        case TroopRarity.Common: headerImage.sprite = commonLabelSprite; break;
+        case TroopRarity.Rare: headerImage.sprite = rareLabelSprite; break;
+        case TroopRarity.Epic: headerImage.sprite = epicLabelSprite; break;
+        case TroopRarity.Legendary: headerImage.sprite = legendaryLabelSprite; break;
+        case TroopRarity.Mythic: headerImage.sprite = mythicLabelSprite; break;
+        case TroopRarity.Boss: headerImage.sprite = bossLabelSprite; break;
     }
+
+    // ---------- TROOP CONTAINER ----------
+    GameObject troopContainer = new GameObject("TroopContainer");
+    RectTransform troopContainerRect = troopContainer.AddComponent<RectTransform>();
+    troopContainerRect.SetParent(rowRect, false);
+
+    troopContainerRect.anchorMin = new Vector2(0, 0);
+    troopContainerRect.anchorMax = new Vector2(1, 1);
+    troopContainerRect.pivot = new Vector2(0.5f, 1);
+    troopContainerRect.anchoredPosition = new Vector2(0, -headerHeight);
+    troopContainerRect.sizeDelta = new Vector2(0, -40);
+
+    HorizontalLayoutGroup layout = troopContainer.AddComponent<HorizontalLayoutGroup>();
+    layout.spacing = 20f;
+    layout.padding = new RectOffset(20, 20, 0, 0);
+
+    layout.childAlignment = TextAnchor.UpperCenter;
+    layout.childControlWidth = false;
+    layout.childControlHeight = false;
+    layout.childForceExpandWidth = false;
+    layout.childForceExpandHeight = false;
+
+    foreach (var troop in troops)
+    {
+        CreateTroopItemWithSprite(troopContainer.transform, troop);
+    }
+}
+
 
 
     // STEP 4: Create individual troop item (sprite + name) - even larger
@@ -675,13 +660,13 @@ public class SettingsManager : MonoBehaviour
         GameObject itemContainer = new GameObject($"Troop_{troop.displayName}");
         RectTransform itemRect = itemContainer.AddComponent<RectTransform>();
         itemRect.SetParent(parent, false);
-        itemRect.sizeDelta = new Vector2(350, 350);
+        itemRect.sizeDelta = new Vector2(260, 320);
         itemRect.pivot = new Vector2(0.5f, 1);
 
         // ✅ Layout control (VERY important)
         LayoutElement layout = itemContainer.AddComponent<LayoutElement>();
-        layout.preferredWidth = 350;
-        layout.preferredHeight = 350;
+        layout.preferredWidth = 260;
+        layout.preferredHeight = 320;
         layout.flexibleWidth = 0;
         layout.flexibleHeight = 0;
 
@@ -693,7 +678,8 @@ public class SettingsManager : MonoBehaviour
         spriteRect.anchorMax = new Vector2(0.5f, 1);
         spriteRect.pivot = new Vector2(0.5f, 1);
         spriteRect.anchoredPosition = new Vector2(0, -10); // small padding
-        spriteRect.sizeDelta = new Vector2(280, 280);
+        spriteRect.sizeDelta = new Vector2(220, 220);
+
 
         Image spriteImage = spriteObj.AddComponent<Image>();
         spriteImage.preserveAspect = true;
@@ -711,22 +697,31 @@ public class SettingsManager : MonoBehaviour
             }
         }
 
-        // ---------- NAME ----------
-        GameObject nameObj = new GameObject("Name");
-        RectTransform nameRect = nameObj.AddComponent<RectTransform>();
-        nameRect.SetParent(itemRect, false);
-        nameRect.anchorMin = new Vector2(0, 0);
-        nameRect.anchorMax = new Vector2(1, 0);
-        nameRect.pivot = new Vector2(0.5f, 0);
-        nameRect.anchoredPosition = new Vector2(0, 10);
-        nameRect.sizeDelta = new Vector2(0, 60);
+        // ---------- NAME IMAGE ----------
+    GameObject nameObj = new GameObject("NameImage");
+    RectTransform nameRect = nameObj.AddComponent<RectTransform>();
+    nameRect.SetParent(itemRect, false);
+    nameRect.anchorMin = new Vector2(0.5f, 0);
+    nameRect.anchorMax = new Vector2(0.5f, 0);
+    nameRect.pivot = new Vector2(0.5f, 0);
+    nameRect.anchoredPosition = new Vector2(0, 35);
+    nameRect.sizeDelta = new Vector2(260, 60); // adjust to your art
 
-        TextMeshProUGUI nameText = nameObj.AddComponent<TextMeshProUGUI>();
-        nameText.fontSize = 32;
-        nameText.color = Color.white;
-        nameText.alignment = TextAlignmentOptions.Center;
-        nameText.text = troop.displayName;
-        nameText.enableWordWrapping = false;
+    Image nameImage = nameObj.AddComponent<Image>();
+    nameImage.preserveAspect = true;
+
+    if (troop.nameSprite != null)
+    {
+        nameImage.sprite = troop.nameSprite;
+    }
+    else
+    {
+        Debug.LogWarning($"[SettingsManager] {troop.displayName} has no nameSprite!");
+    }
+    Outline outline = nameObj.AddComponent<Outline>();
+    outline.effectColor = new Color(0f, 0f, 0f, 0.6f);
+    outline.effectDistance = new Vector2(1, -1);
+
     }
 
 
@@ -775,8 +770,16 @@ public class SettingsManager : MonoBehaviour
         scrollRect.anchorMin = new Vector2(0.5f, 0.5f);
         scrollRect.anchorMax = new Vector2(0.5f, 0.5f);
         scrollRect.pivot = new Vector2(0.5f, 0.5f);
-        scrollRect.anchoredPosition = new Vector2(0, -100);
-        scrollRect.sizeDelta = new Vector2(1100, 550);
+        scrollRect.anchorMin = new Vector2(0.5f, 1f);
+        scrollRect.anchorMax = new Vector2(0.5f, 1f);
+        scrollRect.pivot = new Vector2(0.5f, 1f);
+
+        // Move it just BELOW the "TROOPS" label
+        scrollRect.anchoredPosition = new Vector2(0, -140);
+
+        // Height reaches almost to bottom frame
+        scrollRect.sizeDelta = new Vector2(1100, 640);
+
 
         ScrollRect scrollComponent = scrollView.AddComponent<ScrollRect>();
         scrollComponent.horizontal = false;
@@ -799,9 +802,6 @@ public class SettingsManager : MonoBehaviour
         // Mask + Image
         Mask viewportMask = viewport.AddComponent<Mask>();
         viewportMask.showMaskGraphic = false;
-
-        Image viewportImage = viewport.AddComponent<Image>();
-        viewportImage.color = new Color(0.1f, 0.1f, 0.1f, 0.8f); // Dark background for help panel
 
         scrollComponent.viewport = viewportRect;
 
@@ -965,4 +965,12 @@ public class SettingsManager : MonoBehaviour
             UpdateVolumeTexts();
         }
     }
+
+    private IEnumerator SetScrollToTop(ScrollRect scroll)
+{
+    yield return null;
+    yield return null;
+    scroll.verticalNormalizedPosition = 1f;
+}
+
 }

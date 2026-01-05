@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: Gotoku Youkai
   rarity: 3
   icon: {fileID: 1841737072, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  nameSprite: {fileID: 21300000, guid: e31b72b47dcbbf243940ce2f95eecdde, type: 3}
   maxHealth: 190
   attack: 18
   moveSpeed: 1.7
@@ -25,6 +26,7 @@ MonoBehaviour:
   attackRange: 2
   critRate: 0.3
   critDamage: 2
+  baseUpgradeCost: 100
   projectilePrefab: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3

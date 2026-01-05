@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: Blue Slime
   rarity: 0
   icon: {fileID: -1803147083, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  nameSprite: {fileID: 21300000, guid: 52ad0fa6035f01549bd33446dcb54f2f, type: 3}
   maxHealth: 90
   attack: 6
   moveSpeed: 1.4
@@ -25,6 +26,7 @@ MonoBehaviour:
   attackRange: 1
   critRate: 1
   critDamage: 2
+  baseUpgradeCost: 100
   projectilePrefab: {fileID: 0}
   projectileSpeed: 8
   projectileLifetime: 3

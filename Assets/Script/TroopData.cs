@@ -24,6 +24,9 @@ public class TroopData : ScriptableObject
     public TroopRarity rarity;
     public Sprite icon;
 
+     [Header("UI")]
+    public Sprite nameSprite;
+
     [Header("Stats")]
     public int maxHealth;
     public int attack;

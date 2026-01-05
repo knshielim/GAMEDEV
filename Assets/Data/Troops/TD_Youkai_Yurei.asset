@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: Yurei Youkai
   rarity: 3
   icon: {fileID: -2123461165, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  nameSprite: {fileID: 21300000, guid: 73970dbb2508d8c4d87173ba004355c0, type: 3}
   maxHealth: 200
   attack: 15
   moveSpeed: 1.6
