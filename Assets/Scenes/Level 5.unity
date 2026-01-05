@@ -3297,12 +3297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0feb22b35b9b014ba9706d986f8a090, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  commonLabelSprite: {fileID: 0}
-  rareLabelSprite: {fileID: 0}
-  epicLabelSprite: {fileID: 0}
-  legendaryLabelSprite: {fileID: 0}
-  mythicLabelSprite: {fileID: 0}
-  bossLabelSprite: {fileID: 0}
   settingsPanel: {fileID: 1233369686}
   settingsButton: {fileID: 326050233}
   closeSettingsButton: {fileID: 30019564}
@@ -3321,7 +3315,17 @@ MonoBehaviour:
   masterVolumeText: {fileID: 55041956}
   musicVolumeText: {fileID: 182815543}
   sfxVolumeText: {fileID: 1100190542}
-  upheavttFont: {fileID: 0}
+  commonButton: {fileID: 0}
+  rareButton: {fileID: 0}
+  epicButton: {fileID: 0}
+  legendaryButton: {fileID: 0}
+  mythicButton: {fileID: 0}
+  troopDisplayPanel: {fileID: 0}
+  commonTroopSprite: {fileID: 0}
+  rareTroopSprite: {fileID: 0}
+  epicTroopSprite: {fileID: 0}
+  legendaryTroopSprite: {fileID: 0}
+  mythicTroopSprite: {fileID: 0}
 --- !u!1 &261371066
 GameObject:
   m_ObjectHideFlags: 0
@@ -19805,10 +19809,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e08fbaa9cd08dd47be110a3a47cbaed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  introMusic: {fileID: 8300000, guid: a1482b93db54bc34bbe87264628d43dc, type: 3}
-  loopMusic: {fileID: 8300000, guid: af0ec730dec798642a4b974e08ca80a1, type: 3}
+  mainMenuIntroMusic: {fileID: 0}
+  mainMenuLoopMusic: {fileID: 0}
+  gameplayIntroMusic: {fileID: 0}
+  gameplayLoopMusic: {fileID: 0}
   musicSource: {fileID: 1680181150}
   sfxSource: {fileID: 1874691837}
+  ambientSource: {fileID: 0}
+  waveSource: {fileID: 0}
   masterVolume: 1
   musicVolume: 0.7
   sfxVolume: 0.8
@@ -19821,6 +19829,21 @@ MonoBehaviour:
   troopDeathSFX: {fileID: 8300000, guid: 8965fabd60bdcb54599bf612e746aa6b, type: 3}
   upgradeSFX: {fileID: 8300000, guid: d6656302b01fb1c419f4bc7af0cc84f0, type: 3}
   mythicSFX: {fileID: 8300000, guid: eabf7a683bf2a4d48ac4d74c43821c21, type: 3}
+  buttonClickSFX: {fileID: 0}
+  gemDropSFX: {fileID: 0}
+  wheelSFX: {fileID: 0}
+  upgradeTroopSFX: {fileID: 0}
+  fogAmbienceLoop: {fileID: 0}
+  acidRainLoop: {fileID: 0}
+  weatherAmbienceMul: 0.3
+  acidRainCutTailSeconds: 0
+  waveVolumeMul: 0.5
+  bossSummonedSFX: {fileID: 0}
+  waveOngoingLoop: {fileID: 0}
+  duckFadeDuration: 0.15
+  autoPlayOnStart: 1
+  ambienceFadeDuration: 0.25
+  waveFadeDuration: 0.2
 --- !u!4 &1277630559
 Transform:
   m_ObjectHideFlags: 0
@@ -32094,6 +32117,9 @@ MonoBehaviour:
   debugMode: 0
   debugWeather: 1
   locked: 1
+  bgmDuckMul: 0.35
+  ambientDuckMul: 0.7
+  bgmReturnDelay: 0.1
 --- !u!114 &1923437300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33023,7 +33049,7 @@ Transform:
   m_GameObject: {fileID: 1980779896}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.95, y: -7.72, z: -0.15261084}
+  m_LocalPosition: {x: -14, y: -7.72, z: -0.15261084}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
