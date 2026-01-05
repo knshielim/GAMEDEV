@@ -13,6 +13,11 @@ public class WeatherManager : MonoBehaviour
     public WeatherType CurrentWeather = WeatherType.Sunny;
     public float WeatherEndTime;
 
+    // ================= ADDITION =================
+    [Header("Weather VFX")]
+    [SerializeField] private ParticleSystem acidRainParticles;
+    // ============================================
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -28,7 +33,12 @@ public class WeatherManager : MonoBehaviour
     // Start a weather event
     public void StartWeather(WeatherType type, float duration)
     {
-        StopAllCoroutines(); // stop any previous weather
+        StopAllCoroutines(); 
+
+        // ================= ADDITION =================
+        StopAllWeatherVFX();
+        // ============================================
+
         CurrentWeather = type;
         activeWeatherTime = duration;
 
@@ -52,6 +62,14 @@ public class WeatherManager : MonoBehaviour
 
         Debug.Log("Acid Rain STARTED");
         Debug.Log("All troops will take damage continously"); 
+
+        // ================= ADDITION =================
+        if (acidRainParticles != null)
+        {
+            acidRainParticles.gameObject.SetActive(true);
+            acidRainParticles.Play();
+        }
+        // ============================================
 
         while (elapsed < duration)
         {
@@ -81,70 +99,84 @@ public class WeatherManager : MonoBehaviour
         }
 
         Debug.Log("Acid Rain ENDED");
+
+        // ================= ADDITION =================
+        if (acidRainParticles != null)
+        {
+            acidRainParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            acidRainParticles.gameObject.SetActive(false);
+        }
+        // ============================================
     }
 
-
-   public IEnumerator ApplyFog(float duration)
-{
-    Debug.Log("Fog STARTED");
-    Debug.Log("All battlefield troops will have range reduced");
-
-    FogEffect.Instance?.FadeIn();
-
-    // Troops 
-    foreach (Troops troop in Troops.aliveTroops.ToList())
+    public IEnumerator ApplyFog(float duration)
     {
-        if (troop == null || troop.isDead) continue;
+        Debug.Log("Fog STARTED");
+        Debug.Log("All battlefield troops will have range reduced");
 
-        float newRange = Mathf.Max(0, troop.baseAttackRange - 1.5f);
-        troop.attackRange = newRange;
+        FogEffect.Instance?.FadeIn();
 
-        CircleCollider2D cc = troop.GetComponent<CircleCollider2D>();
-        if (cc != null)
-            cc.radius = newRange;
+        foreach (Troops troop in Troops.aliveTroops.ToList())
+        {
+            if (troop == null || troop.isDead) continue;
+
+            float newRange = Mathf.Max(0, troop.baseAttackRange - 1.5f);
+            troop.attackRange = newRange;
+
+            CircleCollider2D cc = troop.GetComponent<CircleCollider2D>();
+            if (cc != null)
+                cc.radius = newRange;
+        }
+
+        foreach (Enemy enemy in Enemy.aliveEnemies.ToList())
+        {
+            if (enemy == null || enemy.isDead) continue;
+            enemy.ApplyFogRangeReduction(1.5f);
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {   
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        foreach (Troops troop in Troops.aliveTroops.ToList())
+        {
+            if (troop == null || troop.isDead) continue;
+
+            troop.attackRange = troop.baseAttackRange;
+
+            CircleCollider2D cc = troop.GetComponent<CircleCollider2D>();
+            if (cc != null)
+                cc.radius = troop.baseAttackRange;
+        }
+
+        foreach (Enemy enemy in Enemy.aliveEnemies.ToList())
+        {
+            if (enemy == null || enemy.isDead) continue;
+            enemy.RestoreRange();
+        }
+
+        CurrentWeather = WeatherType.Sunny;
+        FogEffect.Instance?.FadeOut();
+        Debug.Log("Fog ENDED");
     }
-
-    foreach (Enemy enemy in Enemy.aliveEnemies.ToList())
-    {
-        if (enemy == null || enemy.isDead) continue;
-        enemy.ApplyFogRangeReduction(1.5f);
-    }
-
-    float elapsed = 0f;
-    while (elapsed < duration)
-    {   
-        elapsed += Time.unscaledDeltaTime;
-        yield return null;
-    }
-
-    // Restore range
-    foreach (Troops troop in Troops.aliveTroops.ToList())
-    {
-        if (troop == null || troop.isDead) continue;
-
-        troop.attackRange = troop.baseAttackRange;
-
-        CircleCollider2D cc = troop.GetComponent<CircleCollider2D>();
-        if (cc != null)
-            cc.radius = troop.baseAttackRange;
-    }
-
-    // ---- RESTORE ENEMIES ----
-    foreach (Enemy enemy in Enemy.aliveEnemies.ToList())
-    {
-        if (enemy == null || enemy.isDead) continue;
-        enemy.RestoreRange();
-    }
-
-    CurrentWeather = WeatherType.Sunny;
-    FogEffect.Instance?.FadeOut();
-    Debug.Log("Fog ENDED");
-    }
-
 
     private IEnumerator ClearWeatherAfter(float duration)
     {
         yield return new WaitForSeconds(duration);
         CurrentWeather = WeatherType.Sunny;
     }
+
+    // ================= ADDITION =================
+    private void StopAllWeatherVFX()
+    {
+        if (acidRainParticles != null)
+        {
+            acidRainParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            acidRainParticles.gameObject.SetActive(false);
+        }
+    }
+    // ============================================
 }

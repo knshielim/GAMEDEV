@@ -27,7 +27,7 @@ public class WeatherRoulette : MonoBehaviour
     public static WeatherRoulette Instance { get; private set; }
 
     private bool isSpinning = false;
-    private float weatherDuration = 90f;
+    private float weatherDuration = 500f;
     public bool locked = true;
     private void Awake()
     {
