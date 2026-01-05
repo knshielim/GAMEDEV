@@ -40,8 +40,8 @@ public class LevelSelectManager : MonoBehaviour
 
     private void Start()
     {
-        InitializeLevelSelect();
         LoadProgress();
+        InitializeLevelSelect();
         UpdateLevelButtons();
     }
 
@@ -95,6 +95,14 @@ public class LevelSelectManager : MonoBehaviour
             Debug.LogWarning("[LevelSelect] PersistenceManager not found, defaulting to Level 1");
         }
 
+        // DEBUG: unlock semua level
+        if (GameDebugConfig.Instance != null && GameDebugConfig.Instance.ShouldUnlockAllLevels())
+        {
+            maxUnlockedLevel = 5;
+            Debug.Log("[LevelSelect] DEBUG: Unlocking all levels (1-5)");
+        }
+
+
         // Always unlock Level 5 for boss testing (no progression required)
         // maxUnlockedLevel = Mathf.Max(maxUnlockedLevel, 5);
         // Reason: If this line is active, Level 5 will always be open (Debug Mode),
@@ -102,6 +110,10 @@ public class LevelSelectManager : MonoBehaviour
 
         // Clamp to valid range
         maxUnlockedLevel = Mathf.Clamp(maxUnlockedLevel, 1, 5);
+        Debug.Log($"[LevelSelect] DebugCfg? {(GameDebugConfig.Instance != null)} " +
+          $"enable={GameDebugConfig.Instance?.enableDebugging} unlockAll={GameDebugConfig.Instance?.unlockAllLevels}");
+
+
     }
 
     // Public method to unlock a level (call this when a level is completed)
@@ -172,6 +184,9 @@ public class LevelSelectManager : MonoBehaviour
 
     public void LoadLevel(int levelNumber)
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+
         if (levelNumber < 1 || levelNumber > 5)
         {
             Debug.LogError($"[LevelSelect] Invalid level number: {levelNumber}");
@@ -211,6 +226,8 @@ public class LevelSelectManager : MonoBehaviour
 
     private void LoadMainMenu()
     {
+        AudioManager.Instance?.PlayButtonClick();
+        
         Debug.Log("[LevelSelect] Returning to Main Menu");
         SceneManager.LoadScene(0);
     }

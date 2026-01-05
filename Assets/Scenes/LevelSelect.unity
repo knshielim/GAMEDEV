@@ -405,7 +405,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 203058667}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &203058667
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,7 +538,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 215453399}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &215453399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1258,7 +1282,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 631722847}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &631722847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1454,7 +1490,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1060329596}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1060329596
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1575,7 +1623,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1742948355}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1742948355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1830,7 +1890,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1806236216}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7256688426656162035, guid: 9fb240489b92cfc4aa21d9add8b0869e, type: 3}
+        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+        m_MethodName: PlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1806236216
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -151,6 +151,9 @@ public class ShopManager : MonoBehaviour
 
     public void OnUpgradeButtonClicked()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+
         if (selectedTroopInstance == null) return;
 
         // Try to upgrade using gems
@@ -164,6 +167,11 @@ public class ShopManager : MonoBehaviour
         }
 
         // Successfully upgraded → update UI
+        // Mainkan Suara Upgrade Sukses
+        if (AudioManager.Instance != null && AudioManager.Instance.upgradeTroopSFX != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeTroopSFX);
+        }
         UpdateRightPanelUI();
         foreach (var slot in troopSlots)
         {

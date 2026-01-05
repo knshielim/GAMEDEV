@@ -317,7 +317,7 @@ public abstract class Unit : MonoBehaviour
         if (unitCollider != null)
             unitCollider.enabled = false;
 
-        yield return new WaitForSeconds(deathDuration);
+        yield return new WaitForSecondsRealtime(deathDuration);
         Destroy(gameObject);
     }
 
@@ -344,8 +344,10 @@ public abstract class Unit : MonoBehaviour
         int finalDamage = baseDamage;
 
         if (isCrit)
+        {
             finalDamage = Mathf.RoundToInt(baseDamage * critDamage);
             Debug.Log($"🔥 CRITICAL HIT by {name}!");
+        }
 
         return finalDamage;
     }

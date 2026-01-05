@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2734329676021763561}
+  - component: {fileID: 298795262871353681}
+  - component: {fileID: 3340725140185312113}
   m_Layer: 0
   m_Name: Bootstrap
   m_TagString: Untagged
@@ -34,6 +36,32 @@ Transform:
   - {fileID: 6936376875364357180}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &298795262871353681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2435587185146330329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f721412551a3d4ab0ca71e3f7bd395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3340725140185312113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2435587185146330329}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f678cc6fd5f1f441815b940726c7ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selected: 2
+  testDuration: 300
 --- !u!1 &2923302768942075038
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,8 +153,10 @@ MonoBehaviour:
   enableDebugging: 1
   skipDialogue: 1
   skipTutorial: 1
+  unlockAllLevels: 1
   giveDebugGem: 1
   debugGemAmount: 500000
+  forceGemDrop100: 1
 --- !u!1001 &4832491802633890714
 PrefabInstance:
   m_ObjectHideFlags: 0

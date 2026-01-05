@@ -158,7 +158,7 @@ public class GameManager : MonoBehaviour
             // Always fix button references when loading a game scene, regardless of whether we transferred references
             FixButtonReferences(scene);
             
-            if ((int)currentLevel > 1)
+            if ((int)currentLevel >= 1)
             {
                 StartCoroutine(EnableRouletteAfterDialogue());
             }
@@ -324,6 +324,9 @@ public void TowerDestroyed(Tower destroyedTower)
 
     public void OnSummonButtonClick()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+            
         // Prevent duplicate summons within cooldown period
         if (Time.time - lastSummonTime < SUMMON_COOLDOWN)
         {

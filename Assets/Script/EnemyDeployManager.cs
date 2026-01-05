@@ -667,18 +667,28 @@ public class EnemyDeployManager : MonoBehaviour
             
             // Shake screen for wave activation
             StartCoroutine(ScreenShake(0.5f, 0.2f));
+            // ✅ PLAY SMOOTH AUDIO (Level 4 Only)
+            if (AudioManager.Instance != null)
+            {
+                // SFX upgrade cuma buat efek 'teng!', tapi loopnya pakai StartWaveOngoing
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX); 
+                
+                // Fungsi ini ada Fade-In nya (diatur di AudioManager)
+                AudioManager.Instance.StartWaveOngoing(); 
+            }
             Debug.Log($"[EnemyDeploy] 🌋 Screen shake triggered for Wave {waveNumber}");
             
-            // Optional: Play sound
-            if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
-            {
-                AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
-            }
         }
         // Reset flag when wave ends
         else if (!isWaveActive && _lastFrameWasActive)
         {
             _lastFrameWasActive = false;
+            // ✅ STOP SMOOTH AUDIO
+            if (AudioManager.Instance != null)
+            {
+                // Fungsi ini ada Fade-Out nya (diatur di AudioManager)
+                AudioManager.Instance.StopWaveOngoing(); 
+            }
         }
 
         // Update text based on state
@@ -994,6 +1004,10 @@ public class EnemyDeployManager : MonoBehaviour
         if (!bossStillAlive && _bossBattleActive)
         {
             _bossBattleActive = false;
+            // Stop Boss Music (Smooth Fade Out)
+            if (AudioManager.Instance != null) 
+                AudioManager.Instance.StopBossMusic();
+
             Debug.Log("[EnemyDeploy] 🏆 BOSS DEFEATED! Enemy deployment RESUMED");
         }
     }
@@ -1024,12 +1038,14 @@ public class EnemyDeployManager : MonoBehaviour
         Debug.Log("[EnemyDeploy] 🏰 Spawning boss during pause...");
         SpawnTroop(bossTroop, false); // isMythic = false (boss spawns as regular enemy)
 
-        // Play sound effect
-        if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
+        // ✅ PLAY SMOOTH AUDIO (Level 5 Only)
+        if (AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
-            Debug.Log("[EnemyDeploy] 🔊 Boss summon sound effect played");
+            // Jangan pakai PlaySFX biasa, pakai fungsi Boss yang sudah ada Fade-In
+            AudioManager.Instance.PlayBossSummoned(); 
+            Debug.Log("[EnemyDeploy] 🔊 Boss music started (Smooth)");
         }
+        
 
         // Start screen shake effect
         StartCoroutine(ScreenShake(2f, 0.3f));

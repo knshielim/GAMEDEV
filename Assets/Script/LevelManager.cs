@@ -199,6 +199,9 @@ public class LevelManager : MonoBehaviour
         int nextLevel = currentLevel + 1;
         int nextSceneIndex = nextLevel + 1; // Level 5 = build index 6
         
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+
         Debug.Log($"[LevelManager] 🔄 Loading Level {nextLevel} (scene index {nextSceneIndex})");
         
         if (nextLevel <= totalLevels)
@@ -218,6 +221,9 @@ public class LevelManager : MonoBehaviour
     // Restart current level (called by Restart button)
     public void RestartLevel()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+
         Debug.Log($"[LevelManager] 🔄 Restarting level {currentLevel}");
         
         // Reset time scale
@@ -230,8 +236,7 @@ public class LevelManager : MonoBehaviour
     // Go to main menu (scene 0)
     public void LoadMainMenu()
     {
-        if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+        AudioManager.Instance?.PlayButtonClick();
 
         Debug.Log("[LevelManager] 🏠 Loading main menu (scene 0)");
 

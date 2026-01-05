@@ -366,6 +366,8 @@ public class GachaManager : MonoBehaviour
     // -------------------- UPGRADE SYSTEM --------------------
     public void UpgradeGachaSystem()
     {
+        AudioManager.Instance?.PlayButtonClick();
+        
         if (SpawnRateBalancer.Instance == null) return;
 
         AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);

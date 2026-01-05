@@ -425,6 +425,9 @@ public class TutorialManager : MonoBehaviour
 
     public void OnSkipButtonPressed()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+            
         Debug.Log("[Tutorial] ⏭️ SKIP BUTTON PRESSED!");
         SkipTutorial();
     }

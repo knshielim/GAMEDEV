@@ -43,10 +43,12 @@ public class Enemy : Unit
     [Tooltip("Amount of gems dropped on success.")]
     [SerializeField] private int gemDropAmount = 1;
 
+    public bool forceGemDrop100 = false;
+
     protected override void Start()
     {
-        base.Start();
         UnitTeam = Team.Enemy;
+        base.Start();
 
         if (TryGetComponent<SpriteRenderer>(out var sr))
             sr.flipX = true;
@@ -450,7 +452,7 @@ private void ShootProjectileInDirection(Vector2 direction)
             col.enabled = false;
 
         // kalau kamu mau drop gem/coin saat mati, panggil di sini (opsional)
-        // HandleGemDrop();
+        HandleGemDrop();
         // AwardCoinsForKill();
 
         StartCoroutine(DestroyAfterDeathRealtime());
@@ -459,43 +461,41 @@ private void ShootProjectileInDirection(Vector2 direction)
 
     private void HandleGemDrop()
     {
-        // Ensure ShopManager exists to avoid errors
-        // if (ShopManager.Instance == null) return;
-        
-        // ensure GemManager exists
+        // 1. Cek GemManager
         if (GemManager.Instance == null)
         {
             Debug.LogWarning($"[GemDrop] FAIL: GemManager.Instance NULL on {name}");
             return;
         }
-        // Check if this unit is a BOSS (using the inherited troopData from Unit class)
-        // troopData is 'protected' in Unit.cs, so we can access it directly here
-        bool isBoss = (troopData != null && troopData.rarity == TroopRarity.Boss);
 
-        // Generate a random roll between 0 and 100
+        // 2. Cek Boss & Roll Chance
+        bool isBoss = (troopData != null && troopData.rarity == TroopRarity.Boss);
         float roll = Random.Range(0f, 100f);
         
-        Debug.Log($"[GemDropCheck] {name} gemDropChance={gemDropChance} gemDropAmount={gemDropAmount}");
-
-        // Logic: Bosses ALWAYS drop gems, regular enemies drop based on chance
-        if (isBoss || roll <= gemDropChance)
+        // 3. Cek Debug Force Drop
+        bool forceDrop = false;
+        if (GameDebugConfig.Instance != null && 
+            GameDebugConfig.Instance.enableDebugging && 
+            GameDebugConfig.Instance.forceGemDrop100)
         {
-            // Bosses drop 50 gems, regular enemies drop 'gemDropAmount' (default 1)
-            int amount = isBoss ? 50 : gemDropAmount; 
-            
-            GemManager.Instance.AddLevelGem(amount);
-            // Add gems to the persistent storage via ShopManager
-            
-            Debug.Log($"[Enemy] Dropped {amount} Gems! (IsBoss: {isBoss})");
+            forceDrop = true;
+            Debug.Log($"[GemDrop] 🔧 FORCE DROP ACTIVE for {name}");
+        }
 
-            // Optional: Spawn Visual Feedback (using DamagePopup to show gem amount)
-            // We pass 'true' for isCrit to make the text appear large/red (indicating a special drop)
+        // 4. Logika Drop (Boss ATAU ForceDrop ATAU Roll Berhasil)
+        if (isBoss || forceDrop || roll <= gemDropChance)
+        {
+            int amount = isBoss ? 50 : gemDropAmount; 
+            GemManager.Instance.AddLevelGem(amount);
+            
+            Debug.Log($"[Enemy] 💎 Dropped {amount} Gems! (Boss:{isBoss}, Force:{forceDrop})");
+
             if (DamagePopupSpawner.Instance != null)
             {
                 DamagePopupSpawner.Instance.Spawn(amount, true, transform.position + Vector3.up);
             }
         }
-    }
+    } // <--- Pastikan ada kurung tutup ini sebelum DestroyAfterDeathRealtime
 
     private IEnumerator DestroyAfterDeathRealtime()
     {

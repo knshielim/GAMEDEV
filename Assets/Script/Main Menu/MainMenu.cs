@@ -72,6 +72,11 @@ public class MainMenu : MonoBehaviour
         // Show main menu, hide options and back button at start
         ShowMainMenu();
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBGM(AudioManager.BGMMode.MainMenu, restartIfSame: false);
+        }
+
         // Set up backstory continue button
         if (continueButton != null)
         {
@@ -128,8 +133,9 @@ public class MainMenu : MonoBehaviour
 
     public void PlayGame()
     {
-        if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
+
 
         // Check if this is the first time playing (or testing mode)
         bool hasSeenBackstory = false;
@@ -362,51 +368,55 @@ public class MainMenu : MonoBehaviour
     {
         Debug.Log("[MainMenu] 🚀 Player dismissed backstory, loading level select");
         
-        if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
 
         LoadLevelSelect();
     }
 
     private void LoadLevelSelect()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
         SceneManager.LoadScene("LevelSelect");
     }
 
+    
+
+    
     public void ShowOptions()
-    {
-        if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
+    {   
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
 
         // Hide main menu buttons
         if (mainMenuButtons != null)
             mainMenuButtons.SetActive(false);
 
         // Show options menu
-        if (optionsMenu != null)
+        if (optionsMenu != null) 
             optionsMenu.SetActive(true);
 
         // Show back button
-        if (backButton != null)
+        if (backButton != null) 
             backButton.SetActive(true);
     }
+    
 
+        
     public void ShowMainMenu()
     {
-        if (AudioManager.Instance != null && AudioManager.Instance.summonSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.summonSFX);
-
         // Show main menu buttons
         if (mainMenuButtons != null)
             mainMenuButtons.SetActive(true);
 
         // Hide options menu
-        if (optionsMenu != null)
-            optionsMenu.SetActive(true);
+        if (optionsMenu != null) 
+            optionsMenu.SetActive(false);
 
         // Hide back button
-        if (backButton != null)
-            backButton.SetActive(true);
+        if (backButton != null) 
+            backButton.SetActive(false);
 
         // Hide backstory panel
         if (backstoryPanel != null)
@@ -416,6 +426,8 @@ public class MainMenu : MonoBehaviour
         if (pressSpacePanel != null)
             pressSpacePanel.SetActive(false);
     }
+
+    
 
     public void QuitGame()
     {

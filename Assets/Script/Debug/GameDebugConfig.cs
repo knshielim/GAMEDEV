@@ -12,24 +12,29 @@ public class GameDebugConfig : MonoBehaviour
     public bool skipDialogue = false;
     public bool skipTutorial = false;
 
+    [Header("Progress Debug")]
+    public bool unlockAllLevels = false;
+
     [Header("Economy Debug")]
     public bool giveDebugGem = false;
     public int debugGemAmount = 500000;
 
+    [Header("Drop Debug")]
+    public bool forceGemDrop100 = false;
+
     public bool ShouldGiveDebugGem() => enableDebugging && giveDebugGem;
+    public bool ShouldUnlockAllLevels() => enableDebugging && unlockAllLevels;
 
     private void Awake()
     {
-        // Singleton pattern supaya bisa diakses script lain
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Opsional: biar setting awet antar scene
-        }
-        else
+        Debug.Log("[GameDebugConfig] Awake called on: " + gameObject.name);
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
     }
 
     // Helper functions biar kodingan di script lain rapi

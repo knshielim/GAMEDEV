@@ -32,6 +32,9 @@ public class TroopSlot : MonoBehaviour
 
     public void OnClick()
     {
+        if (AudioManager.Instance != null) 
+            AudioManager.Instance.PlayButtonClick();
+            
         shopManager.SelectTroop(this, troopData);
     }
 

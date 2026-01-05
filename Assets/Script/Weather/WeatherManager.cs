@@ -40,6 +40,7 @@ public class WeatherManager : MonoBehaviour
         // ============================================
 
         CurrentWeather = type;
+        AudioManager.Instance?.StartWeatherAmbience(type);
         activeWeatherTime = duration;
 
         switch (type)
@@ -107,6 +108,9 @@ public class WeatherManager : MonoBehaviour
             acidRainParticles.gameObject.SetActive(false);
         }
         // ============================================
+
+        CurrentWeather = WeatherType.Sunny;
+        AudioManager.Instance?.StopWeatherAmbience();
     }
 
     public IEnumerator ApplyFog(float duration)
@@ -159,6 +163,7 @@ public class WeatherManager : MonoBehaviour
         }
 
         CurrentWeather = WeatherType.Sunny;
+        AudioManager.Instance?.StopWeatherAmbience();
         FogEffect.Instance?.FadeOut();
         Debug.Log("Fog ENDED");
     }
@@ -167,6 +172,7 @@ public class WeatherManager : MonoBehaviour
     {
         yield return new WaitForSeconds(duration);
         CurrentWeather = WeatherType.Sunny;
+        AudioManager.Instance?.StopWeatherAmbience();
     }
 
     // ================= ADDITION =================

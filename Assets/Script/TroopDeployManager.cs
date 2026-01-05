@@ -57,6 +57,7 @@ public class TroopDeployManager : MonoBehaviour
 
     public void DeploySelectedTroop()
     {
+        AudioManager.Instance?.PlayButtonClick();
         Debug.Log($"[DEPLOY] DeploySelectedTroop called at {Time.time}");
         
         if (!canDeploy)

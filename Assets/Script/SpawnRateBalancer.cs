@@ -556,6 +556,7 @@ public class SpawnRateBalancer : MonoBehaviour
     // Upgrade System Methods
     public void UpgradeSummonSystem()
     {
+        AudioManager.Instance?.PlayButtonClick();
         if (upgradeLevel >= 10) return;
 
         upgradeLevel++;

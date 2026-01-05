@@ -124,6 +124,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ToggleSettings()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         bool isOpen = !settingsPanel.activeSelf;
         settingsPanel.SetActive(isOpen);
         Time.timeScale = isOpen ? 0f : 1f;
@@ -138,6 +140,8 @@ public class SettingsManager : MonoBehaviour
 
     private void CloseSettings()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         settingsPanel.SetActive(false);
         Time.timeScale = 1f;
         HideAllPanels();
@@ -146,6 +150,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ShowVolumePanel()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         settingsPanel.SetActive(false);
         HideAllPanels();
         HideAllBackButtons();
@@ -156,6 +162,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ShowTroopDirectoryPanel()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         settingsPanel.SetActive(false);
         HideAllPanels();
         HideAllBackButtons();
@@ -166,6 +174,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ShowHelpPanel()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         settingsPanel.SetActive(false);
         HideAllPanels();
         HideAllBackButtons();
@@ -176,6 +186,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ShowMainSettings()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         settingsPanel.SetActive(true);
         HideAllPanels();
         HideAllBackButtons();
@@ -199,6 +211,8 @@ public class SettingsManager : MonoBehaviour
 
     private void ShowTroop(TroopRarity rarity)
     {
+        AudioManager.Instance?.PlayButtonClick();
+        
         if (troopDisplayImage == null) return;
 
         switch (rarity)

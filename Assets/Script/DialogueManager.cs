@@ -805,6 +805,10 @@ public class DialogueManager : MonoBehaviour
 
     public void SkipDialogue()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick(); 
+        }
         Debug.Log($"[Dialogue] SkipDialogue called - isTyping: {isTyping}, dialoguePanel active: {dialoguePanel?.activeSelf}");
 
         if (isTyping)

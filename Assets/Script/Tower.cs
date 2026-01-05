@@ -186,6 +186,7 @@ public class Tower : MonoBehaviour
 
     public void UpgradeTower()
     {
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.upgradeSFX);
         if (GameManager.Instance == null || GameManager.Instance.IsGameOver()) return;
 
         if (level >= MAX_LEVEL)

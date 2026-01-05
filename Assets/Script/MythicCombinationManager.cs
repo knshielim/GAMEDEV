@@ -64,6 +64,8 @@ public class MythicCombinationManager : MonoBehaviour
     
     public void OpenMythicPanel()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         if (mythicCombinationPanel != null)
         {
             mythicCombinationPanel.SetActive(true);
@@ -78,12 +80,16 @@ public class MythicCombinationManager : MonoBehaviour
     
     public void CloseMythicPanel()
     {
+        AudioManager.Instance?.PlayButtonClick();
+        
         if (mythicCombinationPanel != null)
             mythicCombinationPanel.SetActive(false);
     }
     
     private void SelectRecipe(int recipeIndex)
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         currentRecipeIndex = recipeIndex;
         
         // Find the recipe by index
@@ -160,6 +166,8 @@ public class MythicCombinationManager : MonoBehaviour
     
     private void CraftSelectedRecipe()
     {
+        AudioManager.Instance?.PlayButtonClick();
+
         DisplayMessage("");
         
         if (selectedRecipe == null)

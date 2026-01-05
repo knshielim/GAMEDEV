@@ -32,9 +32,10 @@ public class Troops : Unit
 
 
     protected override void Start()
-    {
-    base.Start();
-    aliveTroops.Add(this);
+    {   
+        UnitTeam = Team.Player;
+        base.Start();
+        aliveTroops.Add(this);
 
 
         if (instance != null)
@@ -69,7 +70,6 @@ public class Troops : Unit
             moveSpeed = troopData.moveSpeed;
         }
         baseHealth = currentHealth;
-        UnitTeam = Team.Player;
         SetupFriendlyCollisionIgnore();
 
         // Align Circle Collider with attack range
