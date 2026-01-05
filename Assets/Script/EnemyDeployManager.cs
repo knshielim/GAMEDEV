@@ -38,7 +38,7 @@ public class EnemyDeployManager : MonoBehaviour
     public float baseSpawnInterval = 30f;
 
     [Tooltip("Base coin cost per spawned troop.")]
-    public int baseTroopCost = 50;
+    public int baseTroopCost = 100;
 
     [Header("Mythic Deployment")]
     [Tooltip("Mythic troops that can be deployed at higher difficulties.")]
@@ -710,7 +710,7 @@ public class EnemyDeployManager : MonoBehaviour
     }
 
     private float _coinBoostTimer = 0f;
-    private const float COIN_BOOST_INTERVAL = 2f;
+    private const float COIN_BOOST_INTERVAL = 2.5f;
 
     private void BoostAICoins()
     {

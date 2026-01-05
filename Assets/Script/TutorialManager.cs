@@ -368,7 +368,7 @@ public class TutorialManager : MonoBehaviour
     {
         Debug.Log("[Tutorial] 🔑 Waiting for SPACE key press...");
         
-        // Wait until player presses space (use unscaled time since game is paused)
+        // Wait until player presses space
         bool spacePressed = false;
         while (!spacePressed)
         {
@@ -389,6 +389,9 @@ public class TutorialManager : MonoBehaviour
 
         // Clean up all tutorial entities before reload
         CleanupTutorialEntities();
+
+        // Destroy TutorialManager so it doesn't interfere with future levels
+        Destroy(gameObject);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

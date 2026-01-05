@@ -19,10 +19,13 @@ MonoBehaviour:
   maxHealth: 120
   attack: 11
   moveSpeed: 1.6
-  attackInterval: 0.6
+  attackInterval: 2
   level: 1
   isRanged: 1
   attackRange: 6
+  critRate: 0
+  critDamage: 2
+  baseUpgradeCost: 100
   projectilePrefab: {fileID: 859958684992129849, guid: ffebd155801d2b647a105bc7f185bd3e, type: 3}
   projectileSpeed: 8
   projectileLifetime: 3

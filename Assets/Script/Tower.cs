@@ -225,10 +225,6 @@ public class Tower : MonoBehaviour
             {
                 CoinManager.Instance.AddPlayerCoins(coinsPerTick);
             }
-            else if (owner == TowerOwner.Enemy) 
-            {
-                CoinManager.Instance.AddEnemyCoins(coinsPerTick);
-            }
         }
     }
     

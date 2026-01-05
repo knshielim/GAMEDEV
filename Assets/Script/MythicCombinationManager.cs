@@ -14,19 +14,22 @@ public class MythicCombinationManager : MonoBehaviour
     
     [Header("UI References")]
     public GameObject mythicCombinationPanel;
-    public Transform recipeListContainer;
-    public GameObject recipeButtonPrefab;
-    public TextMeshProUGUI recipeDescriptionText;
-    public Button craftButton;
+    public Image mythicRecipeImage; // Shows the combined recipe sprite
+    public Button vampireButton;
+    public Button samuraiButton;
+    public Button craftMythicButton;
+    public Button closeButton; // ✅ NEW: Close button
     public TextMeshProUGUI messageText;
-    public TextMeshProUGUI messageText2;
+    
+    [Header("Recipe Sprites")]
+    [Tooltip("Combined sprite showing Vampire recipe")]
+    public Sprite vampireRecipeSprite;
+    [Tooltip("Combined sprite showing Samurai recipe")]
+    public Sprite samuraiRecipeSprite;
     
     private MythicRecipe selectedRecipe;
+    private int currentRecipeIndex = 0; // 0 = Vampire, 1 = Samurai
     
-    [Header("Icon Display")]
-    public Transform iconContainer; 
-    public GameObject iconPrefab; 
-
     private void Awake()
     {
         if (Instance == null)
@@ -43,45 +46,33 @@ public class MythicCombinationManager : MonoBehaviour
     {
         if (mythicCombinationPanel != null)
             mythicCombinationPanel.SetActive(false);
-            
-        if (craftButton != null)
-            craftButton.onClick.AddListener(CraftSelectedRecipe);
-            
-        RefreshRecipeList();
+        
+        // Setup button listeners
+        if (vampireButton != null)
+            vampireButton.onClick.AddListener(() => SelectRecipe(0)); // Vampire
+        
+        if (samuraiButton != null)
+            samuraiButton.onClick.AddListener(() => SelectRecipe(1)); // Samurai
+        
+        if (craftMythicButton != null)
+            craftMythicButton.onClick.AddListener(CraftSelectedRecipe);
+        
+        // ✅ NEW: Setup close button
+        if (closeButton != null)
+            closeButton.onClick.AddListener(CloseMythicPanel);
     }
     
-    private void DisplayMessage(string message)
-    {
-        if (messageText != null)
-        {
-            messageText.text = message;
-        }
-        else
-        {
-            // Fallback to console if messageText UI is not set up
-            Debug.Log($"[Mythic Combination Message] {message}");
-        }
-    }
-
-    private void DisplayMessage2(string message)
-    {
-        if (messageText2 != null)
-        {
-            messageText2.text = message;
-        }
-        else
-        {
-            // Fallback to console if messageText UI is not set up
-            Debug.Log($"[Mythic Combination Message] {message}");
-        }
-    }
-
     public void OpenMythicPanel()
     {
         if (mythicCombinationPanel != null)
         {
             mythicCombinationPanel.SetActive(true);
-            RefreshRecipeList();
+            
+            // Default to Vampire recipe (index 0)
+            currentRecipeIndex = 0;
+            SelectRecipe(0);
+            
+            DisplayMessage("");
         }
     }
     
@@ -91,116 +82,103 @@ public class MythicCombinationManager : MonoBehaviour
             mythicCombinationPanel.SetActive(false);
     }
     
-    private void RefreshRecipeList()
+    private void SelectRecipe(int recipeIndex)
     {
-        if (recipeListContainer == null || recipeButtonPrefab == null)
-            return;
-            
-        // Clear existing buttons
-        foreach (Transform child in recipeListContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        currentRecipeIndex = recipeIndex;
         
-        // Get available troops from inventory
-        Dictionary<TroopData, int> availableTroops = GetAvailableTroopsFromInventory();
-        
-        // Create button for each recipe
-        foreach (var recipe in mythicRecipes)
+        // Find the recipe by index
+        if (recipeIndex >= 0 && recipeIndex < mythicRecipes.Count)
         {
-            GameObject btnObj = Instantiate(recipeButtonPrefab, recipeListContainer);
+            selectedRecipe = mythicRecipes[recipeIndex];
             
-            TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-            if (btnText != null)
-                btnText.text = recipe.resultMythicTroop.displayName;
-            
-            Button btn = btnObj.GetComponent<Button>();
-            if (btn != null)
+            // Update the recipe image based on selection
+            if (mythicRecipeImage != null)
             {
-                MythicRecipe r = recipe; // Capture for closure
-                btn.onClick.AddListener(() => SelectRecipe(r));
-                
-                // Recipe buttons should always be interactable
-                btn.interactable = true; 
-                
-                // Visual feedback (keep visual feedback based on canCraft)
-                bool canCraft = recipe.CanCraft(availableTroops);
-                Image btnImage = btn.GetComponent<Image>();
-                if (btnImage != null)
+                if (recipeIndex == 0 && vampireRecipeSprite != null)
                 {
-                    btnImage.color = canCraft ? Color.white : new Color(0.5f, 0.5f, 0.5f);
+                    mythicRecipeImage.sprite = vampireRecipeSprite;
+                    Debug.Log("[MythicCombination] Showing Vampire recipe");
+                }
+                else if (recipeIndex == 1 && samuraiRecipeSprite != null)
+                {
+                    mythicRecipeImage.sprite = samuraiRecipeSprite;
+                    Debug.Log("[MythicCombination] Showing Samurai recipe");
                 }
             }
+            
+            // Update button visual states
+            UpdateButtonStates();
+            
+            // Check if player can craft this recipe
+            UpdateCraftButtonState();
+            
+            DisplayMessage("");
+        }
+        else
+        {
+            Debug.LogError($"[MythicCombination] Invalid recipe index: {recipeIndex}");
         }
     }
     
-    private void SelectRecipe(MythicRecipe recipe)
+    private void UpdateButtonStates()
     {
-        selectedRecipe = recipe;
-        
-        DisplayMessage("");
-        DisplayMessage2("");
-
-        // Clear old icons
-        foreach (Transform child in iconContainer)
-            Destroy(child.gameObject);
-        
-        // Build description (only header now)
-        string desc = $"<b>Create {recipe.resultMythicTroop.displayName}</b>\n\n<b>Required:</b>\n"; 
-        
-        foreach (var ingredient in recipe.ingredients)
+        // Visual feedback - highlight selected button
+        if (vampireButton != null)
         {
-            // Create icon-name pair
-            GameObject iconPair = Instantiate(iconPrefab, iconContainer);
-
-            // Get Image component (assuming it's on the root or a child)
-            Image img = iconPair.GetComponent<Image>();
-            if (img == null) // Fallback if Image is a child
-            {
-                 img = iconPair.GetComponentInChildren<Image>();
-            }
-            
-            if (ingredient.requiredTroop?.playerPrefab != null)
-            {
-                var sr = ingredient.requiredTroop.playerPrefab.GetComponent<SpriteRenderer>();
-                if (sr?.sprite != null)
-                    img.sprite = sr.sprite;
-            }
-            
-            // Get TextMeshProUGUI component (assuming it's a child)
-            TextMeshProUGUI nameText = iconPair.GetComponentInChildren<TextMeshProUGUI>();
-            if (nameText != null)
-            {
-                nameText.text = $"{ingredient.quantity}x {ingredient.requiredTroop.displayName}";
-            }
+            var vampireColors = vampireButton.colors;
+            vampireColors.normalColor = (currentRecipeIndex == 0) ? Color.yellow : Color.white;
+            vampireButton.colors = vampireColors;
         }
         
-        if (recipeDescriptionText != null)
-            recipeDescriptionText.text = desc; // Assign only the header text
+        if (samuraiButton != null)
+        {
+            var samuraiColors = samuraiButton.colors;
+            samuraiColors.normalColor = (currentRecipeIndex == 1) ? Color.yellow : Color.white;
+            samuraiButton.colors = samuraiColors;
+        }
+    }
+    
+    private void UpdateCraftButtonState()
+    {
+        if (craftMythicButton == null || selectedRecipe == null) return;
+        
+        Dictionary<TroopData, int> availableTroops = GetAvailableTroopsFromInventory();
+        bool canCraft = selectedRecipe.CanCraft(availableTroops);
+        
+        craftMythicButton.interactable = canCraft;
+        
+        // Visual feedback
+        var craftColors = craftMythicButton.colors;
+        craftColors.normalColor = canCraft ? Color.green : Color.gray;
+        craftMythicButton.colors = craftColors;
+        
+        if (!canCraft)
+        {
+            DisplayMessage("Not enough ingredients!");
+        }
     }
     
     private void CraftSelectedRecipe()
     {
         DisplayMessage("");
-        DisplayMessage2("");
-
+        
         if (selectedRecipe == null)
         {
-            DisplayMessage2("Select a recipe!");
+            DisplayMessage("Select a recipe!");
             Debug.LogWarning("[MythicCombination] No recipe selected!");
             return;
         }
         
         Dictionary<TroopData, int> availableTroops = GetAvailableTroopsFromInventory();
-
-        // 1. Check if the player has enough ingredients
+        
+        // Check if the player has enough ingredients
         if (!selectedRecipe.CanCraft(availableTroops))
         {
             DisplayMessage("Not enough ingredients!");
             Debug.LogWarning($"[MythicCombination] Failed to craft {selectedRecipe.recipeName}: Not enough ingredients.");
             return;
         }
-
+        
         // Consume ingredients
         foreach (var ingredient in selectedRecipe.ingredients)
         {
@@ -209,23 +187,39 @@ public class MythicCombinationManager : MonoBehaviour
                 RemoveTroopFromInventory(ingredient.requiredTroop);
             }
         }
-
-        // Add Mythic result
-        bool added = TroopInventory.Instance.AddTroop(new TroopInstance(selectedRecipe.resultMythicTroop)); // <-- FIXED
-
+        
+        // Add Mythic result to inventory
+        bool added = TroopInventory.Instance.AddTroop(new TroopInstance(selectedRecipe.resultMythicTroop));
+        
         if (added)
         {
             Debug.Log($"[MythicCombination] Successfully crafted {selectedRecipe.resultMythicTroop.displayName}!");
+            DisplayMessage($"✅ Crafted {selectedRecipe.resultMythicTroop.displayName}!");
+            
+            // Play mythic sound effect
+            if (AudioManager.Instance != null && AudioManager.Instance.mythicSFX != null)
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.mythicSFX);
+            
             TroopInventory.Instance.RefreshUI();
-            RefreshRecipeList();
+            
+            // Update craft button state after crafting
+            UpdateCraftButtonState();
         }
         else
         {
+            DisplayMessage("Inventory full!");
             Debug.LogWarning("[MythicCombination] Inventory full! Could not add Mythic troop.");
-            // TODO: Return ingredients to player
+            
+            // Refund ingredients since crafting failed
+            foreach (var ingredient in selectedRecipe.ingredients)
+            {
+                for (int i = 0; i < ingredient.quantity; i++)
+                {
+                    TroopInventory.Instance.AddTroop(new TroopInstance(ingredient.requiredTroop));
+                }
+            }
         }
     }
-
     
     private Dictionary<TroopData, int> GetAvailableTroopsFromInventory()
     {
@@ -236,9 +230,9 @@ public class MythicCombinationManager : MonoBehaviour
         
         foreach (var slot in TroopInventory.Instance.storedTroops)
         {
-            if (slot.Data != null) // <-- use Data instead of troop
+            if (slot.Data != null)
             {
-                if (result.ContainsKey(slot.Data)) // <-- fixed typo
+                if (result.ContainsKey(slot.Data))
                     result[slot.Data] += slot.count;
                 else
                     result[slot.Data] = slot.count;
@@ -247,31 +241,37 @@ public class MythicCombinationManager : MonoBehaviour
         
         return result;
     }
-
     
     private void RemoveTroopFromInventory(TroopData troop)
-{
-    if (TroopInventory.Instance == null)
-        return;
-
-    // Find first slot with this troop
-    for (int i = 0; i < TroopInventory.Instance.storedTroops.Count; i++)
     {
-        var slot = TroopInventory.Instance.storedTroops[i];
-
-        if (slot.Data == troop && slot.count > 0) // <-- use Data instead of troop
-        {
-            slot.count--;
-
-            if (slot.count <= 0)
-            {
-                slot.troopInstance = null; // <-- clear the instance
-                slot.count = 0;
-            }
-
+        if (TroopInventory.Instance == null)
             return;
+        
+        // Find first slot with this troop
+        for (int i = 0; i < TroopInventory.Instance.storedTroops.Count; i++)
+        {
+            var slot = TroopInventory.Instance.storedTroops[i];
+            
+            if (slot.Data == troop && slot.count > 0)
+            {
+                slot.count--;
+                
+                if (slot.count <= 0)
+                {
+                    slot.troopInstance = null;
+                    slot.count = 0;
+                }
+                
+                return;
+            }
         }
     }
-}
-
+    
+    private void DisplayMessage(string message)
+    {
+        if (messageText != null)
+        {
+            messageText.text = message;
+        }
+    }
 }
