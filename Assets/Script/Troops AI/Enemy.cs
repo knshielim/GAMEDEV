@@ -488,6 +488,16 @@ private void ShootProjectileInDirection(Vector2 direction)
             int amount = isBoss ? 50 : gemDropAmount; 
             GemManager.Instance.AddLevelGem(amount);
             
+            // 1. --- TAMBAHAN AUDIO DROP ---
+            if (AudioManager.Instance != null)
+            {
+                // Menggunakan fungsi helper jika sudah kamu buat
+                AudioManager.Instance.PlayGemDrop(); 
+
+                // ATAU gunakan ini jika fungsi helper belum dibuat:
+                // AudioManager.Instance.PlaySFX(AudioManager.Instance.gemDropSFX);
+            }
+            
             Debug.Log($"[Enemy] 💎 Dropped {amount} Gems! (Boss:{isBoss}, Force:{forceDrop})");
 
             if (DamagePopupSpawner.Instance != null)
