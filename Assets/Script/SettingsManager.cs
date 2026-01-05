@@ -9,6 +9,16 @@ public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance;
 
+
+    [Header("Rarity Label Sprites")]
+    public Sprite commonLabelSprite;
+    public Sprite rareLabelSprite;
+    public Sprite epicLabelSprite;
+    public Sprite legendaryLabelSprite;
+    public Sprite mythicLabelSprite;
+    public Sprite bossLabelSprite;
+
+
     [Header("Main Settings Panel")]
     public GameObject settingsPanel; // Main panel with tabs
     public Button settingsButton;
@@ -565,114 +575,129 @@ public class SettingsManager : MonoBehaviour
     private void CreateRarityRowWithSprites(RectTransform parent, TroopRarity rarity, List<TroopData> troops)
     {
         // Create row container
+        float headerHeight = 120f;
+
+        // Header
+        headerRect.anchorMin = new Vector2(0, 1);
+        headerRect.anchorMax = new Vector2(1, 1);
+        headerRect.pivot = new Vector2(0.5f, 1);
+        headerRect.anchoredPosition = Vector2.zero;
+        headerRect.sizeDelta = new Vector2(0, headerHeight);
+
+        // Troop container
+        troopContainerRect.anchorMin = new Vector2(0, 0);
+        troopContainerRect.anchorMax = new Vector2(1, 1);
+        troopContainerRect.pivot = new Vector2(0.5f, 1);
+        troopContainerRect.anchoredPosition = new Vector2(0, -headerHeight);
+        troopContainerRect.sizeDelta = new Vector2(0, -40);
+
+        // ---------- RARITY ROW ----------
         GameObject rowContainer = new GameObject($"RarityRow_{rarity}");
         RectTransform rowRect = rowContainer.AddComponent<RectTransform>();
         rowRect.SetParent(parent);
-        rowRect.sizeDelta = new Vector2(0, 600); // Much bigger to fit large troops
+        rowRect.sizeDelta = new Vector2(0, 600);
 
-        // Add LayoutElement
-        UnityEngine.UI.LayoutElement rowLayoutElement = rowContainer.AddComponent<UnityEngine.UI.LayoutElement>();
-        rowLayoutElement.preferredHeight = 140; // Optimized for 3 troops vertical view
+        LayoutElement rowLayoutElement = rowContainer.AddComponent<LayoutElement>();
+        rowLayoutElement.preferredHeight = 260;
         rowLayoutElement.flexibleWidth = 1;
 
-        // Create rarity header text
+        // ---------- RARITY HEADER IMAGE ----------
         GameObject headerObj = new GameObject("RarityHeader");
         RectTransform headerRect = headerObj.AddComponent<RectTransform>();
         headerRect.SetParent(rowRect);
-        headerRect.anchorMin = new Vector2(0, 1);
+        headerRect.anchorMin = new Vector2(0, 1);   // stretch horizontally
         headerRect.anchorMax = new Vector2(1, 1);
-        headerRect.pivot = new Vector2(0, 1);
-        headerRect.anchoredPosition = new Vector2(0, 0);
-        headerRect.sizeDelta = new Vector2(0, 20); // Smaller header to close gap
+        headerRect.pivot = new Vector2(0.5f, 1);
+        headerRect.anchoredPosition = Vector2.zero;
+        headerRect.sizeDelta = new Vector2(0, 120); // height only
 
-        TextMeshProUGUI headerText = headerObj.AddComponent<TextMeshProUGUI>();
-        headerText.fontSize = 72; // 2x bigger (was 36)
-        headerText.fontStyle = FontStyles.Bold;
-        headerText.alignment = TextAlignmentOptions.Center;
+        Image headerImage = headerObj.AddComponent<Image>();
+        headerImage.type = Image.Type.Simple;
+        headerImage.preserveAspect = true;
 
-        // Set color based on rarity
+        // Shadow for depth
+        Shadow shadow = headerObj.AddComponent<Shadow>();
+        shadow.effectDistance = new Vector2(0, -6);
+        shadow.effectColor = new Color(0, 0, 0, 0.4f);
+
+        // Assign sprite
         switch (rarity)
         {
-            case TroopRarity.Common: 
-                headerText.color = new Color(0.7f, 0.7f, 0.7f);
-                headerText.text = "COMMON";
+            case TroopRarity.Common:
+                headerImage.sprite = commonLabelSprite;
                 break;
-            case TroopRarity.Rare: 
-                headerText.color = new Color(0.3f, 0.7f, 1f);
-                headerText.text = "RARE";
+            case TroopRarity.Rare:
+                headerImage.sprite = rareLabelSprite;
                 break;
-            case TroopRarity.Epic: 
-                headerText.color = new Color(0.8f, 0.3f, 1f);
-                headerText.text = "EPIC";
+            case TroopRarity.Epic:
+                headerImage.sprite = epicLabelSprite;
                 break;
-            case TroopRarity.Legendary: 
-                headerText.color = new Color(1f, 0.7f, 0f);
-                headerText.text = "LEGENDARY";
+            case TroopRarity.Legendary:
+                headerImage.sprite = legendaryLabelSprite;
                 break;
             case TroopRarity.Mythic:
-                headerText.color = new Color(1f, 0.4f, 0.8f);
-                headerText.text = "MYTHIC";
+                headerImage.sprite = mythicLabelSprite;
                 break;
             case TroopRarity.Boss:
-                headerText.color = new Color(1f, 0.2f, 0.2f); // Dark red for boss
-                headerText.text = "BOSS";
+                headerImage.sprite = bossLabelSprite;
                 break;
         }
 
-        // Create horizontal troop container
+        // ---------- TROOP CONTAINER ----------
         GameObject troopContainer = new GameObject("TroopContainer");
         RectTransform troopContainerRect = troopContainer.AddComponent<RectTransform>();
         troopContainerRect.SetParent(rowRect);
         troopContainerRect.anchorMin = new Vector2(0, 0);
         troopContainerRect.anchorMax = new Vector2(1, 1);
-        troopContainerRect.pivot = new Vector2(0, 1);
-        troopContainerRect.anchoredPosition = new Vector2(0, -20); // Better spacing from header
+        troopContainerRect.pivot = new Vector2(0.5f, 1);
+        troopContainerRect.anchoredPosition = new Vector2(0, -110);
         troopContainerRect.sizeDelta = new Vector2(0, -40);
 
-        // Add HorizontalLayoutGroup for troops - centered
-        UnityEngine.UI.HorizontalLayoutGroup troopLayout = troopContainer.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-        troopLayout.spacing = -50f; // 2x closer spacing (double the overlap)
-        troopLayout.padding = new RectOffset(0, 0, 0, 0);
-        troopLayout.childAlignment = TextAnchor.UpperCenter; // Changed to center
+
+        HorizontalLayoutGroup troopLayout = troopContainer.AddComponent<HorizontalLayoutGroup>();
+        troopLayout.spacing = -50f;
+        troopLayout.childAlignment = TextAnchor.UpperCenter;
         troopLayout.childControlHeight = false;
         troopLayout.childControlWidth = false;
         troopLayout.childForceExpandHeight = false;
-
-        // Add bottom separator line after the troops
-        CreateRaritySeparator(rowRect);
         troopLayout.childForceExpandWidth = false;
 
-        // Create each troop item
         foreach (TroopData troop in troops)
         {
             CreateTroopItemWithSprite(troopContainer.transform, troop);
         }
     }
 
+
     // STEP 4: Create individual troop item (sprite + name) - even larger
     private void CreateTroopItemWithSprite(Transform parent, TroopData troop)
     {
-        Debug.Log($"[SettingsManager] Creating troop item: {troop.displayName}");
-        // Create item container
         GameObject itemContainer = new GameObject($"Troop_{troop.displayName}");
         RectTransform itemRect = itemContainer.AddComponent<RectTransform>();
-        itemRect.SetParent(parent);
-        itemRect.sizeDelta = new Vector2(350, 350); // More smaller container
+        itemRect.SetParent(parent, false);
+        itemRect.sizeDelta = new Vector2(350, 350);
+        itemRect.pivot = new Vector2(0.5f, 1);
 
-        // Create sprite
+        // ✅ Layout control (VERY important)
+        LayoutElement layout = itemContainer.AddComponent<LayoutElement>();
+        layout.preferredWidth = 350;
+        layout.preferredHeight = 350;
+        layout.flexibleWidth = 0;
+        layout.flexibleHeight = 0;
+
+        // ---------- SPRITE ----------
         GameObject spriteObj = new GameObject("Sprite");
         RectTransform spriteRect = spriteObj.AddComponent<RectTransform>();
-        spriteRect.SetParent(itemRect);
+        spriteRect.SetParent(itemRect, false);
         spriteRect.anchorMin = new Vector2(0.5f, 1);
         spriteRect.anchorMax = new Vector2(0.5f, 1);
         spriteRect.pivot = new Vector2(0.5f, 1);
-        spriteRect.anchoredPosition = new Vector2(0, 0);
-        spriteRect.sizeDelta = new Vector2(280, 280); // More smaller sprite
+        spriteRect.anchoredPosition = new Vector2(0, -10); // small padding
+        spriteRect.sizeDelta = new Vector2(280, 280);
 
         Image spriteImage = spriteObj.AddComponent<Image>();
         spriteImage.preserveAspect = true;
-        
-        // Get sprite from prefab
+
         if (troop.playerPrefab != null)
         {
             SpriteRenderer sr = troop.playerPrefab.GetComponent<SpriteRenderer>();
@@ -682,28 +707,28 @@ public class SettingsManager : MonoBehaviour
             }
             else
             {
-                // Fallback: white square if no sprite
-                spriteImage.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+                spriteImage.color = Color.gray;
             }
         }
 
-        // Create name text
+        // ---------- NAME ----------
         GameObject nameObj = new GameObject("Name");
         RectTransform nameRect = nameObj.AddComponent<RectTransform>();
-        nameRect.SetParent(itemRect);
+        nameRect.SetParent(itemRect, false);
         nameRect.anchorMin = new Vector2(0, 0);
         nameRect.anchorMax = new Vector2(1, 0);
         nameRect.pivot = new Vector2(0.5f, 0);
-        nameRect.anchoredPosition = new Vector2(0, 0);
-        nameRect.sizeDelta = new Vector2(0, 70); // Slightly smaller text area
+        nameRect.anchoredPosition = new Vector2(0, 10);
+        nameRect.sizeDelta = new Vector2(0, 60);
 
         TextMeshProUGUI nameText = nameObj.AddComponent<TextMeshProUGUI>();
-        nameText.fontSize = 36; // Slightly smaller font
+        nameText.fontSize = 32;
         nameText.color = Color.white;
         nameText.alignment = TextAlignmentOptions.Center;
         nameText.text = troop.displayName;
-        nameText.enableWordWrapping = true;
+        nameText.enableWordWrapping = false;
     }
+
 
     private void CreateSimpleTroopDirectoryDisplay()
     {
