@@ -39,6 +39,9 @@ public class SettingsManager : MonoBehaviour
     public TextMeshProUGUI musicVolumeText;
     public TextMeshProUGUI sfxVolumeText;
 
+    [Header("Font Settings")]
+    public TMP_FontAsset upheavttFont;
+
     private void Awake()
     {
         // Allow one SettingsManager per scene, not persistent
@@ -711,6 +714,10 @@ public class SettingsManager : MonoBehaviour
         textObj.transform.SetParent(troopDirectoryPanel.transform);
 
         TextMeshProUGUI textComponent = textObj.AddComponent<TextMeshProUGUI>();
+         if (upheavttFont != null)
+        {
+            textComponent.font = upheavttFont;
+        }
         textComponent.fontSize = 18;
         textComponent.color = Color.white;
         textComponent.alignment = TextAlignmentOptions.TopLeft;
@@ -788,14 +795,15 @@ public class SettingsManager : MonoBehaviour
         // Content auto-size
         ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
         contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         VerticalLayoutGroup layoutGroup = content.AddComponent<VerticalLayoutGroup>();
         layoutGroup.childControlHeight = true;
         layoutGroup.childControlWidth = true;
         layoutGroup.childForceExpandHeight = false;
-        layoutGroup.childForceExpandWidth = false;
+        layoutGroup.childForceExpandWidth = true;
         layoutGroup.spacing = 20;
-        layoutGroup.padding = new RectOffset(20, 20, 20, 40);
+        layoutGroup.padding = new RectOffset(100, 0, -120, 40);
 
         scrollComponent.content = contentRect;
 
@@ -809,17 +817,23 @@ public class SettingsManager : MonoBehaviour
         textRect.anchorMax = new Vector2(1, 1);
         textRect.pivot = new Vector2(0.5f, 1);
         textRect.anchoredPosition = Vector2.zero;
-        textRect.sizeDelta = new Vector2(0, 0);
+        textRect.sizeDelta = new Vector2(-80, 0);
 
         TextMeshProUGUI textComponent = textObj.AddComponent<TextMeshProUGUI>();
         textComponent.fontSize = 32;
         textComponent.color = Color.white;
         textComponent.alignment = TextAlignmentOptions.TopLeft;
         textComponent.enableWordWrapping = true;
+        textComponent.overflowMode = TextOverflowModes.Overflow;
 
         // Automatically resize height to fit text
         ContentSizeFitter textFitter = textObj.AddComponent<ContentSizeFitter>();
         textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        textFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+        LayoutElement layoutElement = textObj.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = 1020; // ✅ ScrollView width (1100) - padding (40+40)
+        layoutElement.flexibleWidth = 0;
 
         // ------------------------
         // HELP TEXT CONTENT
