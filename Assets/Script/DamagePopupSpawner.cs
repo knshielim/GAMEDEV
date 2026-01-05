@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class DamagePopupSpawner : MonoBehaviour
 {
@@ -9,41 +10,52 @@ public class DamagePopupSpawner : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
+        // Singleton + anti duplikat
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        if (!mainCamera) mainCamera = Camera.main;
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        if (!mainCamera)
+            mainCamera = Camera.main;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Update camera setiap ganti scene
+        if (!mainCamera)
+            mainCamera = Camera.main;
     }
 
     public void Spawn(float damage, bool isCrit, Vector3 worldPos)
     {
+        if (popupPrefab == null)
+        {
+            Debug.LogError("[DamagePopupSpawner] Popup Prefab belum di-assign!");
+            return;
+        }
+
+        worldPos.z = 0f; // aman untuk 2D
+
         var popup = Instantiate(popupPrefab, worldPos, Quaternion.identity);
 
-        // optional: hadap kamera (kalau kamu belum pakai billboard script)
-        /*
-        if (mainCamera)
-            popup.transform.rotation = Quaternion.LookRotation(popup.transform.position - mainCamera.transform.position);
-        */
-
-
+        // Untuk 2D, jangan pakai LookRotation
         popup.transform.rotation = Quaternion.identity;
 
         popup.Setup(damage, isCrit);
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-            Spawn(123, false, Vector3.zero);
-        if (Input.GetKeyDown(KeyCode.Y))
-            Spawn(999, true, Vector3.zero);
-    }
-
 }
