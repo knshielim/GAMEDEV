@@ -586,7 +586,19 @@ public class DialogueManager : MonoBehaviour
         // Ensure game resumes first
         Time.timeScale = 1f;
 
+        int lvl = GetCurrentLevel();
+        bool tutorialDone = (PersistenceManager.Instance != null) && PersistenceManager.Instance.IsTutorialCompleted();
+
+        // ✅ Kalau Level 1 dan tutorial belum selesai, JANGAN start gameplay normal.
+        // Biarkan TutorialManager yang jalanin ShowStep().
+        if (lvl == 1 && !tutorialDone)
+        {
+            Debug.Log("[Dialogue] Level 1 + tutorial not completed -> waiting for tutorial, not starting gameplay.");
+            yield break;
+        }
+
         // Check for tutorial
+        // Kalau tutorial sudah selesai (atau bukan level 1), baru lanjut normal
         TutorialManager tutorialManager = FindObjectOfType<TutorialManager>();
         if (tutorialManager != null)
         {
@@ -904,6 +916,8 @@ public class DialogueManager : MonoBehaviour
 
     private void StartTutorialIfNeeded()
     {
+        Debug.Log($"[CHECK] PersistenceManager instance = {PersistenceManager.Instance}, tutorialCompleted={PersistenceManager.Instance?.IsTutorialCompleted()}");
+
         bool hasCompletedTutorial = false;
         if (PersistenceManager.Instance != null)
             hasCompletedTutorial = PersistenceManager.Instance.IsTutorialCompleted();

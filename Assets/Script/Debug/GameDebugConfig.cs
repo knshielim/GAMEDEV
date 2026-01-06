@@ -16,7 +16,7 @@ public class GameDebugConfig : MonoBehaviour
     public bool unlockAllLevels = false;
 
     [Header("Economy Debug")]
-    public bool giveDebugGem = false;
+    public bool giveDebugGem = false; // for shop
     public int debugGemAmount = 500000;
 
     [Header("Drop Debug")]
@@ -24,10 +24,12 @@ public class GameDebugConfig : MonoBehaviour
 
     public bool ShouldGiveDebugGem() => enableDebugging && giveDebugGem;
     public bool ShouldUnlockAllLevels() => enableDebugging && unlockAllLevels;
+    public bool ShouldForceGemDrop100() => enableDebugging && forceGemDrop100;
 
     private void Awake()
     {
         Debug.Log("[GameDebugConfig] Awake called on: " + gameObject.name);
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -35,7 +37,9 @@ public class GameDebugConfig : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject); // 🔥 INI YANG KURANG
     }
+
 
     // Helper functions biar kodingan di script lain rapi
     public bool ShouldSkipDialogue() => enableDebugging && skipDialogue;

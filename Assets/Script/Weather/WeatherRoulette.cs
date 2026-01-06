@@ -157,7 +157,7 @@ public class WeatherRoulette : MonoBehaviour
         // 4️⃣ Smooth spin
         while (elapsed < spinDuration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             float t = elapsed / spinDuration;
             float eased = Mathf.SmoothStep(0f, 1f, t);
 

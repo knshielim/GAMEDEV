@@ -4,39 +4,102 @@ using UnityEngine;
 public class PersistenceManager : MonoBehaviour
 {
     public static PersistenceManager Instance { get; private set; }
+    [Header("DEBUG")]
+    [SerializeField] private bool resetTutorialAndDialogues;
 
     private SaveData data;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            data = SaveSystem.LoadFromDisk(); // Load JSON saat game nyala
-            Debug.Log("[PersistenceManager] Loaded save data");
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        data = SaveSystem.LoadFromDisk();
+        if (data == null)
+        {
+            data = new SaveData();
+            Debug.LogWarning("[PersistenceManager] No save found / failed to load. Creating new SaveData.");
+            SaveGame(); // opsional: langsung bikin file
+        }
+
+        // pastikan collections tidak null
+        if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
+        if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+
+        Debug.Log("[PersistenceManager] Loaded save data");
     }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    public void ResetTutorialAndDialogues()
+    {
+        if (data == null) data = new SaveData();
+        if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+
+        data.isTutorialCompleted = false;
+        data.seenDialogues.Clear();
+        SaveGame();
+
+        Debug.Log("[PersistenceManager] Reset tutorial + dialogues");
+    }
+
 
     public SaveData GetData() => data;
 
     public void SaveGame()
     {
+        if (data == null) data = new SaveData();
+        if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
+        if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+
+
         // Langsung simpan data yang ada di memori ke Disk
         // Tidak perlu CollectFromManagers() lagi karena data sudah di-update secara real-time
         SaveSystem.SaveToDisk(data);
     }
+    #if UNITY_EDITOR
+    private void Update()
+    {
+        if (!resetTutorialAndDialogues) return;
+
+        ResetTutorialAndDialogues();
+        resetTutorialAndDialogues = false;
+
+        // penting: reload scene biar DialogueManager/TutorialManager baca state baru dari awal
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+        );
+    }
+    #endif
+
 
     public void LoadGame()
     {
         data = SaveSystem.LoadFromDisk();
         // Tidak perlu ApplyToManagers() lagi karena script lain akan mengambil data sendiri via GetData()
+        if (data == null) data = new SaveData();
+
+        if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
+        if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+
     }
+
+    private void EnsureData()
+    {
+        if (data == null) data = new SaveData();
+        if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
+        if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+    }
+
 
     // ❌ HAPUS method CollectFromManagers() sepenuhnya
     // ❌ HAPUS method ApplyToManagers() sepenuhnya
