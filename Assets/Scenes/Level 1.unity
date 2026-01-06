@@ -9316,7 +9316,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &367331911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13571,8 +13571,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -4.1292, y: -30.5566}
-  m_SizeDelta: {x: 852.4254, y: 644.3099}
+  m_AnchoredPosition: {x: -4.1292, y: -37.546936}
+  m_SizeDelta: {x: 852.4254, y: 667.6545}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &761083349
 MonoBehaviour:
@@ -13593,7 +13593,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 15
   m_Viewport: {fileID: 1594591009}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 889775505}
@@ -13617,7 +13617,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -15612,8 +15612,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1111438569}
   m_HandleRect: {fileID: 1111438568}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1.0000001
+  m_Size: 0.055712156
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15631,7 +15631,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.4764151, g: 0.21124065, b: 0.21124065, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -17876,7 +17876,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1079061366
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18372,7 +18372,7 @@ RectTransform:
   m_Father: {fileID: 191989456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -18389,7 +18389,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -21152,8 +21152,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 300}
+  m_AnchoredPosition: {x: 0, y: -0.0004272461}
+  m_SizeDelta: {x: 0, y: 11984}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1498049118
 GameObject:
@@ -22051,7 +22051,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1585362918
 RectTransform:
   m_ObjectHideFlags: 0
@@ -22152,9 +22152,9 @@ RectTransform:
   m_Father: {fileID: 761083348}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1594591010
 MonoBehaviour:
@@ -22189,7 +22189,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -22989,7 +22989,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1626374303
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23514,21 +23514,87 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<b>GAME HELP & CONTROLS</b>\n\nBasic Gameplay:\n\u2022 Build your tower
-    by upgrading it with earned coins\n\u2022 Summon troops to defend against enemy
-    attacks\n\u2022 Destroy the enemy tower to win the level\n\nControls:\n\u2022
-    P \u2013 Summon random troop\n\u2022 O \u2013 Deploy troops to slots\n\u2022
-    I \u2013 Upgrade tower\n\u2022 U \u2013 Upgrade summon rate\n\u2022 1\u20130
-    / - / = \u2013 Select slot\n\u2022 M \u2013 Merge troops when 3+ are in the same
-    slot\n\u2022 Mouse \u2013 Interact with UI\n\u2022 ESC \u2013 Close settings\n\nTroop
-    System:\n\u2022 Troops have rarities: Common \u2192 Rare \u2192 Epic \u2192 Mythic\n\u2022
-    Merge 3 troops of the same type to increase their rarity\n\u2022 Mythic troops
-    require special combinations\n\u2022 Each troop has unique stats and abilities\n\nStrategy
-    Tips:\n\u2022 Balance your upgrades between tower and troops\n\u2022 Save coins
-    for critical moments\n\u2022 Experiment with different troop combinations"
+  m_text: "<line-height=150%>\n<size=70>GAME HELP & CONTROLS</size=70>\r\n_____________________________________\r\n\r\n<size=50>Basic
+    Gameplay:</size=50>\r\n- Build your tower by upgrading it with earned coins\r\n-
+    Summon troops using the gacha system to defend your base\r\n- Merge troops to
+    create stronger units\r\n- Destroy the enemy tower to complete the level\r\n-
+    Complete all 5 levels to save the world from the Shadow King\r\n_____________________________________\r\n\r\n<size=50>Controls:</size=50>\r\n<b>Keyboard
+    Shortcuts:</b>\r\n- <b>P</b> \u2013 Summon random troop (costs coins)\r\n- <b>O</b>
+    or <b>SPACE</b> \u2013 Deploy selected troop to battlefield\r\n- <b>I</b> \u2013
+    Upgrade your tower (increases coin generation)\r\n- <b>U</b> \u2013 Upgrade summon
+    rate (better drop chances)\r\n- <b>1\u20130 / - / =</b> \u2013 Quick select inventory
+    slots (1-12)\r\n- <b>M</b> \u2013 Merge troops (requires 3 of same type)\r\n-
+    <b>F</b> \u2013 Toggle fast forward (2x speed)\r\n- <b>ESC</b> \u2013 Open/close
+    settings menu\r\n\r\n<b>Mouse Controls:</b>\r\n- Left Click \u2013 Interact with
+    buttons and UI\r\n- Hover \u2013 View troop stats and information\r\n_____________________________________\r\n\r\n<size=50>Gacha
+    & Summon System:</size=50>\r\n- Press <b>P</b> or click <b>Summon</b> to roll
+    for troops\r\n- Cost increases with each summon (resets per level)\r\n- Drop
+    rates improve as you upgrade summon system\r\n- <b>Upgrade Summon Rate</b> for
+    better legendary chances\r\n\r\n<b>Drop Rates (Base):</b>\r\n- Common: 78% (weak
+    but plentiful)\r\n- Rare: 16% (balanced units)\r\n- Epic: 4% (powerful fighters)\r\n-
+    Legendary: 2% (elite warriors)\r\n- Mythic: 0% (crafted through special combinations)\r\n_____________________________________\r\n\r\n<size=50>Troop
+    System:</size=50>\r\n<b>Rarity Progression:</b>\r\nCommon \u2192 Rare \u2192
+    Epic \u2192 Legendary \u2192 Mythic\r\n\r\n<b>Merging Troops:</b>\r\n- Select
+    a slot with 3+ identical troops\r\n- Press <b>M</b> or click <b>Merge</b> button\r\n-
+    3 troops combine into 1 higher rarity troop\r\n- Merged troops are stronger than
+    individual units\r\n\r\n<b>Troop Types:</b>\r\n- <b>Melee</b> \u2013 Close-range
+    fighters (high HP, short range)\r\n- <b>Ranged</b> \u2013 Long-range attackers
+    (lower HP, shoots projectiles)\r\n- <b>Mythic</b> \u2013 Special units with unique
+    abilities\r\n\r\n<b>Mythic Combinations:</b>\r\n- <b>Vampire</b> = Yurei Youkai
+    + Shaman Orc + Second Warrior + Red Slime\r\n- <b>Samurai</b> = Gotoku Youkai
+    + Warrior Orc + Third Warrior + Blue Slime\r\n- Craft these in the <b>Mythic
+    Forge</b> menu\r\n_____________________________________\r\n\r\n<size=50>Economy
+    & Resources:</size=50>\r\n<b>Coins:</b>\r\n- Generated automatically by your
+    tower (1/sec at Lv.1)\r\n- Earned by defeating enemy troops (20 per kill)\r\n-
+    Used for summoning, upgrading, and deploying\r\n\r\n<b>Gems:</b>\r\n- Dropped
+    by defeated enemies (chance-based)\r\n- Boss enemies drop 50 gems guaranteed\r\n-
+    Used in the Shop to permanently upgrade troops\r\n- Persist across all levels\r\n\r\n<b>Tower
+    Upgrades:</b>\r\n- Level 1\u21922: 10 coins\r\n- Level 2\u21923: 25 coins (increases
+    by 15 per level)\r\n- Max Level: 10\r\n- Higher levels = faster coin generation\r\n_____________________________________\r\n\r\n<size=50>Weather
+    System:</size=50>\r\nAt the start of each level, spin the weather roulette:\r\n\r\n-
+    <b>Sunny</b> \u2013 Normal conditions, no effects\r\n- <b>Fog</b> \u2013 Reduces
+    attack range for all units (-1.5 range)\r\n- <b>Acid Rain</b> \u2013 Deals continuous
+    damage to ALL troops (5 HP/sec)\r\n\r\nWeather lasts for 5 minutes (300 seconds)\r\n_____________________________________\r\n\r\n<size=50>Troop
+    Stats Explained:</size=50>\r\n- <b>HP</b> \u2013 Health points (how much damage
+    before death)\r\n- <b>Attack</b> \u2013 Damage dealt per hit\r\n- <b>Speed</b>
+    \u2013 Movement speed across battlefield\r\n- <b>Attack Range</b> \u2013 Distance
+    at which troop can attack\r\n- <b>Crit Rate</b> \u2013 % chance to deal critical
+    damage\r\n- <b>Crit Damage</b> \u2013 Multiplier for critical hits (usually 2x\u20133x)\r\n_____________________________________\r\n\r\n<size=50>Strategy
+    Tips:</size=50>\r\n<b>Early Game:</b>\r\n- Upgrade tower first for steady coin
+    income\r\n- Don't spam summons\u2014save coins for key moments\r\n- Deploy troops
+    strategically to counter enemy waves\r\n\r\n<b>Mid Game:</b>\r\n- Balance tower
+    upgrades with summon rate upgrades\r\n- Start merging troops to create stronger
+    units\r\n- Watch for enemy epic/legendary spawns and counter them\r\n\r\n<b>Late
+    Game:</b>\r\n- Craft Mythic troops for maximum power\r\n- Use fast forward (F
+    key) during safe moments\r\n- Save coins for emergency troop deployments\r\n\r\n<b>Advanced
+    Tactics:</b>\r\n- Enemy spawns scale with level difficulty\r\n- Boss appears
+    when enemy tower drops to 50% HP (Level 5)\r\n- Reactive balancing: Game adjusts
+    drop rates based on spawns\r\n- Weather effects apply to BOTH your troops and
+    enemies\r\n_____________________________________\r\n\r\n<size=50>Level Progression:</size=50>\r\n-
+    <b>Level 1:</b> Forest Outpost \u2013 Tutorial stage\r\n- <b>Level 2:</b> Mountain
+    Pass \u2013 Increased difficulty\r\n- <b>Level 3:</b> Desert Ruins \u2013 Harsh
+    conditions\r\n- <b>Level 4:</b> Wave Fortress \u2013 Endless enemy waves\r\n-
+    <b>Level 5:</b> Final Citadel \u2013 Boss battle finale\r\n\r\nComplete levels
+    to unlock the next stage\r\nEarn gems to permanently upgrade troops in the Shop\r\n_____________________________________\r\n\r\n<size=50>Shop
+    System:</size=50>\r\n- Access from main menu\r\n- Use gems to permanently upgrade
+    troop stats\r\n- Upgrades apply to ALL future summons\r\n- Each troop can reach
+    Level 5 (max)\r\n\r\n<b>Upgrade Costs (in Gems):</b>\r\n- Common: 1 \u2192 5
+    \u2192 10 \u2192 20\r\n- Rare: 2 \u2192 10 \u2192 15 \u2192 20\r\n- Epic: 5 \u2192
+    15 \u2192 30 \u2192 50\r\n- Legendary: 10 \u2192 30 \u2192 50 \u2192 75\r\n-
+    Mythic: 20 \u2192 35 \u2192 75 \u2192 100\r\n\r\n<b>Stat Scaling Per Level:</b>\r\nEach
+    level increases HP, Attack, and Speed by 20%\r\n_____________________________________\r\n\r\n<size=50>Settings
+    & Options:</size=50>\r\n- Adjust master, music, and SFX volumes independently\r\n-
+    View troop directory to learn about all units\r\n- Reset tutorial from main menu
+    (debug options)\r\n- Save data persists automatically\r\n_____________________________________\r\n\r\n<size=50>Did
+    You Know?</size=50>\r\n- The game has adaptive difficulty\u2014drop rates adjust
+    based on performance\r\n- You can skip dialogue by pressing SPACE\r\n- Boss units
+    are 5x larger and 4.5x stronger than normal\r\n- Weather roulette can be strategic\u2014plan
+    your summons accordingly\r\n- Mythic troops cannot be obtained through normal
+    summoning\r\n_____________________________________\r\n\r\n<size=40><i>Good luck,
+    Summoner! May the Ancient Spirits guide you to victory!</i></size=40>"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 1d44eadfa3dbb544c84c36fc6fd9f923, type: 2}
+  m_sharedMaterial: {fileID: -5490215008552074585, guid: 1d44eadfa3dbb544c84c36fc6fd9f923, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -23588,7 +23654,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -296.64825, y: 0, z: 0, w: -456.3819}
+  m_margin: {x: -296.64825, y: -5866.772, z: 0, w: -5965.039}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -26650,7 +26716,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1879060491
 RectTransform:
   m_ObjectHideFlags: 0
