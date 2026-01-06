@@ -631,16 +631,6 @@ public class TutorialManager : MonoBehaviour
         SetPlayerButtons(true);
         Time.timeScale = 1f;
   
-        if (WeatherRoulette.Instance != null)
-        {
-            StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
-        }
-        else
-        {
-            Debug.LogWarning("[Tutorial] WeatherRoulette not found!");
-        }
-
-
         StartCoroutine(StartActualLevelplay());
     }
 
@@ -799,6 +789,15 @@ public class TutorialManager : MonoBehaviour
         if (CoinManager.Instance != null)
         {
             CoinManager.Instance.ResetCoins();
+        }
+
+        if (WeatherRoulette.Instance != null)
+        {
+            StartCoroutine(WeatherRoulette.Instance.EnableRoulette());
+        }
+        else
+        {
+            Debug.LogWarning("[Tutorial] WeatherRoulette not found!");
         }
     }
 }
