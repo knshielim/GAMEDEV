@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: TD_Warrior_3
   m_EditorClassIdentifier: 
   id: Warrior_3
-  displayName: Third Warrior
+  displayName: Spearman Dwarf
   rarity: 1
-  icon: {fileID: -1363113052, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  icon: {fileID: 21300000, guid: 0be5352f22c6e7044a53d2be7ac8950f, type: 3}
   nameSprite: {fileID: 21300000, guid: 2234868f4577784468a92e51dda0304e, type: 3}
   maxHealth: 100
   attack: 11

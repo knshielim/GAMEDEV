@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: TD_Warrior_1
   m_EditorClassIdentifier: 
   id: Warrior_1
-  displayName: First Warrior
+  displayName: Executioner Dwarf
   rarity: 1
-  icon: {fileID: -557879512, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  icon: {fileID: 21300000, guid: a99d023f280f5c043b15657827afb0cf, type: 3}
   nameSprite: {fileID: 21300000, guid: c5be16675a8c7cf4ab64a0cf5ca456bd, type: 3}
   maxHealth: 125
   attack: 9

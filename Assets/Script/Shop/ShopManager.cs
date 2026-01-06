@@ -47,14 +47,15 @@ public class ShopManager : MonoBehaviour
     // Show all troops in the left panel
     public void ShowAllTroops()
     {
-        // Hide all slots first
         foreach (var slot in troopSlots)
-            slot.gameObject.SetActive(false);
+        {
+            if (slot != null) slot.gameObject.SetActive(false);
+        }
 
-        // Populate all troops
         for (int i = 0; i < shopTroops.Length && i < troopSlots.Length; i++)
         {
-            if (shopTroops[i] == null) continue;
+            // Skip if either the data or the slot reference in the inspector is missing
+            if (shopTroops[i] == null || troopSlots[i] == null) continue;
 
             troopSlots[i].gameObject.SetActive(true);
             troopSlots[i].Init(shopTroops[i], this);
