@@ -78,7 +78,7 @@ public class WeatherManager : MonoBehaviour
             {
                 if (troop != null && !troop.isDead)
                 {
-                    float dmg = acidRainDamagePerSecond * Time.deltaTime;
+                    float dmg = acidRainDamagePerSecond * Time.unscaledDeltaTime;
                     troop.TakeDamage(dmg);
 
                     Debug.Log($"☠ Acid rain dmg {dmg:F2} to {troop.name}");
@@ -89,13 +89,13 @@ public class WeatherManager : MonoBehaviour
             {
                 if (enemy != null && !enemy.isDead)
                 {
-                    float dmg = acidRainDamagePerSecond * Time.deltaTime;
+                    float dmg = acidRainDamagePerSecond * Time.unscaledDeltaTime;
                     enemy.TakeDamage(dmg);
                     Debug.Log($"☠ Acid rain dmg {dmg:F2} to ENEMY {enemy.name}");
                 }
             }
 
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
@@ -141,7 +141,7 @@ public class WeatherManager : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration)
         {   
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
