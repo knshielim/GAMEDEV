@@ -32120,8 +32120,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49fd83bed98054825bc5bc9543a7efe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weathers: 000000000200000001000000
-  spinDuration: 3
+  weathers: 020000000100000000000000
+  spinDuration: 4
   roulettePanel: {fileID: 1769540146}
   stopPrompt: {fileID: 0}
   debugMode: 0

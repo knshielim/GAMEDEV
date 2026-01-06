@@ -147,9 +147,13 @@ public class WeatherRoulette : MonoBehaviour
         WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
         int index = System.Array.IndexOf(weathers, selectedWeather);
 
-        // 2️⃣ Slice math
+        // Slice math for top pointer 
         float segmentAngle = 360f / weathers.Length; // 120°
-        float targetAngle = index * segmentAngle + segmentAngle / 2f;
+
+        float targetAngle =
+            index * segmentAngle +
+            segmentAngle / 2f +
+            90f; // pointer is on TOP
 
         // 3️⃣ Rotation setup
         float startZ = transform.eulerAngles.z;

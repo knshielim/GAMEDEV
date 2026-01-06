@@ -4986,7 +4986,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: -3.652, y: 0}
+  m_AnchoredPosition: {x: -3.6519928, y: 0}
   m_SizeDelta: {x: 76.3271, y: 62.6917}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &15333050
@@ -25071,7 +25071,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49fd83bed98054825bc5bc9543a7efe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weathers: 000000000200000001000000
+  weathers: 020000000100000000000000
   spinDuration: 3
   roulettePanel: {fileID: 1312950560}
   stopPrompt: {fileID: 0}
