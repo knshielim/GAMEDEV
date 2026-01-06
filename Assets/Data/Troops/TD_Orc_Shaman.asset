@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Orc_Shaman
   displayName: Shaman Orc
   rarity: 2
-  icon: {fileID: -1515286441, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  icon: {fileID: 21300000, guid: 1fb1c4598e4fe6b44a433622a94080b9, type: 3}
   nameSprite: {fileID: 21300000, guid: 2b89513aa6ab7d7488602ec9d4c010b7, type: 3}
   maxHealth: 120
   attack: 11

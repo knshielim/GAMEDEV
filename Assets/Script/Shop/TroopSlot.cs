@@ -1,33 +1,30 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class TroopSlot : MonoBehaviour
 {
-    public Image background;
-    public Image iconImage;
-
+    private Image slotImage; 
     private TroopData troopData;
     private ShopManager shopManager;
 
-    private Color normalColor = Color.gray;
-    private Color selectedColor = Color.yellow;
-    public TextMeshProUGUI priceText;
+    private void Awake()
+    {
+        slotImage = GetComponent<Image>();
+    }
 
-    
-
-   public void Init(TroopData data, ShopManager shop)
+    public void Init(TroopData data, ShopManager shop)
     {
         troopData = data;
         shopManager = shop;
 
-        iconImage.sprite = data.icon;
+        // Syncs the data icon to the sprite you've already set in the Inspector
+        if (slotImage != null && slotImage.sprite != null)
+        {
+            data.icon = slotImage.sprite; 
+        }
 
-        // Make sure a TroopInstance exists
-        TroopInstance instance = shopManager.GetOrCreateInstance(data);
-
-        // Set price text
-        UpdatePriceText(instance);
+        // Ensures the instance exists in the manager's dictionary
+        shopManager.GetOrCreateInstance(data);
     }
 
     public void OnClick()
@@ -35,29 +32,18 @@ public class TroopSlot : MonoBehaviour
         if (AudioManager.Instance != null) 
             AudioManager.Instance.PlayButtonClick();
             
+        // This is the line that triggers the info to show in the right panel
         shopManager.SelectTroop(this, troopData);
     }
 
     public void SetSelected(bool selected)
     {
-        background.color = selected ? selectedColor : normalColor;
-    }
-    private void UpdatePriceText(TroopInstance instance)
-    {
-        int cost = instance.GetUpgradeCost();
-        if (cost < 0) // Max level or Boss
-            priceText.text = "MAX";
-        else
-            priceText.text = cost.ToString();
-    }
-    public void Refresh()
-    {
-        if (troopData == null || shopManager == null)
-            return;
-
-        TroopInstance instance = shopManager.GetOrCreateInstance(troopData);
-        UpdatePriceText(instance);
+        if (slotImage != null)
+        {
+            // Tints the slot yellow when selected, white when not
+            slotImage.color = selected ? Color.yellow : Color.white;
+        }
     }
 
-
+    public void Refresh() { /* Optional logic here */ }
 }

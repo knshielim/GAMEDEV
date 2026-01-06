@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: TD_Orc_Berserk
   m_EditorClassIdentifier: 
   id: Orc_Berserk
-  displayName: Berserk Orc
+  displayName: Berserker Orc
   rarity: 2
-  icon: {fileID: 1638753895, guid: 8e22d76ed829e5048b49fe25a1f64fb0, type: 3}
+  icon: {fileID: 21300000, guid: ea6561bd18e3a014cb2911b4208d8cef, type: 3}
   nameSprite: {fileID: 21300000, guid: 43a23f0e6d961be419f75937441ad64e, type: 3}
   maxHealth: 135
   attack: 15
