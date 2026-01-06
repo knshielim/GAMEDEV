@@ -59,7 +59,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Awake()
     {
-        // ✅ FIX: Setup skip button with proper GameObject find
+        // Setup skip button
         if (SkipButton == null)
         {
             SkipButton = GameObject.Find("SkipButton");
@@ -74,18 +74,10 @@ public class TutorialManager : MonoBehaviour
                 skipBtn.onClick.AddListener(OnSkipButtonPressed);
                 Debug.Log("[TutorialManager] ✅ Skip button listener added successfully");
             }
-            else
-            {
-                Debug.LogError("[TutorialManager] ❌ Button component not found on SkipButton!");
-            }
             SkipButton.SetActive(false);
         }
-        else
-        {
-            Debug.LogWarning("[TutorialManager] ⚠️ SkipButton GameObject not found!");
-        }
 
-        // --- Debug to always show tutorial
+        // Debug mode check
         if (TutorialDebug && !tutorialShownThisSession)
         {
             tutorialActive = true;
@@ -97,7 +89,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // --- NORMAL MODE: Use PersistenceManager ---
+        // Check if tutorial completed
         bool hasCompletedTutorial = false;
         if (PersistenceManager.Instance != null)
             hasCompletedTutorial = PersistenceManager.Instance.IsTutorialCompleted();
@@ -111,23 +103,26 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // For Level 1, don't start tutorial yet - wait for dialogue to complete
+        // ✅ FIX: For Level 1, keep tutorial enabled but don't start yet
+        // Wait for DialogueManager to call StartTutorialAfterDialogue()
         int currentLevel = GetCurrentLevel();
         if (currentLevel == 1)
         {
-            Debug.Log("[TutorialManager] Level 1 detected - waiting for dialogue completion before starting tutorial");
-            tutorialActive = false; // Don't start yet
-            EnemyDeployManager.tutorialActive = false;
-            if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
+            Debug.Log("[TutorialManager] Level 1 detected - tutorial ready, waiting for dialogue");
+            // Don't disable! Just don't call Start() yet
+            tutorialActive = true; // ✅ Keep active
+            EnemyDeployManager.tutorialActive = true;
+            if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = true;
+            SetPlayerButtons(false);
+            // Don't show skip button yet - dialogue will handle that
             return;
         }
 
-        // For other levels, tutorial should run normally
-        tutorialActive = true;
-        EnemyDeployManager.tutorialActive = true;
-        if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = true;
-        SetPlayerButtons(false);
-        if (SkipButton != null) SkipButton.SetActive(true);
+        // For other levels, tutorial should not run
+        tutorialActive = false;
+        EnemyDeployManager.tutorialActive = false;
+        if (GachaManager.Instance != null) GachaManager.Instance.tutorialLocked = false;
+        this.enabled = false;
     }
 
     private void Start()
@@ -146,6 +141,16 @@ public class TutorialManager : MonoBehaviour
             this.enabled = false;
             return;
         }
+
+        // ✅ FIX: Don't auto-start for Level 1 - wait for dialogue
+        int currentLevel = GetCurrentLevel();
+        if (currentLevel == 1)
+        {
+            Debug.Log("[TutorialManager] Level 1 - waiting for StartTutorialAfterDialogue() call");
+            return; // Don't show first step yet
+        }
+
+        // For other levels with tutorial
         CoinManager.Instance.AddPlayerCoins(5);
         ShowStep();
     }

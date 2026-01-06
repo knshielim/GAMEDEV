@@ -121,12 +121,12 @@ public class WeatherRoulette : MonoBehaviour
         isSpinning = true;
 
         // ====== START DUCK (tanpa mengubah SFX roulette kamu) ======
-        var am = AudioManager.Instance;
+        AudioManager am = AudioManager.Instance; // ✅ Store reference outside the if block
         AudioClip cachedWheel = null;
 
         if (am != null)
         {
-            // StartRouletteAudio() normalnya PlaySFX(wheelSFX) :contentReference[oaicite:4]{index=4}
+            // StartRouletteAudio() normalnya PlaySFX(wheelSFX)
             // jadi kita "matikan" wheelSFX sementara supaya tidak dobel dengan PlayWheelTail()
             cachedWheel = am.wheelSFX;
             am.wheelSFX = null;
@@ -138,8 +138,8 @@ public class WeatherRoulette : MonoBehaviour
         }
         // ====== END DUCK START ======
 
-
         AudioManager.Instance?.PlayWheelTail(spinDuration, spinSpeed);
+        
         // 1️⃣ Decide result FIRST
         WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
         int index = System.Array.IndexOf(weathers, selectedWeather);
@@ -174,10 +174,16 @@ public class WeatherRoulette : MonoBehaviour
         WeatherManager.Instance.StartWeather(selectedWeather, weatherDuration);
 
         roulettePanel?.SetActive(false);
+        
+        // ✅ FIX: Release pause and ensure game resumes
         GameManager.Instance?.ReleasePause("WeatherRoulette");
+        
+        // ✅ FIX: Explicitly resume game
+        Time.timeScale = 1f;
+        Debug.Log("[WeatherRoulette] ▶️ Game resumed - gameplay should start now");
 
         // ====== UNDUCK (smooth balik) ======
-        if (am != null)
+        if (am != null) // ✅ Now 'am' is accessible here
         {
             if (bgmReturnDelay > 0f)
                 yield return new WaitForSecondsRealtime(bgmReturnDelay);
@@ -185,7 +191,6 @@ public class WeatherRoulette : MonoBehaviour
             am.EndRouletteAudio();
         }
         // ====== END UNDUCK ======
-
 
         isSpinning = false;
     }

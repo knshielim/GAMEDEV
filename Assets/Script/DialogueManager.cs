@@ -918,13 +918,21 @@ public class DialogueManager : MonoBehaviour
             if (tutorialManager != null)
             {
                 Debug.Log($"[Dialogue] Found TutorialManager, calling StartTutorialAfterDialogue");
-                tutorialManager.enabled = true;
+                tutorialManager.enabled = true; // ✅ Ensure it's enabled
                 tutorialManager.StartTutorialAfterDialogue();
             }
             else
             {
                 Debug.LogError("[Dialogue] TutorialManager not found!");
+                // ✅ FIX: If no tutorial, start gameplay directly
+                StartCoroutine(StartGameplayAfterDialogue());
             }
+        }
+        else
+        {
+            // ✅ FIX: For levels 2-5 or completed tutorial, start gameplay
+            Debug.Log("[Dialogue] No tutorial needed, starting gameplay");
+            StartCoroutine(StartGameplayAfterDialogue());
         }
     }
 
