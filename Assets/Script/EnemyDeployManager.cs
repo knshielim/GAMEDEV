@@ -302,7 +302,7 @@ public class EnemyDeployManager : MonoBehaviour
         levelConfigs[2] = new LevelConfig
         {
             startingCoins = 300,   // awalnya 400
-            coinGenerationMultiplier = 1.3f, // awalnya 1.3f
+            coinGenerationMultiplier = 1.1f, // awalnya 1.3f
             spawnIntervalMultiplier = 0.9f, // 27 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
@@ -331,7 +331,7 @@ public class EnemyDeployManager : MonoBehaviour
         levelConfigs[3] = new LevelConfig
         {
             startingCoins = 600,
-            coinGenerationMultiplier = 2.0f,
+            coinGenerationMultiplier = 1.4f,
             spawnIntervalMultiplier = 0.83f, // 25 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
@@ -350,7 +350,7 @@ public class EnemyDeployManager : MonoBehaviour
         levelConfigs[4] = new LevelConfig
         {
             startingCoins = 800,
-            coinGenerationMultiplier = 2.5f,
+            coinGenerationMultiplier = 1.7f,
             spawnIntervalMultiplier = 0.9f, // 21 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
@@ -369,7 +369,7 @@ public class EnemyDeployManager : MonoBehaviour
         levelConfigs[5] = new LevelConfig
         {
             startingCoins = 1000,
-            coinGenerationMultiplier = 3.0f,
+            coinGenerationMultiplier = 2.0f,
             spawnIntervalMultiplier = 0.83f, // 18 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
