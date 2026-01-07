@@ -8,9 +8,6 @@ public enum WeatherType
     AcidRain
 }
 
-
-
-
 public class WeatherRoulette : MonoBehaviour
 {
     [Header("Wheel Settings")]
@@ -30,11 +27,12 @@ public class WeatherRoulette : MonoBehaviour
     private bool isSpinning = false;
     private float weatherDuration = 300f; // 5 minutes
     public bool locked = true;
+    private bool hasShownRouletteThisLevel = false; // ✅ NEW: Track if roulette was shown
 
     [Header("BGM Ducking (Roulette)")]
-    [Range(0f, 1f)] public float bgmDuckMul = 0.35f;     // BGM jadi 35%
-    [Range(0f, 1f)] public float ambientDuckMul = 0.7f;  // ambience jadi 70% (opsional)
-    public float bgmReturnDelay = 0.1f;                  // tunggu dikit sebelum balik
+    [Range(0f, 1f)] public float bgmDuckMul = 0.35f;
+    [Range(0f, 1f)] public float ambientDuckMul = 0.7f;
+    public float bgmReturnDelay = 0.1f;
 
     private void Awake()
     {
@@ -48,6 +46,7 @@ public class WeatherRoulette : MonoBehaviour
         
         debugMode = false;
         locked = true;
+        hasShownRouletteThisLevel = false; // ✅ Initialize flag
     }
 
     private void Start()
@@ -65,29 +64,17 @@ public class WeatherRoulette : MonoBehaviour
 
         // Start with sunny
         WeatherManager.Instance.StartWeather(WeatherType.Sunny, weatherDuration);
-
-        /*
-        if (debugMode)
-            StartCoroutine(ApplyDebugWeatherNextFrame());
-        */
         
         StartCoroutine(StartRouletteSafetyCheck());
     }
 
     private IEnumerator StartRouletteSafetyCheck()
     {
-        // Tunggu sebentar (0.5 detik real time) biar DialogManager siap dulu
+        // Wait a bit for DialogManager to be ready
         yield return new WaitForSecondsRealtime(0.5f);
 
-        // Panggil EnableRoulette
+        // Call EnableRoulette
         StartCoroutine(EnableRoulette());
-    }
-
-    private IEnumerator ApplyDebugWeatherNextFrame()
-    {
-        yield return null;
-        Debug.Log(" Debug Weather Applied: " + debugWeather);
-        WeatherManager.Instance.StartWeather(debugWeather, weatherDuration);
     }
 
     private void Update()
@@ -118,50 +105,43 @@ public class WeatherRoulette : MonoBehaviour
             StartCoroutine(Spin());
     }
 
-
     private IEnumerator Spin()
     {
         isSpinning = true;
 
-        // ====== START DUCK (tanpa mengubah SFX roulette kamu) ======
-        AudioManager am = AudioManager.Instance; // ✅ Store reference outside the if block
+        // Duck audio
+        AudioManager am = AudioManager.Instance;
         AudioClip cachedWheel = null;
 
         if (am != null)
         {
-            // StartRouletteAudio() normalnya PlaySFX(wheelSFX)
-            // jadi kita "matikan" wheelSFX sementara supaya tidak dobel dengan PlayWheelTail()
             cachedWheel = am.wheelSFX;
             am.wheelSFX = null;
-
             am.StartRouletteAudio(bgmDuckMul, ambientDuckMul);
-
-            // balikin lagi (biar sistem audio lain tetap normal)
             am.wheelSFX = cachedWheel;
         }
-        // ====== END DUCK START ======
 
         AudioManager.Instance?.PlayWheelTail(spinDuration, spinSpeed);
         
-        // 1️⃣ Decide result FIRST
+        // Decide result FIRST
         WeatherType selectedWeather = weathers[Random.Range(0, weathers.Length)];
         int index = System.Array.IndexOf(weathers, selectedWeather);
 
         // Slice math for top pointer 
-        float segmentAngle = 360f / weathers.Length; // 120°
+        float segmentAngle = 360f / weathers.Length;
 
         float targetAngle =
             index * segmentAngle +
             segmentAngle / 2f +
-            90f; // pointer is on TOP
+            90f;
 
-        // 3️⃣ Rotation setup
+        // Rotation setup
         float startZ = transform.eulerAngles.z;
-        float finalZ = startZ + (360f * 4) - targetAngle; // 4 spins
+        float finalZ = startZ + (360f * 4) - targetAngle;
 
         float elapsed = 0f;
 
-        // 4️⃣ Smooth spin
+        // Smooth spin
         while (elapsed < spinDuration)
         {
             elapsed += Time.unscaledDeltaTime; 
@@ -174,7 +154,7 @@ public class WeatherRoulette : MonoBehaviour
             yield return null;
         }
 
-        // 5️⃣ Snap exactly to target
+        // Snap exactly to target
         transform.eulerAngles = new Vector3(0, 0, finalZ);
 
         Debug.Log("🎯 Selected Weather: " + selectedWeather);
@@ -187,19 +167,85 @@ public class WeatherRoulette : MonoBehaviour
         Time.timeScale = 1f;
         Debug.Log("[WeatherRoulette] ▶️ Game resumed - gameplay should start now");
 
-        // ====== UNDUCK (smooth balik) ======
-        if (am != null) // ✅ Now 'am' is accessible here
+        // Unduck audio
+        if (am != null)
         {
             if (bgmReturnDelay > 0f)
                 yield return new WaitForSecondsRealtime(bgmReturnDelay);
 
             am.EndRouletteAudio();
         }
-        // ====== END UNDUCK ======
 
         isSpinning = false;
     }
 
+    public IEnumerator EnableRoulette()
+    {
+        yield return new WaitForEndOfFrame();
+
+        // ✅ NEW: Check if roulette was already shown this level
+        if (hasShownRouletteThisLevel)
+        {
+            Debug.Log("[WeatherRoulette] ⏭️ Roulette already shown this level - skipping");
+            yield break;
+        }
+
+        // ✅ NEW: Check if game is over (victory/defeat)
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
+        {
+            Debug.Log("[WeatherRoulette] 🏁 Game is over - not showing roulette");
+            yield break;
+        }
+
+        // Wait for dialogue to complete
+        if (DialogueManager.Instance != null)
+        {
+            yield return new WaitUntil(() => !DialogueManager.Instance.ShouldGameBePaused());
+        }
+
+        // ✅ NEW: Double-check game isn't over after dialogue
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver())
+        {
+            Debug.Log("[WeatherRoulette] 🏁 Game ended during dialogue - not showing roulette");
+            yield break;
+        }
+
+        // Wait for tutorial to complete
+        TutorialManager tm = FindObjectOfType<TutorialManager>();
+        if (tm != null && tm.enabled && tm.tutorialActive)
+        {
+            yield break; 
+        }
+
+        // ✅ NEW: Mark that roulette has been shown
+        hasShownRouletteThisLevel = true;
+        
+        // Pause Game
+        GameManager.Instance?.RequestPause("WeatherRoulette");
+
+        locked = false;
+
+        if (roulettePanel != null)
+        {
+            roulettePanel.SetActive(true);
+            roulettePanel.transform.SetAsLastSibling(); 
+        }
+
+        Debug.Log("[WeatherRoulette] ✅ Roulette enabled and shown!");
+    }
+
+    // ✅ NEW: Public method to reset the flag when level restarts
+    public void ResetRouletteFlag()
+    {
+        hasShownRouletteThisLevel = false;
+        locked = true;
+        Debug.Log("[WeatherRoulette] 🔄 Roulette flag reset for new level");
+    }
+}
+
+
+
+    /*
     public IEnumerator EnableRoulette()
     {
         // Tunggu sampai frame selesai (biar aman)
@@ -237,6 +283,7 @@ public class WeatherRoulette : MonoBehaviour
 
         Debug.Log("[WeatherRoulette] ✅ Roulette enabled and shown!");
     }
+    */
 
     /*
     public IEnumerator EnableRoulette()
@@ -258,5 +305,3 @@ public class WeatherRoulette : MonoBehaviour
         Debug.Log("[WeatherRoulette] ✅ Roulette enabled");
     }
     */
-
-}
