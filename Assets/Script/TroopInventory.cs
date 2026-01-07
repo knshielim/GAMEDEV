@@ -307,6 +307,7 @@ public class TroopInventory : MonoBehaviour
                 slotCountTexts[i].text = "x" + slot.count;
 
                 bool canMerge = slot.count >= maxUnitsPerSlot &&
+                                slot.Data.rarity != TroopRarity.Legendary &&
                                 slot.Data.rarity != TroopRarity.Mythic &&
                                 slot.Data.rarity != TroopRarity.Boss;
 
