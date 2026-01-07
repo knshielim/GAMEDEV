@@ -1361,11 +1361,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: skipDialogue
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: skipTutorial
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: enableDebugging
@@ -1373,7 +1373,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: unlockAllLevels
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1233333075734607358, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_Name
@@ -1381,7 +1381,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1233333075734607358, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4525055103352943870, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_LocalPosition.x
