@@ -344,7 +344,9 @@ public class TroopInventory : MonoBehaviour
     private IEnumerator SlotSummonAnimation(int slotIndex)
     {
         Transform t = slotImages[slotIndex].transform;
-        Vector3 original = t.localScale;
+        t.localScale = Vector3.one;
+        Vector3 original = Vector3.one;
+
         t.localScale = Vector3.zero;
 
         float elapsed = 0f;
