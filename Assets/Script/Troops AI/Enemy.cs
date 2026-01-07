@@ -334,6 +334,13 @@ public class Enemy : Unit
 
                 // Deal Damage ke Troops player
                 targetUnit.TakeDamage(finalDamage, isCrit);
+                if (AudioManager.Instance != null)
+                {
+                    if (useProjectile)
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.rangedAttackSFX);
+                    else
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.meleeAttackSFX);
+                }
 
                 // Debug Log biar enak ngeceknya
                 /*
@@ -358,22 +365,22 @@ public class Enemy : Unit
     {
         if (projectilePrefab == null) return;
 
-        Vector3 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
+        Vector3 spawnPos = projectileSpawnPoint != null
+            ? projectileSpawnPoint.position
+            : transform.position;
+
         GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
-        
+
+        Vector2 dir = (target.transform.position - spawnPos).normalized;
+
         Projectile projectile = proj.GetComponent<Projectile>();
         if (projectile != null)
         {
-            // 1. Hitung Damage & Crit menggunakan fungsi baru di Unit.cs
             float finalDamage = CalculateDamage(attackPoints, out bool isCrit);
-
-            // 2. Arah tembakan
-            Vector2 dir = (target.transform.position - spawnPos).normalized;
-
-            // 3. Panggil Initialize dengan parameter isCrit yang baru
             projectile.Initialize(dir, finalDamage, isCrit, UnitTeam, projectileSpeed, projectileLifetime);
         }
     }
+
 
 
     private void PerformAttackOnTower()
@@ -382,6 +389,7 @@ public class Enemy : Unit
         int damage = Mathf.RoundToInt(attackPoints);
         targetTower.TakeDamage(damage);
         Debug.Log($"[ATTACK] {name} hitting tower {targetTower.name}");
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.hitTowerSFX);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

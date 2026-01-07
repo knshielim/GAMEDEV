@@ -897,6 +897,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
+      propertyPath: skipDialogue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
+      propertyPath: skipTutorial
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
+      propertyPath: enableDebugging
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
+      propertyPath: unlockAllLevels
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1233333075734607358, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_Name
       value: 'DebugConfig         '

@@ -267,44 +267,31 @@ public abstract class Unit : MonoBehaviour
         if (attackCooldown >= 1f / attackSpeed)
         {
             attackCooldown = 0f;
-            if (troopData != null)
-            {
-                if (troopData.isRanged)
-                {
-                    AudioManager.Instance?.PlaySFX(AudioManager.Instance.rangedAttackSFX);
-                }
-                else
-                {
-                    AudioManager.Instance?.PlaySFX(AudioManager.Instance.meleeAttackSFX);
-                }
-            }
             FindAndPerformAttack();
         }
     }
 
-    public void TakeDamage(float dmg, bool isCrit = false)
+    public void TakeDamage(float dmg, bool isCrit = false, bool showPopup = true)
     {
         if (isDead) return;
 
         currentHealth -= dmg;
         OnHealthChanged?.Invoke();
 
-        if (DamagePopupSpawner.Instance != null)
+        if (showPopup && DamagePopupSpawner.Instance != null)
         {
             Vector3 pos = transform.position + Vector3.up;
 
-            // 1️⃣ offset utama (menjauh dari badan)
+            // offset utama (menjauh dari badan)
             float xOffset = (UnitTeam == Team.Enemy) ? 0.6f : -0.6f;
 
-            // 2️⃣ random kecil (biar tidak numpuk)
+            // random kecil (biar tidak numpuk)
             float randX = UnityEngine.Random.Range(-0.1f, 0.1f);
             float randY = UnityEngine.Random.Range(0.0f, 0.15f);
 
-            // 3️⃣ gabungkan
-            pos += new Vector3(xOffset + randX, randY, 0f);
+            pos += new Vector3(xOffset + randX, randY + 0.8f, 0f);
 
             DamagePopupSpawner.Instance.Spawn(dmg, isCrit, pos);
-
         }
 
         if (currentHealth <= 0) Die();

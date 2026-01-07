@@ -438,9 +438,6 @@ public class Tower : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (AudioManager.Instance != null && AudioManager.Instance.hitTowerSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.hitTowerSFX);
-
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         Debug.Log($"[{owner} TOWER] Took {damage} damage → HP: {currentHealth}/{maxHealth}");

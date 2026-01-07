@@ -235,7 +235,13 @@ public class Troops : Unit
 
                 // Deal Damage ke musuh
                 targetUnit.TakeDamage(finalDamage, isCrit);
-
+                if (AudioManager.Instance != null)
+                {
+                    if (useProjectile)
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.rangedAttackSFX);
+                    else
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.meleeAttackSFX);
+                }
                 // Debug Log (Pakai finalDamage, bukan damage)
                 Debug.Log(
                     $"[ATTACK] {name} dealt {finalDamage} damage to {targetUnit.name} " +
@@ -260,6 +266,7 @@ public class Troops : Unit
         if (targetTower == null) return;
         int damage = Mathf.RoundToInt(attackPoints);
         targetTower.TakeDamage(damage);
+        AudioManager.Instance?.PlaySFX(AudioManager.Instance.hitTowerSFX);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

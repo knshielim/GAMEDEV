@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 public class WeatherManager : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class WeatherManager : MonoBehaviour
     public float activeWeatherTime; 
     public WeatherType CurrentWeather = WeatherType.Sunny;
     public float WeatherEndTime;
+    [SerializeField] private float acidPopupInterval = 0.5f;
+
 
     // ================= ADDITION =================
     [Header("Weather VFX")]
@@ -57,6 +60,136 @@ public class WeatherManager : MonoBehaviour
         }
     }
 
+    private IEnumerator ApplyAcidRain(float duration)
+    {
+        // === popup interval settings ===
+        const float popupYOffset = 0.8f;    // biar popup muncul di atas unit
+
+        float elapsed = 0f;
+        float popupTimer = 0f;
+
+        // Akumulasi damage per target supaya popup nggak spam tiap frame
+        var troopAccum = new Dictionary<Troops, float>();
+        var enemyAccum = new Dictionary<Enemy, float>();
+
+        Debug.Log("Acid Rain STARTED");
+        Debug.Log("All troops will take damage continously");
+
+        // VFX
+        if (acidRainParticles != null)
+        {
+            acidRainParticles.gameObject.SetActive(true);
+            acidRainParticles.Play();
+        }
+
+        while (elapsed < duration)
+        {
+            float dt = Time.unscaledDeltaTime;
+            float dmgThisFrame = acidRainDamagePerSecond * dt;
+
+            // === Apply damage to troops ===
+            foreach (var troop in Troops.aliveTroops.ToList())
+            {
+                if (troop == null || troop.isDead) continue;
+
+                troop.TakeDamage(dmgThisFrame, showPopup: false);
+
+                if (troopAccum.ContainsKey(troop))
+                    troopAccum[troop] += dmgThisFrame;
+                else
+                    troopAccum.Add(troop, dmgThisFrame);
+            }
+
+            // === Apply damage to enemies ===
+            foreach (var enemy in Enemy.aliveEnemies.ToList())
+            {
+                if (enemy == null || enemy.isDead) continue;
+
+                enemy.TakeDamage(dmgThisFrame, showPopup: false);
+
+                if (enemyAccum.ContainsKey(enemy))
+                    enemyAccum[enemy] += dmgThisFrame;
+                else
+                    enemyAccum.Add(enemy, dmgThisFrame);
+            }
+
+            // === Spawn popups per interval ===
+            popupTimer += dt;
+            if (popupTimer >= acidPopupInterval)
+            {
+                popupTimer = 0f;
+
+                // Troop popups
+                foreach (var kvp in troopAccum.ToList())
+                {
+                    var troop = kvp.Key;
+                    if (troop == null || troop.isDead) continue;
+
+                    float total = kvp.Value;
+                    if (total > 0.0001f)
+                    {
+                        Vector3 pos = troop.transform.position + Vector3.up * popupYOffset;
+                        DamagePopupSpawner.Instance?.Spawn(total, false, pos);
+                    }
+                }
+
+                // Enemy popups
+                foreach (var kvp in enemyAccum.ToList())
+                {
+                    var enemy = kvp.Key;
+                    if (enemy == null || enemy.isDead) continue;
+
+                    float total = kvp.Value;
+                    if (total > 0.0001f)
+                    {
+                        Vector3 pos = enemy.transform.position + Vector3.up * popupYOffset;
+                        DamagePopupSpawner.Instance?.Spawn(total, false, pos);
+                    }
+                }
+
+                troopAccum.Clear();
+                enemyAccum.Clear();
+            }
+
+            elapsed += dt;
+            yield return null;
+        }
+
+        // Optional: flush sisa akumulasi biar nggak “hilang” kalau durasi habis pas tengah interval
+        foreach (var kvp in troopAccum)
+        {
+            var troop = kvp.Key;
+            if (troop == null || troop.isDead) continue;
+
+            float total = kvp.Value;
+            if (total > 0.0001f)
+                DamagePopupSpawner.Instance?.Spawn(total, false, troop.transform.position + Vector3.up * popupYOffset);
+        }
+
+        foreach (var kvp in enemyAccum)
+        {
+            var enemy = kvp.Key;
+            if (enemy == null || enemy.isDead) continue;
+
+            float total = kvp.Value;
+            if (total > 0.0001f)
+                DamagePopupSpawner.Instance?.Spawn(total, false, enemy.transform.position + Vector3.up * popupYOffset);
+        }
+
+        Debug.Log("Acid Rain ENDED");
+
+        // Stop VFX
+        if (acidRainParticles != null)
+        {
+            acidRainParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            acidRainParticles.gameObject.SetActive(false);
+        }
+
+        CurrentWeather = WeatherType.Sunny;
+        AudioManager.Instance?.StopWeatherAmbience();
+    }
+
+    /*
     private IEnumerator ApplyAcidRain(float duration)
     {
         float elapsed = 0f;
@@ -112,6 +245,7 @@ public class WeatherManager : MonoBehaviour
         CurrentWeather = WeatherType.Sunny;
         AudioManager.Instance?.StopWeatherAmbience();
     }
+    */
 
     public IEnumerator ApplyFog(float duration)
     {
