@@ -37,7 +37,7 @@ public class MainMenu : MonoBehaviour
     public GameObject mainMenuButtons;
 
     [Tooltip("The options menu panel")]
-    public GameObject optionsMenu;
+    public GameObject upgradeButton; // awalnya optionsMenu;
 
     [Tooltip("The back button")]
     public GameObject backButton;
@@ -376,8 +376,6 @@ public class MainMenu : MonoBehaviour
 
     private void LoadLevelSelect()
     {
-        if (AudioManager.Instance != null) 
-            AudioManager.Instance.PlayButtonClick();
         SceneManager.LoadScene("LevelSelect");
     }
 
@@ -393,17 +391,36 @@ public class MainMenu : MonoBehaviour
         if (mainMenuButtons != null)
             mainMenuButtons.SetActive(false);
 
+        if (upgradeButton != null)
+            upgradeButton.SetActive(true);
+        /*
         // Show options menu
         if (optionsMenu != null) 
             optionsMenu.SetActive(true);
+        */
 
         // Show back button
         if (backButton != null) 
             backButton.SetActive(true);
     }
     
+    public void ShowMainMenu()
+    {
+        if (mainMenuButtons != null)
+            mainMenuButtons.SetActive(true);
 
-        
+        // jangan matiin tombol upgrade/quit lewat variabel lain
+        // karena mereka sudah bagian dari mainMenuButtons
+
+        if (backstoryPanel != null)
+            backstoryPanel.SetActive(false);
+
+        if (pressSpacePanel != null)
+            pressSpacePanel.SetActive(false);
+    }
+
+
+    /*
     public void ShowMainMenu()
     {
         // Show main menu buttons
@@ -426,13 +443,19 @@ public class MainMenu : MonoBehaviour
         if (pressSpacePanel != null)
             pressSpacePanel.SetActive(false);
     }
-
+    */
     
 
     public void QuitGame()
     {
         Application.Quit();
     }
+    
+    public void GoToShop()
+    {
+        SceneManager.LoadScene("Shop");
+    }
+
 
     // ═══════════════════════════════════════════════════════
     // RESET FUNCTIONS
