@@ -6783,7 +6783,7 @@ MonoBehaviour:
   currentLevel: 1
   playerTower: {fileID: 1462288396}
   aiTower: {fileID: 887701352}
-  gameOverPanel: {fileID: 0}
+  gameOverPanel: {fileID: 903152616}
   gameOverText: {fileID: 0}
   fastForwardKey: 102
   normalSpeed: 1
@@ -6837,6 +6837,7 @@ MonoBehaviour:
   activeWeatherTime: 90
   CurrentWeather: 2
   WeatherEndTime: 0
+  acidPopupInterval: 0.5
   acidRainParticles: {fileID: 1412546}
 --- !u!4 &171159374
 Transform:
@@ -11632,6 +11633,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fogImage: {fileID: 576963502}
   fadeDuration: 1.5
+  startAlpha: 0
+  maxAlpha: 0.25
 --- !u!114 &576963502
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15477,12 +15480,12 @@ MonoBehaviour:
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: 99c35b08182c7a5489fdfc199b885553, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: f7641c701f4cb734e844995120c810bd, type: 3}
-  gameOverPanel: {fileID: 0}
-  victoryPanel: {fileID: 0}
+  gameOverPanel: {fileID: 903152616}
+  victoryPanel: {fileID: 1327654978}
   gameOverText: {fileID: 0}
   victoryText: {fileID: 0}
-  nextLevelButton: {fileID: 0}
-  mainMenuButton: {fileID: 0}
+  nextLevelButton: {fileID: 1372492974}
+  mainMenuButton: {fileID: 512760917}
 --- !u!50 &887701353
 Rigidbody2D:
   serializedVersion: 4
@@ -21199,12 +21202,12 @@ MonoBehaviour:
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: 99c35b08182c7a5489fdfc199b885553, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: f7641c701f4cb734e844995120c810bd, type: 3}
-  gameOverPanel: {fileID: 0}
-  victoryPanel: {fileID: 0}
+  gameOverPanel: {fileID: 903152616}
+  victoryPanel: {fileID: 1327654978}
   gameOverText: {fileID: 0}
   victoryText: {fileID: 0}
-  nextLevelButton: {fileID: 0}
-  mainMenuButton: {fileID: 0}
+  nextLevelButton: {fileID: 1372492974}
+  mainMenuButton: {fileID: 512760917}
 --- !u!50 &1462288397
 Rigidbody2D:
   serializedVersion: 4

@@ -1151,7 +1151,7 @@ MonoBehaviour:
   currentLevel: 1
   playerTower: {fileID: 1462288396}
   aiTower: {fileID: 887701352}
-  gameOverPanel: {fileID: 0}
+  gameOverPanel: {fileID: 1393169372}
   gameOverText: {fileID: 0}
   fastForwardKey: 102
   normalSpeed: 1
@@ -15603,12 +15603,12 @@ MonoBehaviour:
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: 99c35b08182c7a5489fdfc199b885553, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: f7641c701f4cb734e844995120c810bd, type: 3}
-  gameOverPanel: {fileID: 0}
-  victoryPanel: {fileID: 0}
+  gameOverPanel: {fileID: 1393169372}
+  victoryPanel: {fileID: 2093953842}
   gameOverText: {fileID: 0}
   victoryText: {fileID: 0}
-  nextLevelButton: {fileID: 0}
-  mainMenuButton: {fileID: 0}
+  nextLevelButton: {fileID: 408765648}
+  mainMenuButton: {fileID: 1302669943}
 --- !u!50 &887701353
 Rigidbody2D:
   serializedVersion: 4
@@ -21731,12 +21731,12 @@ MonoBehaviour:
   upgradeButtonImage: {fileID: 1607317672}
   affordableSprite: {fileID: 21300000, guid: 99c35b08182c7a5489fdfc199b885553, type: 3}
   unaffordableSprite: {fileID: 21300000, guid: f7641c701f4cb734e844995120c810bd, type: 3}
-  gameOverPanel: {fileID: 0}
-  victoryPanel: {fileID: 0}
+  gameOverPanel: {fileID: 1393169372}
+  victoryPanel: {fileID: 2093953842}
   gameOverText: {fileID: 0}
   victoryText: {fileID: 0}
-  nextLevelButton: {fileID: 0}
-  mainMenuButton: {fileID: 0}
+  nextLevelButton: {fileID: 408765648}
+  mainMenuButton: {fileID: 1302669943}
 --- !u!50 &1462288397
 Rigidbody2D:
   serializedVersion: 4
@@ -25023,6 +25023,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fogImage: {fileID: 1737043125}
   fadeDuration: 1.5
+  startAlpha: 0
+  maxAlpha: 0.25
 --- !u!1 &1744964243
 GameObject:
   m_ObjectHideFlags: 0
@@ -25759,7 +25761,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1809500732
 RectTransform:
   m_ObjectHideFlags: 0
@@ -32665,6 +32667,7 @@ MonoBehaviour:
   activeWeatherTime: 90
   CurrentWeather: 2
   WeatherEndTime: 0
+  acidPopupInterval: 0.5
   acidRainParticles: {fileID: 360999074}
 --- !u!4 &1960797003
 Transform:

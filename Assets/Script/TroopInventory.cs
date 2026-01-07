@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Linq;
 
 [System.Serializable]
 public class StoredTroopSlot
@@ -170,6 +171,9 @@ public class TroopInventory : MonoBehaviour
             storedTroops[index].count = 0;
         }
 
+        // ✅ NEW: Consolidate stacks after deployment
+        ConsolidateStacks();
+
         RefreshUI();
     }
 
@@ -192,7 +196,79 @@ public class TroopInventory : MonoBehaviour
             AddTroop(new TroopInstance(upgradedData), true);
         }
 
+        // ✅ NEW: Consolidate stacks after merge
+        ConsolidateStacks();
+
         RefreshUI();
+    }
+
+    // ✅ NEW METHOD: Consolidate duplicate troop stacks
+    private void ConsolidateStacks()
+    {
+        // Group slots by troop ID (excluding empty slots)
+        var troopGroups = new Dictionary<string, List<int>>();
+
+        for (int i = 0; i < storedTroops.Count; i++)
+        {
+            if (storedTroops[i].IsEmpty) continue;
+
+            string troopId = storedTroops[i].Data.id;
+
+            if (!troopGroups.ContainsKey(troopId))
+                troopGroups[troopId] = new List<int>();
+
+            troopGroups[troopId].Add(i);
+        }
+
+        // For each group with multiple slots, consolidate them
+        foreach (var group in troopGroups)
+        {
+            var slotIndices = group.Value;
+
+            // Skip if only one slot (no need to consolidate)
+            if (slotIndices.Count <= 1) continue;
+
+            // Sort by count (ascending) so we fill smaller stacks first
+            slotIndices.Sort((a, b) => storedTroops[a].count.CompareTo(storedTroops[b].count));
+
+            // Consolidate: Move troops from later slots to earlier slots
+            for (int i = 0; i < slotIndices.Count - 1; i++)
+            {
+                int targetSlot = slotIndices[i];
+
+                // If target slot is full, skip to next
+                if (storedTroops[targetSlot].count >= maxUnitsPerSlot) continue;
+
+                // Try to fill this slot from subsequent slots
+                for (int j = i + 1; j < slotIndices.Count; j++)
+                {
+                    int sourceSlot = slotIndices[j];
+
+                    // Calculate how many we can move
+                    int spaceAvailable = maxUnitsPerSlot - storedTroops[targetSlot].count;
+                    int toMove = Mathf.Min(spaceAvailable, storedTroops[sourceSlot].count);
+
+                    if (toMove <= 0) continue;
+
+                    // Move troops
+                    storedTroops[targetSlot].count += toMove;
+                    storedTroops[sourceSlot].count -= toMove;
+
+                    // Clear source slot if empty
+                    if (storedTroops[sourceSlot].count <= 0)
+                    {
+                        storedTroops[sourceSlot].troopInstance = null;
+                        storedTroops[sourceSlot].count = 0;
+                    }
+
+                    // If target slot is now full, move to next target
+                    if (storedTroops[targetSlot].count >= maxUnitsPerSlot)
+                        break;
+                }
+            }
+        }
+
+        Debug.Log("[Inventory] 🔄 Consolidated duplicate troop stacks");
     }
 
     private TroopRarity GetNextRarity(TroopRarity current)
