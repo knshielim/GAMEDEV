@@ -17,7 +17,7 @@ public abstract class Unit : MonoBehaviour
     protected static readonly float[] RarityAtkMult = { 1.0f, 1.4f, 1.9f, 2.5f, 3.3f, 4.5f }; // Boss: 4.5x Attack
     protected static readonly float[] RaritySpdMult = { 1.0f, 1.1f, 1.2f, 1.3f, 1.4f, 1.2f }; // Boss: Slightly faster
 
-    protected static readonly float[] LevelMult = { 1.0f, 1.2f, 1.45f, 1.75f, 2.1f };
+    protected static readonly float[] LevelMult = { 1.0f, 1.0f, 1.0f, 1.2f, 1.3f };
 
     [Header("Config (Data Driven)")]
     [SerializeField] protected TroopData troopData;
