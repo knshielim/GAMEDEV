@@ -351,7 +351,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 800,
             coinGenerationMultiplier = 2.5f,
-            spawnIntervalMultiplier = 0.7f, // 21 seconds between spawns
+            spawnIntervalMultiplier = 0.9f, // 21 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 15f },    // 15% Common
@@ -370,7 +370,7 @@ public class EnemyDeployManager : MonoBehaviour
         {
             startingCoins = 1000,
             coinGenerationMultiplier = 3.0f,
-            spawnIntervalMultiplier = 0.6f, // 18 seconds between spawns
+            spawnIntervalMultiplier = 0.83f, // 18 seconds between spawns
             rarityWeights = new Dictionary<TroopRarity, float>
             {
                 { TroopRarity.Common, 10f },    // 10% Common
@@ -622,7 +622,7 @@ public class EnemyDeployManager : MonoBehaviour
         // Update wave progress bar and text
         UpdateWaveUI(elapsedTime);
     }
-
+    /*
     /// <summary>
     /// Update wave progression (same spawn rate, just wave number increases)
     /// </summary>
@@ -637,6 +637,31 @@ public class EnemyDeployManager : MonoBehaviour
         // Keep spawn interval constant (use level 4 base rate)
         float baseInterval = levelConfigs[4].spawnIntervalMultiplier * baseSpawnInterval;
         currentSpawnInterval = baseInterval; // No changes to spawn rate
+    }
+    */
+    private void UpdateProgressiveDifficulty(float elapsedTime)
+    {
+        // Calculate current wave number based on time (increases every 60 seconds)
+        int waveNumber = Mathf.FloorToInt(elapsedTime / waveTransitionInterval) + 1;
+        _currentWave = waveNumber;
+
+        // Calculate progress within current wave cycle
+        float timeInCurrentWave = elapsedTime % waveTransitionInterval;
+        bool isWaveActive = timeInCurrentWave >= 50f; // Last 10 seconds = active wave
+
+        // Get base spawn interval for Level 4
+        float baseInterval = levelConfigs[4].spawnIntervalMultiplier * baseSpawnInterval;
+
+        // ✅ SPEED UP SPAWNS DURING ACTIVE WAVE (1.5x faster = divide interval by 1.5)
+        if (isWaveActive)
+        {
+            currentSpawnInterval = baseInterval / 1.5f; // 1.5x faster spawns
+            Debug.Log($"[EnemyDeploy] ⚡ WAVE ACTIVE - Spawn interval: {currentSpawnInterval:F1}s (base: {baseInterval:F1}s, 1.5x faster)");
+        }
+        else
+        {
+            currentSpawnInterval = baseInterval; // Normal spawn rate
+        }
     }
 
     /// <summary>
