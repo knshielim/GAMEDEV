@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class SettingsManager : MonoBehaviour
@@ -29,6 +30,11 @@ public class SettingsManager : MonoBehaviour
     public Button volumeBackButton;
     public Button troopDirectoryBackButton;
     public Button helpBackButton;
+
+    // ==================== NEW: GAME CONTROL BUTTONS ====================
+    [Header("Game Control Buttons")]
+    public Button restartButton;
+    public Button mainMenuButton;
 
     // ==================== VOLUME ====================
     [Header("Volume Sliders")]
@@ -111,6 +117,10 @@ public class SettingsManager : MonoBehaviour
         epicButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Epic));
         legendaryButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Legendary));
         mythicButton?.onClick.AddListener(() => ShowTroop(TroopRarity.Mythic));
+
+        // ✅ NEW: Setup game control buttons
+        restartButton?.onClick.AddListener(RestartLevel);
+        mainMenuButton?.onClick.AddListener(GoToMainMenu);
     }
 
     private void SetupSliders()
@@ -144,11 +154,6 @@ public class SettingsManager : MonoBehaviour
 
         settingsPanel.SetActive(false);
         Time.timeScale = 1f;
-        if (PersistenceManager.Instance != null)
-        {
-            PersistenceManager.Instance.SaveGame();
-            Debug.Log("[SettingsManager] Settings saved on Close.");
-        }
         HideAllPanels();
         HideAllBackButtons();
     }
@@ -194,11 +199,6 @@ public class SettingsManager : MonoBehaviour
         AudioManager.Instance?.PlayButtonClick();
 
         settingsPanel.SetActive(true);
-        if (PersistenceManager.Instance != null)
-        {
-            PersistenceManager.Instance.SaveGame();
-            Debug.Log("[SettingsManager] Audio settings saved on Back.");
-        }
         HideAllPanels();
         HideAllBackButtons();
     }
@@ -215,6 +215,58 @@ public class SettingsManager : MonoBehaviour
         volumeBackButton.gameObject.SetActive(false);
         troopDirectoryBackButton.gameObject.SetActive(false);
         helpBackButton.gameObject.SetActive(false);
+    }
+
+    // ==================== ✅ NEW: GAME CONTROL FUNCTIONS ====================
+
+    private void RestartLevel()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
+
+        Debug.Log("[Settings] Restarting current level...");
+
+        // Close settings first
+        settingsPanel.SetActive(false);
+
+        // Resume game time
+        Time.timeScale = 1f;
+
+        // Use LevelManager if available, otherwise reload current scene
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.RestartLevel();
+        }
+        else
+        {
+            // Fallback: Just reload the current scene
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    private void GoToMainMenu()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
+
+        Debug.Log("[Settings] Going to Main Menu...");
+
+        // Close settings first
+        settingsPanel.SetActive(false);
+
+        // Resume game time
+        Time.timeScale = 1f;
+
+        // Use LevelManager if available, otherwise load scene 0
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.LoadMainMenu();
+        }
+        else
+        {
+            // Fallback: Load Main Menu (scene index 0)
+            SceneManager.LoadScene(0);
+        }
     }
 
     // ==================== TROOP DISPLAY LOGIC ====================
