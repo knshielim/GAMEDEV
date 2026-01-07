@@ -347,6 +347,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 120290497}
   m_CullTransparentMesh: 1
+--- !u!1 &388064564
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 388064566}
+  - component: {fileID: 388064565}
+  m_Layer: 0
+  m_Name: DEBUG_WIPE_SAVE
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &388064565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388064564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6e197893bc1fbb42bd6ce9a92a8372c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &388064566
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388064564}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 135.59155, y: 92.95652, z: -0.8371749}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &541250640
 GameObject:
   m_ObjectHideFlags: 0
@@ -899,23 +943,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: skipDialogue
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: skipTutorial
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: enableDebugging
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: unlockAllLevels
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1233333075734607358, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_Name
       value: 'DebugConfig         '
+      objectReference: {fileID: 0}
+    - target: {fileID: 1233333075734607358, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4525055103352943870, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2590,3 +2638,4 @@ SceneRoots:
   - {fileID: 1204208569}
   - {fileID: 4092227701686781149}
   - {fileID: 662667934}
+  - {fileID: 388064566}

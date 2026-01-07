@@ -7228,6 +7228,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fogImage: {fileID: 602320685}
   fadeDuration: 1.5
+  startAlpha: 0
+  maxAlpha: 0.25
 --- !u!114 &602320685
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13279,7 +13281,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1141333342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19160,6 +19162,7 @@ MonoBehaviour:
   activeWeatherTime: 500
   CurrentWeather: 2
   WeatherEndTime: 0
+  acidPopupInterval: 0.5
   acidRainParticles: {fileID: 1161978884}
 --- !u!4 &1253532404
 Transform:
@@ -19513,7 +19516,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1266782596
 RectTransform:
   m_ObjectHideFlags: 0
