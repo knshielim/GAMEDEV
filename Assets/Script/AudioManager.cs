@@ -109,11 +109,6 @@ public class AudioManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    private void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // Level1 - Level5 (buildIndex 2 - 6)
@@ -335,21 +330,27 @@ public class AudioManager : MonoBehaviour
     {
         masterVolume = volume;
         ApplyVolumeSettings();
-        SaveAudioSettings();
+        // SaveAudioSettings();
     }
 
     public void SetMusicVolume(float volume)
     {
         musicVolume = volume;
         ApplyVolumeSettings();
-        SaveAudioSettings();
+        // SaveAudioSettings();
     }
 
     public void SetSFXVolume(float volume)
     {
         sfxVolume = volume;
         ApplyVolumeSettings();
+        // SaveAudioSettings();
+    }
+
+    private void OnDisable()
+    {
         SaveAudioSettings();
+        SceneManager.sceneLoaded -= OnSceneLoaded; // Jangan lupa unsubscribe event
     }
 
     private void ApplyVolumeSettings()

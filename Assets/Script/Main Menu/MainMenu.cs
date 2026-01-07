@@ -104,6 +104,7 @@ public class MainMenu : MonoBehaviour
             hasSeenBackstory = PersistenceManager.Instance.HasSeenDialogue("Backstory");
         }
         Debug.Log($"[MainMenu] 🎬 Backstory Status: HasSeenBackstory = {hasSeenBackstory}, AlwaysShow = {alwaysShowBackstory}");
+        
     }
 
     private void Update()
@@ -494,6 +495,95 @@ public class MainMenu : MonoBehaviour
     /// Resets ALL player progress (backstory, tutorial, levels, etc.)
     /// </summary>
     [ContextMenu("Reset ALL Progress")]
+
+    private void ResetAllProgress()
+    {
+        // Cara Paling Bersih: Hapus File Save Fisik
+        SaveSystem.DeleteSave(); 
+
+        // Reset Data di Memory (RAM) PersistenceManager
+        if (PersistenceManager.Instance != null)
+        {
+            // Paksa reload data (karena file sudah hilang, dia akan bikin baru default)
+            PersistenceManager.Instance.LoadGame(); 
+            
+            // Atau kalau mau manual reset di memory biar aman:
+            var data = PersistenceManager.Instance.GetData();
+            data.totalGem = 0;
+            data.maxUnlockedLevel = 1;
+            data.isTutorialCompleted = false;
+            data.seenDialogues.Clear();
+            data.troopLevels.Clear();
+            // Audio settings jangan direset biar player gak kesel
+        }
+
+        if (TroopDatabase.Instance != null)
+        {
+            TroopDatabase.Instance.RefreshAllTroops(); 
+        }
+
+        Debug.Log("[MainMenu] 🗑️ SAVE FILE DELETED! Starting fresh.");
+    }
+
+    /*
+    public void ResetAllProgress()
+    {
+        if (PersistenceManager.Instance == null || PersistenceManager.Instance.GetData() == null)
+        {
+            Debug.LogWarning("[MainMenu] PersistenceManager belum ready, reset dibatalkan.");
+            return;
+        }
+
+        var data = PersistenceManager.Instance.GetData();
+
+        // ===== RESET PROGRESS LEVEL =====
+        data.maxUnlockedLevel = 1;              // balik ke level 1 saja
+        data.isTutorialCompleted = false;
+        data.seenDialogues?.Clear();
+
+        // ===== RESET GEM =====
+        data.totalGem = 0;                      // sesuai GemManager (SaveData.totalGem)
+        // Reset runtime juga biar UI langsung ke-update
+        if (GemManager.Instance != null)
+        {
+            GemManager.Instance.totalGem = 0;
+            GemManager.Instance.levelGem = 0;
+        }
+
+        // ===== RESET UPGRADE / LEVEL TROOP =====
+        // Paling aman: set semua troop level di save jadi 1
+        // Ambil sumber list troop dari TroopDatabase (kalau ada), fallback ke ShopManager
+        if (TroopDatabase.Instance != null && TroopDatabase.Instance.allTroops != null)
+        {
+            foreach (var t in TroopDatabase.Instance.allTroops)
+            {
+                if (t == null) continue;
+                PersistenceManager.Instance.SetTroopLevel(t.id, 1);
+            }
+        }
+        else if (ShopManager.Instance != null && ShopManager.Instance.shopTroops != null)
+        {
+            foreach (var t in ShopManager.Instance.shopTroops)
+            {
+                if (t == null) continue;
+                PersistenceManager.Instance.SetTroopLevel(t.id, 1);
+            }
+        }
+
+        // Save sekali di akhir
+        PersistenceManager.Instance.SaveGame();
+
+        // Refresh UI shop kalau lagi kebuka
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.ResetAllTroops(); // reset instance yang lagi di memory
+            ShopManager.Instance.ShowAllTroops();  // refresh list
+        }
+
+        Debug.Log("[MainMenu] Reset ALL: gems=0, maxUnlockedLevel=1, all troop levels=1");
+    }
+    */
+    /*
     public void ResetAllProgress()
     {
         if (PersistenceManager.Instance != null)
@@ -519,6 +609,8 @@ public class MainMenu : MonoBehaviour
         }
         Debug.Log("[MainMenu] 🔄 ALL progress reset!");
     }
+    */
+
 
     /// <summary>
     /// Resets all progress with UI feedback

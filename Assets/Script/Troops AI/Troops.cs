@@ -40,8 +40,8 @@ public class Troops : Unit
 
         if (instance != null)
         {
-           InitStatsFromInstance(instance);
-           baseAttackRange = instance.data.attackRange; 
+            InitStatsFromInstance(instance);
+            baseAttackRange = instance.data.attackRange; 
             useProjectile = instance.data.isRanged;
             projectilePrefab = instance.data.projectilePrefab;
             projectileSpeed = instance.data.projectileSpeed;
@@ -53,7 +53,12 @@ public class Troops : Unit
             currentHealth = instance.currentHealth;
             attackPoints = instance.currentAttack;
             moveSpeed = instance.currentMoveSpeed;
-        }
+
+            Debug.Log($"[CEK STATS] {troopData.displayName} Spawned! " +
+                      $"Level: {instance.level} | " +
+                      $"HP: {instance.currentHealth} | " +
+                      $"Attack: {instance.currentAttack}");
+            }
         else if (troopData != null)
         {
             // fallback for base stats

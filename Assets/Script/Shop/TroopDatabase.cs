@@ -34,4 +34,18 @@ public class TroopDatabase : MonoBehaviour
             return troopInstances[id];
         return null;
     }
+
+    public void RefreshAllTroops()
+    {
+        troopInstances.Clear();
+        foreach (var t in allTroops)
+        {
+            if (t != null)
+            {
+                // Buat instance baru, otomatis dia akan baca level terbaru dari PersistenceManager
+                troopInstances[t.id] = new TroopInstance(t); 
+            }
+        }
+        Debug.Log("[TroopDatabase] All troops refreshed from Save Data!");
+    }
 }

@@ -59,7 +59,7 @@ public class LevelManager : MonoBehaviour
             GemManager.Instance.ResetLevelGem();
             Debug.Log($"[LevelManager] Reset levelGem at start of Level {currentLevel}");
         }
-
+        
         // Ensure time scale is normal
         Time.timeScale = 1f;
     }
