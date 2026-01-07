@@ -1112,11 +1112,11 @@ MonoBehaviour:
     image: {fileID: 0}
   - text: 'This is your battelefield, our task is to topple the enemy tower and defend
       ours '
-    image: {fileID: 21300000, guid: 875148414f2944367b830d33a0693659, type: 3}
+    image: {fileID: 21300000, guid: 0cb471ba1e2cf424197c7bc103464966, type: 3}
   - text: 'Each second we will get coin, killing enemies grant more coins '
-    image: {fileID: 21300000, guid: bb9345d062904412e91094c80f8e3c76, type: 3}
+    image: {fileID: 21300000, guid: ab6637f33a5e945c4b292cf6351c6b4a, type: 3}
   - text: 'Now let us try summoning a troop, click on the summon button '
-    image: {fileID: 21300000, guid: 875148414f2944367b830d33a0693659, type: 3}
+    image: {fileID: 21300000, guid: 79b2f4632f0a447b89115d7766fc9491, type: 3}
   - text: 'Now select the summoned troop, and click on deploy '
     image: {fileID: 0}
   - text: 'Oh No! The enemy has spawned in warrior. '
