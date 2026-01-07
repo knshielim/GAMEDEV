@@ -8,6 +8,8 @@ public class FogEffect : MonoBehaviour
 
     [SerializeField] private Image fogImage;
     [SerializeField] private float fadeDuration = 1.5f;
+    [SerializeField, Range(0f, 1f)] private float startAlpha = 0f;
+    [SerializeField, Range(0f, 1f)] private float maxAlpha = 0.25f;
 
     private Coroutine fadeRoutine;
 
@@ -24,7 +26,7 @@ public class FogEffect : MonoBehaviour
 
     private void Start()
     {
-        SetAlpha(0f); // start invisible
+        SetAlpha(0); // start invisible
     }
 
     public void FadeIn()
@@ -32,7 +34,7 @@ public class FogEffect : MonoBehaviour
         if (fadeRoutine != null)
             StopCoroutine(fadeRoutine);
 
-        fadeRoutine = StartCoroutine(FadeTo(1f));
+        fadeRoutine = StartCoroutine(FadeTo(maxAlpha));
     }
 
     public void FadeOut()
