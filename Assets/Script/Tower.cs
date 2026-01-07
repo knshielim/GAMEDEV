@@ -7,19 +7,19 @@ using TMPro;
 
 public class Tower : MonoBehaviour
 {
-    public enum TowerOwner {Player, Enemy} 
+    public enum TowerOwner {Player, Enemy}
     public TowerOwner owner;
 
     [Header("Health")]
     public int maxHealth = 200;
     public int currentHealth = 0;
-    
+
     public event Action<int> OnHealthChanged;
 
     [Header("Upgrade & Economy")]
-    public int level = 1; 
+    public int level = 1;
     private const int MAX_LEVEL = 10;
-    private const int TOWER_BASE_RATE = 1; 
+    private const int TOWER_BASE_RATE = 1;
     private const int TOWER_FIRST_UPGRADE_COST = 10;
     private const int TOWER_COST_INCREMENT = 15;
 
@@ -29,10 +29,10 @@ public class Tower : MonoBehaviour
     private float coinTimer = 0f;
 
     [Header("Tutorial Reference")]
-    public TutorialManager tutorialManager; 
-    
+    public TutorialManager tutorialManager;
+
     [Header("UI References (Player Only)")]
-    public TextMeshProUGUI upgradeButtonText; 
+    public TextMeshProUGUI upgradeButtonText;
     public Image upgradeButtonImage;
     public Sprite affordableSprite;
     public Sprite unaffordableSprite;
@@ -309,7 +309,21 @@ public class Tower : MonoBehaviour
             Debug.LogWarning("[Tower] DialogueManager not found - skipping victory dialogue");
         }
 
-        // STEP 2: Show victory panel after dialogue
+        // STEP 2: Mark level as completed and unlock next level
+        if (LevelManager.Instance != null)
+        {
+            // Mark current level as completed
+            if (PersistenceManager.Instance != null)
+            {
+                PersistenceManager.Instance.MarkLevelCompleted(currentLevel);
+                Debug.Log($"[Tower] ✅ Marked Level {currentLevel} as completed!");
+            }
+
+            // Unlock next level
+            LevelManager.Instance.UnlockNextLevel();
+        }
+
+        // STEP 3: Show victory panel after dialogue
         ShowVictoryPanel();
     }
 

@@ -8,6 +8,22 @@ public class ShopGemDisplay : MonoBehaviour
     private void OnEnable()
     {
         Refresh();
+        // Subscribe to gem changes for real-time updates
+        if (GemManager.Instance != null)
+        {
+            GemManager.OnTotalGemChanged += OnGemChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Unsubscribe when disabled
+        GemManager.OnTotalGemChanged -= OnGemChanged;
+    }
+
+    private void OnGemChanged(int newTotal)
+    {
+        Refresh();
     }
 
     public void Refresh()

@@ -45,6 +45,13 @@ public class LevelSelectManager : MonoBehaviour
         UpdateLevelButtons();
     }
 
+    private void OnEnable()
+    {
+        // Refresh level buttons when returning to level select (e.g., from main menu or after completing a level)
+        LoadProgress();
+        UpdateLevelButtons();
+    }
+
     private void InitializeLevelSelect()
     {
         // Ensure we have at least some buttons
@@ -148,10 +155,22 @@ public class LevelSelectManager : MonoBehaviour
         // Use the length of levelButtons as the maximum, but check bounds for other arrays
         int maxLevels = Mathf.Min(levelButtons.Length, levelNames.Length);
 
+        Debug.Log($"[LevelSelect] Updating level buttons. MaxUnlocked: {maxUnlockedLevel}");
+
         for (int i = 0; i < maxLevels; i++)
         {
             int levelNumber = i + 1;
-            bool isUnlocked = levelNumber <= maxUnlockedLevel;
+            // A level is unlocked if:
+            // 1. It's within maxUnlockedLevel (includes next unlocked level even if not completed), OR
+            // 2. It has been completed (so completed levels remain selectable)
+            bool isCompleted = PersistenceManager.Instance != null && 
+                               PersistenceManager.Instance.IsLevelCompleted(levelNumber);
+            bool isUnlocked = levelNumber <= maxUnlockedLevel || isCompleted;
+
+            if (isUnlocked)
+            {
+                Debug.Log($"[LevelSelect] Level {levelNumber}: UNLOCKED (Completed: {isCompleted}, MaxUnlocked: {levelNumber <= maxUnlockedLevel})");
+            }
 
             // Update button interactability
             if (levelButtons[i] != null)
@@ -193,11 +212,20 @@ public class LevelSelectManager : MonoBehaviour
             return;
         }
 
-        if (levelNumber > maxUnlockedLevel)
+        // Check if level is unlocked:
+        // 1. Within maxUnlockedLevel (next unlocked level is selectable even if not completed), OR
+        // 2. Has been completed (completed levels remain selectable)
+        bool isCompleted = PersistenceManager.Instance != null && 
+                          PersistenceManager.Instance.IsLevelCompleted(levelNumber);
+        bool isUnlocked = levelNumber <= maxUnlockedLevel || isCompleted;
+
+        if (!isUnlocked)
         {
-            Debug.LogWarning($"[LevelSelect] Level {levelNumber} is locked!");
+            Debug.LogWarning($"[LevelSelect] Level {levelNumber} is locked! (MaxUnlocked: {maxUnlockedLevel}, Completed: {isCompleted})");
             return;
         }
+
+        Debug.Log($"[LevelSelect] Loading Level {levelNumber} (MaxUnlocked: {maxUnlockedLevel}, Completed: {isCompleted})");
 
         // Try different scene name formats
         string[] sceneNamesToTry = {

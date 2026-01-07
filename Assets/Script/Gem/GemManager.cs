@@ -96,12 +96,20 @@ public class GemManager : MonoBehaviour
     // ===== LEVEL GEM =====
     public void ResetLevelGem() => levelGem = 0;
 
-    public void AddLevelGem(int amount) => levelGem += amount;
+    public void AddLevelGem(int amount)
+    {
+        levelGem += amount;
+        // Immediately add to total gems and save to persistent storage
+        // This ensures gems persist even if player dies or restarts
+        AddTotalGem(amount);
+        Debug.Log($"[GemManager] Collected {amount} gems during gameplay. Total: {totalGem} (Saved)");
+    }
 
     public void ConvertLevelGemToTotal()
     {
-        if (levelGem <= 0) return;
-        AddTotalGem(levelGem);
+        // Since AddLevelGem now immediately adds to total gems,
+        // this method just resets levelGem (gems are already in totalGem)
+        // This is kept for backwards compatibility and for level completion flow
         ResetLevelGem();
     }
 

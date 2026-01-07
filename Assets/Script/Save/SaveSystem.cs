@@ -72,6 +72,7 @@ public static class SaveSystem
         // 🔥 TAMBAHAN BARU: Wrapper Fields
         public bool isTutorialCompleted;
         public List<string> seenDialogues = new List<string>();
+        public List<int> completedLevels = new List<int>();
 
         public List<string> troopIds = new List<string>();
         public List<int> troopLvls = new List<int>();
@@ -90,6 +91,8 @@ public static class SaveSystem
             isTutorialCompleted = d.isTutorialCompleted;
             if (d.seenDialogues != null)
                 seenDialogues = new List<string>(d.seenDialogues);
+            if (d.completedLevels != null)
+                completedLevels = new List<int>(d.completedLevels);
 
             foreach (var kvp in d.troopLevels)
             {
@@ -112,7 +115,8 @@ public static class SaveSystem
                 
                 // 🔥 Copy Wrapper ke Data
                 isTutorialCompleted = isTutorialCompleted,
-                seenDialogues = new List<string>(seenDialogues)
+                seenDialogues = new List<string>(seenDialogues),
+                completedLevels = new List<int>(completedLevels ?? new List<int>())
             };
 
             int n = Mathf.Min(troopIds.Count, troopLvls.Count);

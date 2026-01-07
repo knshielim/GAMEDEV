@@ -31,6 +31,7 @@ public class PersistenceManager : MonoBehaviour
         // pastikan collections tidak null
         if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
         if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+        if (data.completedLevels == null) data.completedLevels = new List<int>();
 
         Debug.Log("[PersistenceManager] Loaded save data");
     }
@@ -60,6 +61,7 @@ public class PersistenceManager : MonoBehaviour
         if (data == null) data = new SaveData();
         if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
         if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+        if (data.completedLevels == null) data.completedLevels = new List<int>();
 
 
         // Langsung simpan data yang ada di memori ke Disk
@@ -90,6 +92,7 @@ public class PersistenceManager : MonoBehaviour
 
         if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
         if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+        if (data.completedLevels == null) data.completedLevels = new List<int>();
 
     }
 
@@ -98,6 +101,7 @@ public class PersistenceManager : MonoBehaviour
         if (data == null) data = new SaveData();
         if (data.troopLevels == null) data.troopLevels = new Dictionary<string, int>();
         if (data.seenDialogues == null) data.seenDialogues = new List<string>();
+        if (data.completedLevels == null) data.completedLevels = new List<int>();
     }
 
 
@@ -134,6 +138,29 @@ public class PersistenceManager : MonoBehaviour
     public void SetMaxUnlockedLevel(int lvl)
     {
         data.maxUnlockedLevel = Mathf.Clamp(lvl, 1, 5);
+    }
+
+    // Mark a level as completed (so it can be selected in level select)
+    public void MarkLevelCompleted(int levelNumber)
+    {
+        EnsureData();
+        if (levelNumber >= 1 && levelNumber <= 5)
+        {
+            if (!data.completedLevels.Contains(levelNumber))
+            {
+                data.completedLevels.Add(levelNumber);
+                SaveGame();
+                Debug.Log($"[Persistence] Marked Level {levelNumber} as completed");
+            }
+        }
+    }
+
+    // Check if a level is completed
+    public bool IsLevelCompleted(int levelNumber)
+    {
+        if (data == null || data.completedLevels == null)
+            return false;
+        return data.completedLevels.Contains(levelNumber);
     }
 
     // 3. AUDIO SETTINGS

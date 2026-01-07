@@ -132,6 +132,12 @@ public class LevelManager : MonoBehaviour
             Debug.Log($"[LevelReward] Player dapat {reward} Gems!");
         }
 
+        // Mark current level as completed so it can be selected in level select
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.MarkLevelCompleted(currentLevel);
+            Debug.Log($"[LevelManager] ✅ Marked Level {currentLevel} as completed!");
+        }
 
         ShowLevelEndDialogue();
         UnlockNextLevel();
@@ -281,7 +287,7 @@ public class LevelManager : MonoBehaviour
     }
 
     // Unlock the next level in level select
-    private void UnlockNextLevel()
+    public void UnlockNextLevel()
     {
         int nextLevel = currentLevel + 1;
         if (nextLevel <= totalLevels)
