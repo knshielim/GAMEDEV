@@ -37,6 +37,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float normalSpeed = 1f;
     [SerializeField] private float fastForwardSpeed = 2f;
 
+    [Header("Confirm Quit UI")]
+    [SerializeField] private GameObject confirmQuitPanel;
+
+    private bool quitConfirmed = false;
+    private float previousTimeScale = 1f;
+
+
     private bool isGameOver = false;
     private bool isFastForward = false;
 
@@ -273,6 +280,13 @@ public void TowerDestroyed(Tower destroyedTower)
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape) && !isGameOver)
+        {
+            if (confirmQuitPanel != null && confirmQuitPanel.activeSelf)
+                ConfirmQuitNo();
+            else
+                ShowConfirmQuit();
+        }
         // Ensure game stays paused when game over panel is active
         if (gameOverPanel != null && gameOverPanel.activeSelf && Time.timeScale != 0f)
         {
@@ -401,6 +415,90 @@ public void TowerDestroyed(Tower destroyedTower)
             Debug.LogError("[GameManager] ❌ WeatherRoulette.Instance is NULL");
         }
     }
+
+    private void OnEnable()
+    {
+        Application.wantsToQuit += OnWantsToQuit;
+    }
+
+    private void OnDisable()
+    {
+        Application.wantsToQuit -= OnWantsToQuit;
+    }
+
+    private bool OnWantsToQuit()
+    {
+        // If already confirmed, allow quitting
+        if (quitConfirmed)
+            return true;
+
+        // Otherwise, show confirmation panel
+        ShowConfirmQuit();
+
+        // Cancel quit for now
+        return false;
+    }
+
+    public void ShowConfirmQuit()
+    {
+        if (confirmQuitPanel == null)
+        {
+            Debug.LogError("[GameManager] ConfirmQuitPanel is NULL");
+            return;
+        }
+
+        if (confirmQuitPanel.activeSelf)
+            return;
+
+        // ✅ Save current speed (normal / fast-forward / paused)
+        previousTimeScale = Time.timeScale;
+
+        confirmQuitPanel.SetActive(true);
+
+        // Force pause
+        Time.timeScale = 0f;
+
+        // Clear UI focus
+        UnityEngine.EventSystems.EventSystem.current
+            ?.SetSelectedGameObject(null);
+
+        Debug.Log("[GameManager] Confirm Quit panel opened");
+    }
+
+
+
+public void ConfirmQuitYes()
+{
+    quitConfirmed = true;
+
+    // Resume so quit completes cleanly
+    Time.timeScale = 1f;
+
+    Application.Quit();
+
+#if UNITY_EDITOR
+    UnityEditor.EditorApplication.isPlaying = false;
+#endif
+}
+
+
+
+public void ConfirmQuitNo()
+{
+    quitConfirmed = false;
+
+    if (confirmQuitPanel != null)
+        confirmQuitPanel.SetActive(false);
+
+    // ✅ Restore EXACT previous state
+    Time.timeScale = previousTimeScale;
+
+    Debug.Log("[GameManager] Quit cancelled, game resumed");
+}
+
+
+
+
 
 
 }

@@ -61,6 +61,10 @@ public class MainMenu : MonoBehaviour
     [Tooltip("Optional: Instruction text inside the panel")]
     public TMPro.TextMeshProUGUI instructionText;
 
+    [Header("Confirm Quit UI")]
+[SerializeField] private GameObject confirmQuitPanel;
+
+
     // Internal state
     private int currentParagraphIndex = 0;
     private bool isTyping = false;
@@ -449,8 +453,18 @@ public class MainMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        Application.Quit();
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayButtonClick();
+
+        // Hide main menu buttons
+        if (mainMenuButtons != null)
+            mainMenuButtons.SetActive(false);
+
+        // Show confirm quit panel
+        if (confirmQuitPanel != null)
+            confirmQuitPanel.SetActive(true);
     }
+
     
     public void GoToShop()
     {
@@ -635,4 +649,34 @@ public class MainMenu : MonoBehaviour
         Debug.Log($"[MainMenu] 💬 {message}");
         yield return new WaitForSeconds(duration);
     }
+
+    // Called when player presses YES
+public void ConfirmQuitYes()
+{
+    if (AudioManager.Instance != null)
+        AudioManager.Instance.PlayButtonClick();
+
+    Application.Quit();
+
+    // For testing in Editor
+    #if UNITY_EDITOR
+    UnityEditor.EditorApplication.isPlaying = false;
+    #endif
+}
+
+// Called when player presses NO
+public void ConfirmQuitNo()
+{
+    if (AudioManager.Instance != null)
+        AudioManager.Instance.PlayButtonClick();
+
+    // Hide confirm quit panel
+    if (confirmQuitPanel != null)
+        confirmQuitPanel.SetActive(false);
+
+    // Show main menu again
+    if (mainMenuButtons != null)
+        mainMenuButtons.SetActive(true);
+}
+
 }
