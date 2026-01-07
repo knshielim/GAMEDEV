@@ -18367,7 +18367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settingsPanel: {fileID: 427469627}
-  settingsButton: {fileID: 0}
+  settingsButton: {fileID: 864808302}
   closeSettingsButton: {fileID: 1262305773}
   volumeTabButton: {fileID: 1588178571}
   troopDirectoryTabButton: {fileID: 1792303250}

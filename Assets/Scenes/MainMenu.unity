@@ -1357,7 +1357,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: giveDebugGem
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1011198965370943266, guid: 74f4597a47ccf794db1a6f1cae4afb27, type: 3}
       propertyPath: skipDialogue

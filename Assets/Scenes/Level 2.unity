@@ -6019,7 +6019,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settingsPanel: {fileID: 362739701}
-  settingsButton: {fileID: 0}
+  settingsButton: {fileID: 1865658903}
   closeSettingsButton: {fileID: 1578534801}
   volumeTabButton: {fileID: 679780377}
   troopDirectoryTabButton: {fileID: 1852985739}
