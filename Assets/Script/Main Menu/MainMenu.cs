@@ -527,9 +527,6 @@ public class MainMenu : MonoBehaviour
     {
         ResetAllProgress();
         
-        if (AudioManager.Instance != null && AudioManager.Instance.upgradeSFX != null)
-            AudioManager.Instance.PlaySFX(AudioManager.Instance.upgradeSFX);
-        
         Debug.Log("[MainMenu] ✅ ALL progress reset! Game will restart from the beginning.");
         
         // Optional: Show a temporary message to the player

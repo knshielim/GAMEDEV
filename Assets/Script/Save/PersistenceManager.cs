@@ -142,7 +142,6 @@ public class PersistenceManager : MonoBehaviour
         data.masterVolume = master;
         data.musicVolume = music;
         data.sfxVolume = sfx;
-        SaveGame();
     }
     
     public float GetMasterVolume() => data.masterVolume;

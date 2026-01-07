@@ -144,6 +144,11 @@ public class SettingsManager : MonoBehaviour
 
         settingsPanel.SetActive(false);
         Time.timeScale = 1f;
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SaveGame();
+            Debug.Log("[SettingsManager] Settings saved on Close.");
+        }
         HideAllPanels();
         HideAllBackButtons();
     }
@@ -189,6 +194,11 @@ public class SettingsManager : MonoBehaviour
         AudioManager.Instance?.PlayButtonClick();
 
         settingsPanel.SetActive(true);
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SaveGame();
+            Debug.Log("[SettingsManager] Audio settings saved on Back.");
+        }
         HideAllPanels();
         HideAllBackButtons();
     }

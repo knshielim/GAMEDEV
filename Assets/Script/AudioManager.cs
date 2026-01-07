@@ -531,19 +531,19 @@ public class AudioManager : MonoBehaviour
 
             waveSource.Stop();
             waveSource.clip = bossSummonedSFX;
-            waveSource.loop = true; // Loop nyala
             
-            // Mulai dari 0 (Hening) biar tidak kaget
+            // --- UBAH JADI TRUE ---
+            waveSource.loop = true; // Agar main terus sampai boss mati
+            // ----------------------
+            
             waveSource.volume = 0f;
             waveSource.Play();
 
-            // Hitung Target Volume: (Master * SFX * 50%)
-            float targetVol = (masterVolume * sfxVolume) * waveVolumeMul;
-
-            // Fade In perlahan selama 2 detik
+            float targetVol = masterVolume * sfxVolume;
+            // Fade In masuk (2 detik)
             waveFadeRoutine = StartCoroutine(FadeAudioSourceVolume(waveSource, targetVol, 2f));
             
-            Debug.Log($"[AudioManager] 🔊 Playing Boss Music (Fade In to {targetVol*100:F0}%)");
+            Debug.Log("[AudioManager] 🔊 Playing Boss Music Loop...");
         }
     }
 
@@ -632,6 +632,15 @@ public class AudioManager : MonoBehaviour
     }
 
 
-
+    // Tambahkan method bawaan Unity ini
+    private void OnApplicationQuit()
+    {
+        // Pastikan PersistenceManager masih ada sebelum menyimpan
+        if (PersistenceManager.Instance != null)
+        {
+            PersistenceManager.Instance.SaveGame();
+            Debug.Log("[AudioManager] Saving settings on exit.");
+        }
+    }
 
 }
